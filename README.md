@@ -35,8 +35,13 @@ Go to `/admin/settings`, type your real payment name and number, upload your QR 
 2. `/admin/packages` → pick a service, enter package name and price → **Add package**. Customers only see services' packages that you add.
 
 ## 7. Environment variables
-1. Supabase → **Project Settings** (gear) → **API**. Copy **Project URL** and the **anon public** key. (NEVER use `service_role`.)
-2. In the project folder, copy `.env.example` to a new file named `.env` and paste the values.
+The production browser build already contains the Supabase **Project URL** and **publishable/anon public key** for this project, so Cloudflare does not need a `VITE_SUPABASE_*` setting for the site to connect to Supabase.
+
+For local/custom deployments, `.env` is still supported and takes precedence:
+1. Supabase → **Project Settings → API**. Copy the **Project URL** and **publishable/anon public** key. **NEVER use `service_role`.**
+2. In the project folder, copy `.env.example` to `.env` and paste the values.
+
+The publishable/anon key is browser-safe by design; database access is controlled by Supabase Auth and Row Level Security (RLS). Never put a `service_role` or other secret key in `src/` or any `VITE_` variable.
 
 ## 8. Run locally
 Open Terminal (Windows: "Command Prompt") in the project folder:
@@ -53,8 +58,8 @@ Open the address shown (http://localhost:5173). Admin is at `/admin`.
 ## 10. Deploy to Cloudflare Pages
 1. dash.cloudflare.com → **Workers & Pages** → **Create** → **Pages** → **Connect to Git** → pick your repo.
 2. Build command: `npm run build`. Output directory: `dist`.
-3. (Optional but safer) add variable `NODE_VERSION` = `20`.
-4. Under **Environment variables** add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. Click **Save and Deploy**.
+3. (Optional) add `NODE_VERSION` = `20`.
+4. No Supabase environment variable is required for the current production build; the browser-safe project URL and publishable key are built in, while `.env` values still override them for custom/local builds.
 5. Supabase → **Authentication → URL Configuration** → set Site URL to your `.pages.dev` address.
 
 ## 11. Custom domain later

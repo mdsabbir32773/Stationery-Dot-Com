@@ -1,0 +1,4 @@
+import {useState} from 'react';import {useNavigate} from 'react-router-dom';import {supabase} from '../../lib/supabase';
+export default function Login(){const nav=useNavigate();const[e,setE]=useState('');const[p,setP]=useState('');const[err,setErr]=useState('');
+async function go(ev){ev.preventDefault();const{error}=await supabase.auth.signInWithPassword({email:e,password:p});if(error)return setErr(error.message);nav('/admin');}
+return(<main className="wrap" style={{maxWidth:380}}><h1>Admin Login</h1><form onSubmit={go}><label>Email</label><input type="email" value={e} onChange={x=>setE(x.target.value)} required/><label>Password</label><input type="password" value={p} onChange={x=>setP(x.target.value)} required/>{err&&<p className="err">{err}</p>}<p><button className="btn">Login</button></p></form></main>);}

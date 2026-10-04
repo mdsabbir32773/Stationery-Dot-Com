@@ -1,0 +1,2 @@
+import {Link} from 'react-router-dom';import useTitle from '../lib/useTitle';
+export default function NotFound(){useTitle('Page not found');return <main className="wrap"><div className="card empty"><h1>Page not found</h1><p>The page you are looking for does not exist.</p><div className="row" style={{justifyContent:'center'}}><Link className="btn" to="/">Home</Link><Link className="btn alt" to="/services">View Services</Link></div></div></main>;}

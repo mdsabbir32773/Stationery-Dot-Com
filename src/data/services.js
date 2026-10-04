@@ -1,0 +1,8 @@
+const S=(category,names)=>names.map(name=>({category,name,slug:name.toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')}));
+export const CATEGORIES=[
+{name:'Document & Government Services',items:['NID Related Services','Birth Certificate Services','Passport Services','TIN & e-TIN','Income Tax & e-Return','Trade License','Trade License Translation','Notary Services','Online Application Services','Government Document Support','Other Document-Related Services']},
+{name:'Meta & Social Media Services',items:['Facebook Page Creation','Page Setup & Customization','Facebook Page Management','Meta Ads Setup','Facebook Boosting','Ad Campaign Setup','Audience Targeting','Lead Generation','Engagement Campaigns','Social Media Marketing','SMM Panel Services','Custom SMM Services']},
+{name:'Social Media Growth',items:['Facebook Followers','Instagram Followers','YouTube Subscribers','TikTok Followers','Facebook Likes & Reactions','Instagram Likes','Post Engagement','Comments','Story Views','Reels Views','Video Views','YouTube Views','Other Social Media Growth Services']},
+{name:'Digital Subscriptions',items:['Canva Pro','Gemini AI / Google AI','Google One','ChatGPT','AI Tools','Design Tools','Productivity Tools','Other Digital Subscriptions']},
+{name:'Creative Services',items:['Logo / Profile Design','Facebook Cover','Social Media Post','Banner','Visiting Card','Flyer','Promotional Graphics','Other Basic Design']}];
+export const STARTER_SERVICES=CATEGORIES.flatMap(c=>S(c.name,c.items)).map((s,i)=>({...s,sort_order:i,requires_file:s.category.startsWith('Document')}));

@@ -1,0 +1,3 @@
+import {Link} from 'react-router-dom';import {taka} from '../lib/supabase';
+export default function PackageCard({p,service}){return(<div className="card" style={{display:'flex',flexDirection:'column'}}><h3>{p.name}</h3><p className="muted" style={{flex:1}}>{p.description}</p><div><span className="price">{taka(p.price)}</span> <span className="muted">{p.unit}</span></div>
+{service.requires_file&&<p className="muted" style={{margin:'6px 0 0'}}>Documents required at checkout</p>}<Link className="btn block" style={{marginTop:12}} to={`/order?service=${service.slug}&package=${p.id}`}>Order Now</Link></div>);}

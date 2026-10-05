@@ -5,4 +5,5 @@ export const CATEGORIES=[
 {name:'Social Media Growth',items:['Facebook Followers','Instagram Followers','YouTube Subscribers','TikTok Followers','Facebook Likes & Reactions','Instagram Likes','Post Engagement','Comments','Story Views','Reels Views','Video Views','YouTube Views','Other Social Media Growth Services']},
 {name:'Digital Subscriptions',items:['Canva Pro','Gemini AI / Google AI','Google One','ChatGPT','AI Tools','Design Tools','Productivity Tools','Other Digital Subscriptions']},
 {name:'Creative Services',items:['Logo / Profile Design','Facebook Cover','Social Media Post','Banner','Visiting Card','Flyer','Promotional Graphics','Other Basic Design']}];
+export const categoriesFromServices=rows=>{const map=new Map();for(const row of rows||[]){if(!row.category)continue;if(!map.has(row.category))map.set(row.category,[]);if(row.name)map.get(row.category).push(row.name);}return [...map.entries()].map(([name,items])=>({name,items}));};
 export const STARTER_SERVICES=CATEGORIES.flatMap(c=>S(c.name,c.items)).map((s,i)=>({...s,sort_order:i,requires_file:s.category.startsWith('Document')}));

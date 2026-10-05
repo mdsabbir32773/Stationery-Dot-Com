@@ -21,14 +21,22 @@ insert into admin_profiles(id,full_name) select id,'Owner' from auth.users where
 ```
 2. Only people in `admin_profiles` can manage the site. Never share the password.
 
-### 4b. Turn off public sign-up (important)
-Supabase → **Authentication** → **Sign In / Providers** (or **Providers → Email**) → turn **OFF** "Allow new users to sign up" → **Save**. (Strangers still could not manage the site, but this is safer.)
+### 4b. Customer accounts
+Customer sign-up is available using email/password. Supabase → **Authentication → Sign In / Providers** → make sure Email sign-ups are enabled. Keep email confirmations enabled for production. Admin access is still restricted by `admin_profiles` and database RLS; a customer account does not get admin access.
+
+Run `supabase/customer-accounts.sql` once in SQL Editor after the main schema and other migrations. It creates customer profiles and safely links future signed-in orders to their account. Older guest orders remain guest orders.
+
+To enable Google/Gmail sign-in:
+1. Supabase → **Authentication → Sign In / Providers → Google** → enable Google and save the Client ID and Client Secret from Google Cloud's OAuth setup.
+2. In Google Cloud's OAuth client, add Supabase's callback URL shown on the Supabase Google provider page.
+3. Supabase → **Authentication → URL Configuration**: set the production Site URL and add your Cloudflare Pages URL plus `/account` as an allowed redirect URL.
+4. For reliable customer confirmation and password-reset emails, configure a custom SMTP service in Supabase Auth. Supabase's default mailer has a low testing limit.
 
 ### If you already ran the OLD schema.sql
 Run `supabase/update-after-audit.sql` once in SQL Editor (same way as step 2).
 
-## 5. Add the payment QR (after the site runs)
-Go to `/admin/settings`, type your real payment name and number, upload your QR image, click **Save settings**. Nothing is pre-filled — use only your real details.
+## 5. Add payment details (after the site runs)
+Go to `/admin/settings`, enter your real bKash and/or Nagad number, add the matching QR if you use one, then click **Save settings**. Customers see the payment options you configure. Never enter made-up account details.
 
 ## 6. Add services and packages
 1. `/admin/services` → **Import starter services list** (adds all your categories). Tick "Show as popular" on a few.
@@ -51,10 +59,8 @@ npm run dev
 ```
 Open the address shown (http://localhost:5173). Admin is at `/admin`.
 
-## 9. Push to GitHub
-1. github.com → **New repository** → name `stationery-dot-com` → Private → Create.
-2. Easiest: install **GitHub Desktop** → File → Add Local Repository → choose the folder → **Publish repository**. (`.env` is ignored, so your keys stay private.)
-
+## 9. Update your existing GitHub website
+This is an updated copy of your current site. Extract this ZIP, then copy the files inside `Stationery-Dot-Com-Updated` into your existing local GitHub project folder and choose **Replace files** if Windows asks. Keep the existing `.git` folder and `.env` file. In GitHub Desktop, review the changed files, write a short summary such as `Refresh website design and admin`, then click **Commit** and **Push origin**. Cloudflare Pages will publish the new version from that same GitHub repository.
 ## 10. Deploy to Cloudflare Pages
 1. dash.cloudflare.com → **Workers & Pages** → **Create** → **Pages** → **Connect to Git** → pick your repo.
 2. Build command: `npm run build`. Output directory: `dist`.
@@ -73,20 +79,20 @@ Cloudflare Pages → your project → **Custom domains** → **Set up a domain**
 Your real payment QR, account name and number; package names and prices; admin email/password; Supabase keys; domain. Nothing is invented for you.
 
 ## Notes
-Real payment gateway: replace `src/components/PaymentQR.jsx` later; orders are created through the `create_order` database function. Tracking needs Order ID + phone. Customer files are in a private bucket; only admins get temporary links.
+Payment options support manual Send Money and Transaction ID submission; admin review is required until an official merchant/gateway verification adapter is configured. Orders are created through the `create_order` database function. Guest tracking uses Order ID + phone. New signed-in orders appear in customer accounts after running `supabase/customer-accounts.sql`. Customer files are in a private bucket; only admins get temporary links.
 
 ---
 ## Update 2: Redesign + payment-ready upgrade
 1. **Supabase → SQL Editor → New query**: paste `supabase/payments-upgrade.sql` → **Run**. (Safe to run twice. Fresh installs already get it through schema.sql.)
 2. Everything else (services, packages, orders, admin) stays as it was.
 
-### Automatic payment (NOT active yet)
+### bKash/Nagad payment and automatic verification
 Customers can submit a bKash/Nagad Transaction ID now, but it is recorded as **Verification Pending**. Admin must confirm it in the order screen. The website cannot safely verify a personal-wallet “Send Money” ID by looking at its format; it needs an official bKash/Nagad merchant API or an authenticated transaction notification. No merchant account or API credentials were included in this project, so automatic verification is not active.
 
 To enable it, first obtain merchant onboarding and API/webhook documentation and credentials from the payment provider. Then implement that provider's documented signature/transaction verification in `functions/_lib/providers.js`, deploy the Cloudflare Pages Functions, and set encrypted Cloudflare variables `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` and the provider secrets (never `VITE_` variables). The webhook endpoint is `https://YOUR-SITE/api/payment-webhook/PROVIDERNAME`. Configure the provider to call it. The server function and `apply_payment_event` validate the verified amount against the order total and ignore duplicate provider events. Do not mark a payment paid based only on a customer-entered Transaction ID or client-side request.
 
 ### Admin website content
-In `/admin/settings`, the admin can change the home page heading and introduction, announcement, tagline, footer text, contact details, payment instructions and payment QR. Services and package visibility/prices are managed under `/admin/services` and `/admin/packages`.
+In `/admin/content`, the admin can edit the home page section by section and hide optional sections. `/admin/services` manages service descriptions, category names, cover images and featured/visible status; `/admin/packages` manages packages and prices. `/admin/settings` manages contact details and bKash/Nagad numbers and payment QR. `/admin/customers` lists customer accounts and their linked order counts.
 
 ---
 ## Update 3: Premium redesign + service images
@@ -98,3 +104,5 @@ In `/admin/settings`, the admin can change the home page heading and introductio
 1. Supabase → SQL Editor → paste `supabase/qr-pdf-support.sql` → Run (allows PDF, 10MB limit).
 2. Admin → Settings → upload the QR as PDF, JPG, PNG or WEBP → **Save settings**.
 Customers see an image QR as a picture, and a PDF QR as a "View Payment QR" button that opens your original PDF unchanged.
+
+

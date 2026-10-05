@@ -81,9 +81,12 @@ Real payment gateway: replace `src/components/PaymentQR.jsx` later; orders are c
 2. Everything else (services, packages, orders, admin) stays as it was.
 
 ### Automatic payment (NOT active yet)
-Today customers pay by QR manually and you verify in Admin. Automatic verification needs a provider's merchant account and credentials, which do not exist yet, so none are included.
-When you have them: provider adapter goes in `functions/_lib/providers.js`; the provider's webhook URL will be `https://YOUR-SITE/api/payment-webhook/PROVIDERNAME`. Add these as **encrypted** variables in Cloudflare (never as `VITE_` variables): `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, plus the provider's own secrets.
-Only that server function can mark a payment "Paid" automatically (database function `apply_payment_event`); browsers cannot. It also checks the amount equals the order total and ignores duplicate events.
+Customers can submit a bKash/Nagad Transaction ID now, but it is recorded as **Verification Pending**. Admin must confirm it in the order screen. The website cannot safely verify a personal-wallet “Send Money” ID by looking at its format; it needs an official bKash/Nagad merchant API or an authenticated transaction notification. No merchant account or API credentials were included in this project, so automatic verification is not active.
+
+To enable it, first obtain merchant onboarding and API/webhook documentation and credentials from the payment provider. Then implement that provider's documented signature/transaction verification in `functions/_lib/providers.js`, deploy the Cloudflare Pages Functions, and set encrypted Cloudflare variables `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` and the provider secrets (never `VITE_` variables). The webhook endpoint is `https://YOUR-SITE/api/payment-webhook/PROVIDERNAME`. Configure the provider to call it. The server function and `apply_payment_event` validate the verified amount against the order total and ignore duplicate provider events. Do not mark a payment paid based only on a customer-entered Transaction ID or client-side request.
+
+### Admin website content
+In `/admin/settings`, the admin can change the home page heading and introduction, announcement, tagline, footer text, contact details, payment instructions and payment QR. Services and package visibility/prices are managed under `/admin/services` and `/admin/packages`.
 
 ---
 ## Update 3: Premium redesign + service images

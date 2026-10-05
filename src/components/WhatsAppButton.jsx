@@ -1,2 +1,2 @@
-import {MessageCircle} from 'lucide-react';import {waLink} from '../lib/whatsapp';
-export default function WhatsAppButton(){return <a className="wafab" href={waLink()} target="_blank" rel="noreferrer" aria-label="WhatsApp Us"><MessageCircle size={22}/><span>WhatsApp Us</span></a>;}
+import {useEffect,useState} from 'react';import {MessageCircle} from 'lucide-react';import {waLink} from '../lib/whatsapp';import {getSettings} from '../lib/supabase';
+export default function WhatsAppButton(){const[s,setS]=useState('');useEffect(()=>{getSettings().then(x=>setS(x.contact_whatsapp||''));},[]);return <a className="wafab" href={waLink('Hello Stationery Dot Com',s)} target="_blank" rel="noreferrer" aria-label="WhatsApp Us"><MessageCircle size={22}/><span>WhatsApp Us</span></a>;}

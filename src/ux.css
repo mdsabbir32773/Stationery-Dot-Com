@@ -1,0 +1,11 @@
+/* Small usability refinements layered over the existing visual system. */
+.links a[aria-current="page"]:not(.btn){background:#edf3e9;color:#385f42;font-weight:700}
+.burger{transition:background .15s,border-color .15s}
+.burger:hover{background:#f2f6ef;border-color:#cddbc9}
+.checkout-error{max-width:680px;margin:38px auto;padding:clamp(22px,5vw,42px);text-align:center}
+.checkout-error h1{font-size:clamp(28px,5vw,40px);margin:8px 0 12px}
+.checkout-error .muted{max-width:470px;margin:0 auto}
+.checkout-error-actions{justify-content:center;margin-top:22px}
+.checkout-error-actions .btn{min-width:140px}
+@media(max-width:759px){.nav .wrap{position:relative}.menu{top:calc(100% + 8px);z-index:2;gap:3px;padding:10px}.menu a{width:100%}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}}

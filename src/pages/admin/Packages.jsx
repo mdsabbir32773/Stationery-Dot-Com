@@ -3,7 +3,8 @@ import {Search,Plus,PackageOpen,Eye,EyeOff,Trash2,PenLine} from 'lucide-react';
 import {supabase,taka} from '../../lib/supabase';
 
 const fresh=()=>({service_id:'',name:'',description:'',price:'',unit:'per order',is_active:true,sort_order:0,access_type:null,duration_months:null});
-const durationLabel=n=>n===1?'1 month':n===6?'6 months':n===12?'1 year':'';
+const SUBSCRIPTION_DURATIONS=[{months:1,label:'1 Month'},{months:6,label:'6 Months'},{months:12,label:'1 Year'},{months:24,label:'2 Years'},{months:36,label:'3 Years'},{months:48,label:'4 Years'},{months:60,label:'5 Years'},{months:0,label:'Lifetime'}];
+const durationLabel=n=>SUBSCRIPTION_DURATIONS.find(d=>d.months===Number(n))?.label||'';
 const isSubscription=s=>s?.category?.trim().toLowerCase()==='digital subscriptions';
 
 export default function Packages(){
@@ -62,7 +63,7 @@ export default function Packages(){
     e.preventDefault();
     setMessage('');
     if(!form.service_id)return setMessage('Choose a service first.');
-    if(subscription&&(!form.access_type||!form.duration_months))return setMessage('Choose both access type and subscription duration.');
+    if(subscription&&(!form.access_type||form.duration_months===null||!SUBSCRIPTION_DURATIONS.some(d=>d.months===Number(form.duration_months))))return setMessage('Choose both access type and a valid subscription duration.');
     setBusy(true);
     const row={...form,price:Number(form.price),access_type:subscription?form.access_type:null,duration_months:subscription?Number(form.duration_months):null};
     delete row.services;
@@ -111,7 +112,7 @@ export default function Packages(){
         <label>Package or plan name<input value={form.name} onChange={e=>update('name',e.target.value)} placeholder="e.g. Canva Pro" required maxLength={120}/></label>
         <label>Price (৳)<input type="number" min="0" step="0.01" value={form.price} onChange={e=>update('price',e.target.value)} required/></label>
         <label className="form-wide">Description <span className="muted">(optional)</span><textarea rows="3" value={form.description||''} onChange={e=>update('description',e.target.value)} placeholder="What is included in this option?"/></label>
-        {subscription?<><label>Access type<select value={form.access_type||''} onChange={e=>update('access_type',e.target.value||null)} required><option value="">Choose access…</option><option value="shared">Shared</option><option value="personal">Personal</option></select></label><label>Subscription duration<select value={form.duration_months||''} onChange={e=>update('duration_months',e.target.value||null)} required><option value="">Choose duration…</option><option value="1">1 month</option><option value="6">6 months</option><option value="12">1 year</option></select></label></>:<label>Price unit<input value={form.unit||''} onChange={e=>update('unit',e.target.value)} placeholder="e.g. per order, per month"/></label>}
+        {subscription?<><label>Access type<select value={form.access_type||''} onChange={e=>update('access_type',e.target.value||null)} required><option value="">Choose access…</option><option value="shared">Shared</option><option value="personal">Personal</option></select></label><label>Subscription duration<select value={form.duration_months||''} onChange={e=>update('duration_months',e.target.value||null)} required><option value="">Choose duration…</option>{SUBSCRIPTION_DURATIONS.map(d=><option key={d.months} value={d.months}>{d.label}</option>)}</select></label></>:<label>Price unit<input value={form.unit||''} onChange={e=>update('unit',e.target.value)} placeholder="e.g. per order, per month"/></label>}
         <label>Display order<input type="number" value={form.sort_order??0} onChange={e=>update('sort_order',Number(e.target.value))}/></label>
         <label className="check-label"><input type="checkbox" checked={Boolean(form.is_active)} onChange={e=>update('is_active',e.target.checked)}/> Make this package available</label>
       </div>

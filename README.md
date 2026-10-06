@@ -35,6 +35,8 @@ To enable Google/Gmail sign-in:
 ### If you already ran the OLD schema.sql
 Run `supabase/update-after-audit.sql` once in SQL Editor (same way as step 2).
 
+For an existing database that already has subscription package options, run `supabase/migrations/20261006100000_expand_subscription_durations.sql` in Supabase SQL Editor before publishing this update. It keeps current package and order records, enables all eight durations, and preserves plan duration on new orders.
+
 ## 5. Add payment details (after the site runs)
 Go to `/admin/settings`, enter your real bKash and/or Nagad number, add the matching QR if you use one, then click **Save settings**. Customers see the payment options you configure. Never enter made-up account details.
 

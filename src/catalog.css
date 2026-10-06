@@ -83,7 +83,7 @@
 .cart-item-actions .qty input::-webkit-outer-spin-button,.cart-item-actions .qty input::-webkit-inner-spin-button{appearance:none}
 @media(max-width:1000px){
  .cart-layout{grid-template-columns:1fr;gap:16px}
- .cart-layout .summary{position:static}
+ .cart-layout .summary{position:static;order:-1}
 }
 @media(max-width:600px){
  .package-actions{grid-template-columns:1fr}

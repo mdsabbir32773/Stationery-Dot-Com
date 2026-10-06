@@ -1,0 +1,1 @@
+update public.services set category='ChatGPT Services', sort_order=1, is_active=true where slug='chatgpt-go-plus';

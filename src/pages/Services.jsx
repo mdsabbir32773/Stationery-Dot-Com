@@ -25,7 +25,7 @@ export default function Services(){
   useTitle(s.catalog_title||'Services',s.catalog_intro||'Browse our services and packages.');
   useEffect(()=>{
     getSettings().then(setS).catch(()=>{});
-    supabase.from('services').select('*,packages(price,is_active)').eq('is_active',true).order('sort_order').then(r=>{if(r.error)setErr(true);setList(r.data||[]);});
+    (async()=>{const sr=await supabase.from('services').select('id,category,name,slug,description,requires_file,is_popular,is_active,sort_order,created_at,image_url,smm_platform,smm_category,smm_country,smm_service_code,smm_min_quantity,smm_max_quantity,smm_price_per_1000,smm_start_time,smm_delivery_time,smm_refill,smm_cancel,smm_instructions').eq('is_active',true).order('sort_order');if(sr.error){setErr(true);setList([]);return;}const ids=(sr.data||[]).map(x=>x.id);let packages=[];if(ids.length){const pr=await supabase.from('packages').select('id,service_id,name,price,is_active,sort_order').in('service_id',ids).eq('is_active',true).order('sort_order');if(!pr.error)packages=pr.data||[];}const byService={};for(const p of packages)(byService[p.service_id]||(byService[p.service_id]=[])).push(p);setList((sr.data||[]).map(x=>({...x,packages:byService[x.id]||[]})));})();
   },[]);
   useEffect(()=>setVisibleCount(PAGE_SIZE),[cat,q]);
   const categoryList=list?categoriesFromServices(list):[];

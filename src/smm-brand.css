@@ -23,3 +23,18 @@
 .smm-admin-callout b{color:#31569b!important}
 .smm-status.is-on{background:#edf3ff!important;color:#31569b!important}
 .smm-adapter-note>svg{color:#31569b!important}
+
+
+/* SMM readability pass: separate surfaces from text and keep controls high-contrast. */
+.smm-hero,.smm-section-head,.smm-admin-list-head{font-family:var(--font-ui,Inter,"Noto Sans Bengali","Segoe UI",Roboto,Arial,sans-serif)}
+.smm-hero{background:#f7f9fc!important;color:#111827!important}
+.smm-hero h1,.smm-section-head h2,.smm-admin-list-head h2,.smm-card h3,.smm-modal h2{color:#111827!important}
+.smm-hero p,.smm-highlights,.smm-trust,.smm-card p,.smm-card-foot,.smm-admin-callout{color:#596579!important}
+.smm-kicker{background:#fff!important;color:#3730a3!important;border-color:#d7dee8!important}
+.smm-filter-panel,.smm-card,.smm-modal{background:#fff!important;border-color:#d7dee8!important;box-shadow:0 8px 24px rgba(16,24,40,.08)!important}
+.smm-platform,.smm-social-avatar,.smm-float>span,.smm-float.float-two>span,.smm-empty>div{background:#eef2ff!important;color:#3730a3!important}
+.smm-highlights>span,.smm-platform,.smm-card-foot>div>b,.smm-total>b,.smm-admin-total,.smm-admin-total b{color:#3730a3!important}
+.smm-order-btn,.smm-hero-cta{background:#3730a3!important;color:#fff!important;border-color:#312e81!important}
+.smm-order-btn:hover,.smm-hero-cta:hover{background:#312e81!important}
+.smm-status.is-on{background:#ecfdf3!important;color:#166534!important}
+.smm-card .muted,.smm-modal .muted{color:#596579!important}

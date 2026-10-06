@@ -1,5 +1,5 @@
-import {FileText,Megaphone,TrendingUp,Sparkles,Palette} from 'lucide-react';
-export const CAT={'Document & Government Services':{I:FileText,bg:'#dbeafe',fg:'#1d4ed8',tag:'Documents'},'Meta & Social Media Services':{I:Megaphone,bg:'#ede9fe',fg:'#6d28d9',tag:'Meta'},'Social Media Growth':{I:TrendingUp,bg:'#fce7f3',fg:'#be185d',tag:'Growth'},'Digital Subscriptions':{I:Sparkles,bg:'#fef3c7',fg:'#b45309',tag:'Digital'},'Creative Services':{I:Palette,bg:'#dcfce7',fg:'#15803d',tag:'Creative'}};
+import {FileText,Megaphone,TrendingUp,Sparkles,Palette,Share2} from 'lucide-react';
+export const CAT={'Document & Government Services':{I:FileText,bg:'#edf3ff',fg:'#31569b',tag:'Documents'},'Meta & Social Media Services':{I:Megaphone,bg:'#edf3ff',fg:'#31569b',tag:'Meta'},'Social Media Growth':{I:TrendingUp,bg:'#edf3ff',fg:'#31569b',tag:'Growth'},'SMM Panel Services':{I:Share2,bg:'#e5edfc',fg:'#24447f',tag:'SMM'},'Digital Subscriptions':{I:Sparkles,bg:'#edf3ff',fg:'#31569b',tag:'Digital'},'Creative Services':{I:Palette,bg:'#edf3ff',fg:'#31569b',tag:'Creative'}};
 export const catStyle=c=>CAT[c]||{I:Sparkles,bg:'#e2e8f0',fg:'#334155',tag:'Service'};
 // 16:9 cover. Uses the service image when set (object-fit: cover, never stretched); otherwise a category-coloured fallback.
 export default function ServiceCover({s,large}){const c=catStyle(s.category);const I=c.I;

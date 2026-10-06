@@ -1,0 +1,25 @@
+/* Keep the dedicated SMM catalogue aligned with Stationery Dot Com's blue identity. */
+.smm-hero{background:#f3f6fc!important;color:#1c2d4e!important}
+.smm-hero h1,.smm-section-head h2,.smm-admin-list-head h2{font-family:Inter,"Noto Sans Bengali","Segoe UI",Arial,sans-serif!important;color:#1c2d4e!important;letter-spacing:-.03em}
+.smm-hero h1 em,.smm-kicker,.smm-overline,.smm-trust svg,.smm-chart-caption span{color:#31569b!important}
+.smm-kicker{background:#fff!important;border-color:#dce5f2!important}
+.smm-hero-cta,.smm-order-btn{background:#31569b!important;color:#fff!important;box-shadow:0 8px 18px #31569b24!important}
+.smm-hero-cta:hover,.smm-order-btn:hover{background:#24447f!important}
+.smm-hero-bottom{background:#f4f7fd!important;border-color:#e2e8f2!important}
+.smm-highlights,.smm-trust{color:#526789!important}
+.smm-highlights>span,.smm-platform,.smm-card-foot>div>b,.smm-total>b,.smm-admin-total,.smm-admin-total b,.smm-adapter-note a{color:#31569b!important}
+.smm-highlights i{background:#b9c8df!important}
+.smm-orbit{border-color:#d8e2f2!important}
+.smm-social-card,.smm-phone{border-color:#e3eaf4!important}
+.smm-social-avatar,.smm-float>span,.smm-float.float-two>span,.smm-platform,.smm-empty>div{background:#edf3ff!important;color:#31569b!important}
+.smm-chart span,.smm-chart span:nth-child(2n){background:linear-gradient(180deg,#7895c5,#e4ebf6)!important}
+.smm-progress i{background:#31569b!important}
+.smm-filter-panel,.smm-card,.smm-modal{border-color:#e3eaf4!important;box-shadow:0 8px 24px #203b700b!important}
+.smm-card h3,.smm-modal h2{color:#1c2d4e!important}
+.smm-service-icon,.smm-total,.smm-card-foot{border-color:#e3eaf4!important}
+.smm-service-icon,.smm-rules svg,.smm-order-btn svg{color:#31569b!important}
+.smm-consent input{accent-color:#31569b!important}
+.smm-admin-callout{background:#f3f6fc!important;border-color:#dfe7f4!important;color:#526789!important}
+.smm-admin-callout b{color:#31569b!important}
+.smm-status.is-on{background:#edf3ff!important;color:#31569b!important}
+.smm-adapter-note>svg{color:#31569b!important}

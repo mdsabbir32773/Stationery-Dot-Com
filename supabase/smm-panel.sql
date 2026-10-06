@@ -130,8 +130,8 @@ begin
   if bal<total then raise exception 'Insufficient wallet balance'; end if;
   insert into public.order_counters(day,n) values(d,1) on conflict(day) do update set n=public.order_counters.n+1 returning n into seq;
   code:='STDC-'||to_char(d,'YYYYMMDD')||'-'||lpad(seq::text,3,'0');
-  insert into public.orders(order_code,customer_name,phone,email,service_id,package_id,service_name,package_name,unit_price,quantity,total,notes,target_link,status)
-    values(code,left(trim(coalesce(p->>'customer_name','')),120),left(trim(coalesce(p->>'phone','')),20),left(coalesce(p->>'email',''),120),sv.id,null,sv.name,'SMM · '||sv.smm_service_code,unit,qty,total,left(coalesce(p->>'notes',''),1000),link,'Payment Received') returning id into oid;
+  insert into public.orders(order_code,customer_name,phone,email,customer_id,service_id,package_id,service_name,package_name,unit_price,quantity,total,notes,target_link,status)
+    values(code,left(trim(coalesce(p->>'customer_name','')),120),left(trim(coalesce(p->>'phone','')),20),left(coalesce(p->>'email',''),120),uid,sv.id,null,sv.name,'SMM · '||sv.smm_service_code,unit,qty,total,left(coalesce(p->>'notes',''),1000),link,'Payment Received') returning id into oid;
   update public.wallets set balance=balance-total,updated_at=now() where user_id=uid;
   insert into public.wallet_transactions(user_id,amount,transaction_type,reference,description,order_id)
     values(uid,-total,'order_charge',code,'SMM order · '||sv.name,oid);

@@ -64,7 +64,8 @@ export default function Packages(){
     if(!form.service_id)return setMessage('Choose a service first.');
     if(subscription&&(!form.access_type||!form.duration_months))return setMessage('Choose both access type and subscription duration.');
     setBusy(true);
-    const row={...form,price:Number(form.price),access_type:subscription?form.access_type:null,duration_months:subscription?Number(form.duration_months):null};\n    delete row.services;
+    const row={...form,price:Number(form.price),access_type:subscription?form.access_type:null,duration_months:subscription?Number(form.duration_months):null};
+    delete row.services;
     const {error}=await supabase.from('packages').upsert(row);
     setBusy(false);
     if(error){setMessage(error.message);return;}

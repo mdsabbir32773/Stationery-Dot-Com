@@ -1,6 +1,7 @@
 import {useEffect,useState} from 'react';
 import {useSearchParams,Link} from 'react-router-dom';
 import {supabase,getSettings} from '../lib/supabase';
+import {waLink} from '../lib/whatsapp';
 import OrderForm from '../components/OrderForm';
 import useTitle from '../lib/useTitle';
 
@@ -33,5 +34,6 @@ export default function Order(){
   if(status==='missing')return <main className="wrap"><div className="card empty"><p>Please select an available service and package first.</p><Link className="btn" to="/services">View Services</Link></div></main>;
   if(status==='error')return <main className="wrap"><section className="card checkout-error" role="alert"><span className="section-overline">CHECKOUT</span><h1>We couldn’t load this package.</h1><p className="muted">Your order hasn’t been placed. Check your connection and try again, or return to services to choose a package.</p><div className="row checkout-error-actions"><button type="button" className="btn" onClick={()=>setRetry(value=>value+1)}>Try again</button><Link className="btn alt" to="/services">Browse services</Link></div></section></main>;
   if(status==='loading'||!data)return <main className="wrap" aria-busy="true" aria-label="Loading checkout"><div className="sk"/></main>;
+  if(Number(data.pkg.price)<=0)return <main className="wrap"><nav className="crumbs" aria-label="Breadcrumb"><Link to="/services">Services</Link> / <Link to={'/services/'+data.service.slug}>{data.service.name}</Link> / Order</nav><section className="card empty" style={{maxWidth:680,margin:'32px auto',textAlign:'center'}}><span className="section-overline">PRICE ON REQUEST</span><h1>Let’s discuss your requirements first.</h1><p className="muted">This service does not have a fixed online price. Tell us what you need on WhatsApp, we’ll confirm the requirements and agree the final price with you. Once the price is fixed, we’ll send you a secure payment link.</p><a className="btn wa" href={waLink('Hello, I want to order '+data.service.name+' — '+data.pkg.name+'. Please confirm the requirements and final price.')} target="_blank" rel="noreferrer">Discuss &amp; order on WhatsApp</a></section></main>;
   return <main className="wrap"><nav className="crumbs" aria-label="Breadcrumb"><Link to="/services">Services</Link> / <Link to={'/services/'+data.service.slug}>{data.service.name}</Link> / Checkout</nav><h1>Checkout</h1><OrderForm service={data.service} pkg={data.pkg} settings={data.settings}/></main>;
 }

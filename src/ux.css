@@ -180,3 +180,5 @@ footer{background:#171e3b}
  .package-option-actions{justify-content:flex-start}
 }
 @media(max-width:480px){.package-stats{grid-template-columns:1fr}.package-filters{display:grid}.package-filters label{min-width:0}.package-group>header{align-items:flex-start}}
+
+.package-card-image{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:13px;margin:-2px 0 17px;border:1px solid var(--line)}

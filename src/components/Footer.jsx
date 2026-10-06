@@ -62,8 +62,8 @@ export default function Footer() {
             <Phone size={14} /> <a href={'tel:' + p.replace(/\D/g, '')}>{p}</a>
             {p2 && <> · <a href={'tel:' + p2.replace(/\D/g, '')}>{p2}</a></>}
           </p>
-          <div aria-label="Social media" style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 18 }}>
-            <span style={{ color: '#d0d9d1', fontSize: 12, marginRight: 2 }}>Follow us</span>
+          <div aria-label="Social media" className="footer-socials">
+            <span className="footer-social-label">Follow us</span>
             {socialLinks.map(({ name: socialName, href, Icon }) => (
               <a
                 key={socialName}
@@ -72,15 +72,7 @@ export default function Footer() {
                 rel="noopener noreferrer"
                 aria-label={socialName}
                 title={socialName}
-                style={{
-                  width: 38,
-                  height: 38,
-                  display: 'grid',
-                  placeItems: 'center',
-                  borderRadius: '50%',
-                  border: '1px solid #ffffff35',
-                  color: '#fff',
-                }}
+                className="footer-social-link"
               >
                 {Icon ? <Icon size={18} aria-hidden="true" /> : <TikTokIcon />}
               </a>
@@ -104,6 +96,12 @@ export default function Footer() {
             <li><Link to="/privacy-policy">Privacy Policy</Link></li>
             <li><Link to="/terms-of-service">Terms of Service</Link></li>
           </ul>
+        </div>
+      </div>
+      <div className="footer-bottom">
+        <div className="footer-bottom-inner">
+          <span>© {new Date().getFullYear()} {name}. All rights reserved.</span>
+          <span className="footer-credit">Built with care by <a href="https://www.facebook.com/share/1DJjJZKWaA/" target="_blank" rel="noopener noreferrer">Crafting Stations</a></span>
         </div>
       </div>
     </footer>

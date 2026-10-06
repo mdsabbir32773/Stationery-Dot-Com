@@ -112,7 +112,7 @@ create or replace function public.create_smm_order(p jsonb)
 returns text language plpgsql security definer set search_path=public as $$
 declare sv public.services; uid uuid:=auth.uid(); d date:=(now() at time zone 'Asia/Dhaka')::date;
   seq int; code text; oid uuid; qty int; unit numeric(12,2); total numeric(12,2); bal numeric(12,2);
-  link text:=trim(coalesce(p->>'target_link',''));
+  link text:=trim(coalesce(p->>'target_link','')); ph text:=regexp_replace(coalesce(p->>'phone',''),'\D','','g');
 begin
   if uid is null then raise exception 'Sign in to place an SMM order'; end if;
   begin qty:=(p->>'quantity')::int; exception when others then raise exception 'Invalid quantity'; end;
@@ -120,6 +120,8 @@ begin
   begin select * into sv from public.services where id=(p->>'service_id')::uuid and is_active; exception when others then raise exception 'Invalid service'; end;
   if not found or sv.smm_platform is null or sv.smm_min_quantity is null or sv.smm_price_per_1000 is null then raise exception 'SMM service is unavailable'; end if;
   if qty<sv.smm_min_quantity or qty>sv.smm_max_quantity then raise exception 'Quantity is outside this service limit'; end if;
+  if length(trim(coalesce(p->>'customer_name','')))<2 then raise exception 'Name required'; end if;
+  if ph !~ '^(880|0)?1[0-9]{9}$' then raise exception 'Valid Bangladeshi mobile number required'; end if;
   if link !~* '^https?://' or length(link)>1000 then raise exception 'Valid public link required'; end if;
   unit:=sv.smm_price_per_1000; total:=round(unit*qty/1000,2);
   if total<=0 then raise exception 'Invalid order amount'; end if;

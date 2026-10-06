@@ -17,3 +17,26 @@ footer{background:#203b70}footer a:hover{color:#dce8ff}
 .brand-image{object-fit:contain;background:#fff;border-radius:5px}.nav .brand .brand-image{width:48px;height:48px;max-width:48px;max-height:48px}.footer-brand .brand-image{width:58px;height:58px;max-width:58px;max-height:58px}.admin-brand .brand-image{width:42px;height:42px;max-width:42px;max-height:42px}
 input:focus,select:focus,textarea:focus{border-color:#5678b5;box-shadow:0 0 0 3px #5678b520}
 .proof-upload-hint{display:block;margin-top:6px;font-size:12px;color:var(--mut)}
+
+
+/* Final accessibility contrast layer: keep text clearly separated from every surface. */
+body{color:#1c2d4e;background:#fff}
+body :is(p,li,td,th,small,label,span){text-rendering:optimizeLegibility}
+body :is(.card,.scard,.catcard,.tile,.st,.account-panel,.auth-card,.content-section,.package-card,.package-editor,.package-list-panel,.service-list-panel,.featured-section,.home-category,.home-proof,.home-benefits,.pay,.drop,.qrdoc,.review-item,.review-compose,.reviews-empty,.review-thanks,.review-signin,.account-review-row,.admin-review,.stat-card,.admin-shortcut,.package-group,.package-stats>div){color:#1c2d4e}
+body :is(.card,.scard,.catcard,.tile,.st,.account-panel,.auth-card,.content-section,.package-card,.package-editor,.package-list-panel,.service-list-panel,.featured-section,.home-category,.home-proof,.home-benefits,.review-item,.account-review-row,.admin-review,.stat-card,.admin-shortcut){background:#fff}
+body :is(.card,.scard,.catcard,.tile,.st,.account-panel,.auth-card,.content-section,.package-card,.package-editor,.package-list-panel,.service-list-panel,.featured-section,.home-category,.home-proof,.home-benefits,.review-item,.account-review-row,.admin-review,.stat-card,.admin-shortcut) :is(h1,h2,h3,h4,b,strong){color:#1c2d4e}
+body :is(.card,.scard,.catcard,.tile,.st,.account-panel,.auth-card,.content-section,.package-card,.package-editor,.package-list-panel,.service-list-panel,.featured-section,.home-category,.home-proof,.home-benefits,.review-item,.account-review-row,.admin-review,.stat-card,.admin-shortcut) :is(p,.muted,.sub,.sdesc,.package-option-main p,.package-price small){color:#52627a}
+body :is(.hero,.cta,.band,.home-cta,.panel){color:#fff}
+body :is(.hero,.cta,.band,.home-cta) :is(h1,h2,h3,h4,p,li,b,strong,span){color:inherit}
+body .hero p.lead,body .trust,body .cta p{color:#dbe4f1}
+body .panel li{color:#e6edf6}.panel b{color:#9fc1ff}
+body footer,body footer :is(p,li,small,span){color:#dbe4f1}body footer h4{color:#fff}body footer a{color:#dbe4f1}
+body :is(input,select,textarea){background:#fff;color:#1c2d4e;border-color:#cbd5e1}body :is(input,select,textarea)::placeholder{color:#71809a;opacity:1}
+body :is(th){background:#f5f8fc;color:#52627a}body :is(td){color:#1c2d4e;background:#fff}
+body .muted,body .sub,body .legal-updated{color:#65748a}
+body a:not(.btn){color:#31569b}body a:not(.btn):hover{color:#24447f}
+body :is(.home-hero,.smm-hero,.auth-story){color:#1c2d4e}
+body .home-hero :is(h1,h2,h3,p){color:inherit}body .home-hero-copy>p{color:#52627a}.home-hero h1 em{color:#31569b}
+body .home-cta :is(h1,h2,h3,p,.home-cta-link){color:#fff!important}
+body .smm-card,.smm-modal{background:#fff!important;color:#1c2d4e!important}.smm-card :is(h3,p,.muted),.smm-modal :is(h2,p,.muted){color:#1c2d4e!important}.smm-card p,.smm-modal .muted{color:#52627a!important}
+body .admin-sidebar{background:#fff;color:#344867}body .admin-sidebar nav a{color:#52627a}body .admin-sidebar nav a.active{color:#24447f;background:#edf3ff}

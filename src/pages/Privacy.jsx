@@ -20,6 +20,6 @@ export default function Privacy() {
     <h2>Service providers and retention</h2>
     <p>The website uses Supabase for account, database, and file-storage features, Cloudflare to host and deliver the website, and Google when you choose Google sign-in. Information is kept for as long as it is needed to manage your account, orders, support, and business records; some records may need to remain for operational or legal reasons.</p>
     <h2>Your choices and contact</h2>
-    <p>You can choose not to create an account and may place an order as a guest. For questions about this notice or a request concerning your information, contact <a href="mailto:sabbirshuvro07@gmail.com">sabbirshuvro07@gmail.com</a> or call <a href="tel:+8801827680520">01827-680520</a>.</p>
+    <p>You can choose not to create an account and may place an order as a guest. For questions about this notice or a request concerning your information, contact <a href="mailto:metaadsstationery@gmail.com">metaadsstationery@gmail.com</a> or call <a href="tel:+8801827680520">01827-680520</a>.</p>
   </main>;
 }

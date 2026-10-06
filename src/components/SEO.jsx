@@ -60,10 +60,21 @@ export default function SEO(){
 
     let ld=document.head.querySelector('#stationery-seo-jsonld');
     if(!ld){ld=document.createElement('script');ld.id='stationery-seo-jsonld';ld.type='application/ld+json';document.head.appendChild(ld);}
+    const breadcrumbItems=[{'@type':'ListItem',position:1,name:'Home',item:new URL('/',window.location.origin).href}];
+    if(route!=='/'){
+      if(route.startsWith('/services/')){
+        breadcrumbItems.push(
+          {'@type':'ListItem',position:2,name:'Services',item:new URL('/services',window.location.origin).href},
+          {'@type':'ListItem',position:3,name:'Service Details',item:canonical}
+        );
+      }else{
+        breadcrumbItems.push({'@type':'ListItem',position:2,name:clean(page.title.replace(/ \\| Stationery Dot Com.*/,'')).slice(0,80),item:canonical});
+      }
+    }
     const graph=[
       {'@type':'Organization','@id':new URL('/#organization',window.location.origin).href,name:SITE,url:window.location.origin,logo:image,sameAs:['https://www.facebook.com/StationeryDotCom2','https://www.tiktok.com/@stationerydotcom','https://www.instagram.com/stationerydotcom']},
-      {'@type':'WebSite','@id':new URL('/#website',window.location.origin).href,name:SITE,url:window.location.origin,publisher:{'@id':new URL('/#organization',window.location.origin).href},potentialAction:{'@type':'SearchAction',target:new URL('/services?search={search_term_string}',window.location.origin).href, 'query-input':'required name=search_term_string'}},
-      {'@type':'BreadcrumbList','itemListElement':[{'@type':'ListItem',position:1,name:'Home',item:new URL('/',window.location.origin).href},...(route!=='/'?(route.startsWith('/services/')?[{'@type':'ListItem',position:2,name:'Services',item:new URL('/services',window.location.origin).href},{'@type':'ListItem',position:3,name:'Service Details',item:canonical}]:[{'@type':'ListItem',position:2,name:clean(page.title.replace(/ \| Stationery Dot Com.*/,'')).slice(0,80),item:canonical}]:[]))]}
+      {'@type':'WebSite','@id':new URL('/#website',window.location.origin).href,name:SITE,url:window.location.origin,publisher:{'@id':new URL('/#organization',window.location.origin).href},potentialAction:{'@type':'SearchAction',target:new URL('/services?search={search_term_string}',window.location.origin).href,'query-input':'required name=search_term_string'}},
+      {'@type':'BreadcrumbList','itemListElement':breadcrumbItems}
     ];
     ld.textContent=JSON.stringify({'@context':'https://schema.org', '@graph':graph});
   },[pathname]);

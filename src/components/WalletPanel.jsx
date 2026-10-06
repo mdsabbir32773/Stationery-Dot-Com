@@ -13,7 +13,7 @@ export default function WalletPanel({session}){
     setTransactions(tx||[]);setRequests(dr||[]);getSettings().then(setSettings);
   }
   useEffect(()=>{if(session)load();},[session?.user?.id]);
-  const channels=[...(settings.payment_bkash_number||settings.payment_number?[{name:'bKash',number:settings.payment_bkash_number||settings.payment_number,qr:settings.payment_bkash_qr_url}]:[]),...(settings.payment_nagad_number||settings.payment_number?[{name:'Nagad',number:settings.payment_nagad_number||settings.payment_number,qr:settings.payment_nagad_qr_url}]:[]),...(settings.payment_rocket_number?[{name:'Rocket',number:settings.payment_rocket_number,qr:settings.payment_rocket_qr_url}]:[]),...(settings.payment_bank_details?[{name:'Bank transfer',number:settings.payment_bank_details}]:[])];
+  const channels=settings.payment_qr_url?[{name:'Bangla QR',number:'Scan the QR to pay',qr:settings.payment_qr_url}]:[];
   const selected=channels.find(x=>x.name===method);
   function pick(e){const f=e.target.files?.[0];if(!f){setProof(null);return;}if(!['image/jpeg','image/png','image/webp'].includes(f.type)){setMessage('Screenshot must be JPG, PNG or WEBP.');return;}if(f.size>5*1024*1024){setMessage('Screenshot must be 5MB or smaller.');return;}setMessage('');setProof(f);}
   async function submit(e){
@@ -37,7 +37,7 @@ export default function WalletPanel({session}){
         {selected&&Number(amount)>=50&&<PaymentQR settings={settings} total={Number(amount)} method={selected}/>}
         <label>Payment screenshot *<input type="file" accept="image/jpeg,image/png,image/webp" required onChange={pick}/><small className="muted">JPG, PNG or WEBP · max 5MB{proof?` · Selected: ${proof.name}`:''}</small></label>
         <button className="btn sm" disabled={busy||!channels.length}>{busy?'Submitting…':'Request deposit'}</button>
-      </form>:<div className="callout warn">Store payment details are not configured yet. You can still view your balance and order history.</div>}
+      </form>:<div className="callout warn">Bangla QR payment is not configured yet. Please contact support.</div>}
       {message&&<p role="status" className={message.startsWith('Deposit submitted')?'ok':'err'}>{message}</p>}
     </div><div className="wallet-recent"><h3>Recent activity</h3>{transactions.length?transactions.map(t=><div className="wallet-transaction" key={t.id}><span className={t.amount>0?'wallet-in':'wallet-out'}>{t.amount>0?<ArrowDownLeft size={15}/>:<ArrowUpRight size={15}/>}</span><div><b>{t.description||t.transaction_type}</b><small>{new Date(t.created_at).toLocaleString()}</small></div><strong className={t.amount>0?'wallet-positive':''}>{t.amount>0?'+':''}{taka(t.amount)}</strong></div>):<div className="wallet-no-activity">No wallet activity yet.</div>}</div></div>
     <div className="wallet-deposits"><h3>Deposit requests</h3>{requests.length?requests.map(d=><div className="wallet-deposit-row" key={d.id}><span>{d.method} · screenshot submitted</span><b>{taka(d.amount)}</b><em className={`deposit-${d.status.toLowerCase()}`}>{d.status}</em></div>):<p>No deposit requests yet.</p>}</div>

@@ -117,3 +117,34 @@ body :is(.card,.scard,.catcard,.st,.tile,.account-panel,.auth-card,.content-sect
 body :is(.hero,.home-hero,.home-cta,.panel,footer,.wallet-balance) :is(h1,h2,h3,h4,h5,h6,b,strong){color:#fff!important}
 body :is(.hero,.home-hero,.home-cta,.panel,footer,.wallet-balance) :is(p,li,small,label,.muted,.sub,.trust){color:#e4ebf8!important}
 body :is(.hero,.home-hero,.home-cta,.panel,footer,.wallet-balance) a:not(.btn){color:#e4ebf8!important}
+
+
+/* Context-aware link colors: don't flatten every link into one color. */
+body .home-hero .text-link{color:#ffffff!important}
+body .home-hero .text-link:hover{color:#ffd39f!important}
+body .home-hero-actions .text-link svg{color:currentColor!important}
+body .home-cta-link{color:#f5f8ff!important}
+body .home-cta-link:hover{color:#ffd39f!important}
+body .wafab,body a.wafab{color:#ffffff!important;background:#16a34a!important}
+body .wafab:hover,body a.wafab:hover{color:#ffffff!important;background:#15803d!important}
+/* Footer uses its own hierarchy rather than the generic page-link blue. */
+body footer a:not(.btn){color:#dce7f5!important}
+body footer a:not(.btn):hover{color:#ffffff!important}
+/* Light-surface links: blue for navigation/action, muted gray for supporting copy. */
+body .home-main a.text-link,body .section-heading>a.text-link{color:#3d50a8!important}
+body .home-main a.text-link:hover,body .section-heading>a.text-link:hover{color:#26377f!important}
+body .home-main .category-go{color:#4654b5!important}
+body .featured-section .btn.alt{color:#3d50a8!important}
+/* Hero search has a white field: use a dark input and a distinct action button. */
+body .home-hero .hero-search input{color:#172033!important}
+body .home-hero .hero-search input::placeholder{color:#69748a!important}
+body .home-hero .hero-search>svg{color:#65728a!important}
+body .home-hero .hero-search button{color:#ffffff!important}
+/* Small labels should be softer than headings, but never disappear. */
+body .category-count{color:#6b778b!important}
+body .step-number{color:#71809a!important}
+body .package-price small{color:#68758a!important}
+/* Keep status / badge text matched to its own surface. */
+body .service-status{color:#536075!important}
+body .service-status.visible{color:#28764e!important}
+body .package-tags span,body .package-plan-details span,body .package-plan-badge{color:#4851a7!important}

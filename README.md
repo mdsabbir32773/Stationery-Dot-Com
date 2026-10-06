@@ -26,6 +26,9 @@ Customer sign-up is available using email/password. Supabase → **Authenticatio
 
 Run `supabase/customer-accounts.sql` once in SQL Editor after the main schema and other migrations. It creates customer profiles and safely links future signed-in orders to their account. Older guest orders remain guest orders.
 
+### SMM panel catalogue
+Run `supabase/smm-panel.sql` once in SQL Editor after the main schema and `customer-accounts.sql`. It adds SMM catalogue fields and a server-priced SMM order function. Open `/admin/smm` to publish services and `/smm` to see the customer catalogue. Customer SMM checkout charges the signed-in customer wallet in the same database transaction that creates the order. Deposits use manual payment channels and admin review; the wallet is credited only after an admin approves the transaction ID. Configure verified payment account details in Admin > Settings. Provider IDs and costs can be mapped in the admin form, but provider API connection, imports, automatic order placement, refills, cancellation and status sync need a server-side provider adapter and credentials.
+
 To enable Google/Gmail sign-in:
 1. Supabase → **Authentication → Sign In / Providers → Google** → enable Google and save the Client ID and Client Secret from Google Cloud's OAuth setup.
 2. In Google Cloud's OAuth client, add Supabase's callback URL shown on the Supabase Google provider page.

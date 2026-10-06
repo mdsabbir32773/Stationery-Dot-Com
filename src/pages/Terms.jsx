@@ -20,6 +20,6 @@ export default function Terms() {
     <h2>Accounts and website use</h2>
     <p>Keep your sign-in details private and use only accounts you are authorized to access. We may restrict access where needed to protect customers, orders, or the website.</p>
     <h2>Contact</h2>
-    <p>For order or terms questions, email <a href="mailto:sabbirshuvro07@gmail.com">sabbirshuvro07@gmail.com</a> or call <a href="tel:+8801827680520">01827-680520</a> / <a href="tel:+8801611103453">01611-103453</a>.</p>
+    <p>For order or terms questions, email <a href="mailto:metaadsstationery@gmail.com">metaadsstationery@gmail.com</a> or call <a href="tel:+8801827680520">01827-680520</a> / <a href="tel:+8801611103453">01611-103453</a>.</p>
   </main>;
 }

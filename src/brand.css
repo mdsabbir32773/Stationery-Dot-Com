@@ -65,3 +65,55 @@ body :is(main,.pagehead,.home-main,.account-page,.content-admin,.settings-admin)
 /* SMM */
 body .smm-hero{color:#1c2d4e}body .smm-hero :is(h1,h2,h3){color:#1c2d4e!important}body .smm-hero p,body .smm-highlights,body .smm-trust{color:#52627a!important}
 body .smm-card,body .smm-modal{background:#fff!important;color:#1c2d4e!important}body .smm-card :is(h3,b,strong){color:#1c2d4e!important}body .smm-card :is(p,.muted,small){color:#52627a!important}
+
+
+/* Accessibility contrast lock — final pass. */
+body{color:#172033}
+body :is(p,li,small,label,dt,dd){color:#46546a}
+body :is(h1,h2,h3,h4,h5,h6,strong,b){color:#172033}
+body .muted,body .sub,body .sdesc,body .legal-updated{color:#5b687c!important}
+body a:not(.btn){color:#31569b}
+/* Homepage: make every secondary line readable on its actual light surface. */
+body .home-proof .proof-inner span{color:#46546a!important}
+body .home-proof .proof-inner span:first-child{color:#273b5e!important}
+body .section-heading p{color:#56657a!important}
+body .section-overline{color:#4656b8!important}
+body .home-category{color:#172033!important}
+body .home-category h3{color:#172033!important}
+body .home-category p{color:#526178!important}
+body .home-category .category-count{color:#647187!important}
+body .home-category .category-go{color:#354bb1!important}
+body .featured-section{color:#172033!important}
+body .featured-section .section-heading p{color:#526178!important}
+body .featured-section .sbody h3{color:#172033!important}
+body .featured-section .sbody p,body .featured-section .sdesc{color:#526178!important}
+body .featured-section .sfoot{color:#34435b!important}
+body .home-benefits{color:#172033!important}
+body .home-benefits .benefit h3{color:#172033!important}
+body .home-benefits .benefit p{color:#526178!important}
+body .home-steps{color:#172033!important}
+body .home-steps .section-heading p{color:#526178!important}
+body .home-step b{color:#172033!important}
+body .home-step small{color:#526178!important}
+body .featured-empty b{color:#172033!important}body .featured-empty p{color:#526178!important}
+/* Homepage hero stays intentionally dark. */
+body .home-hero :is(h1,h2,h3){color:#fff!important}
+body .home-hero-copy>p{color:#edf1ff!important}
+body .home-kicker{color:#e4e8ff!important}
+body .home-trust{color:#edf1ff!important}
+body .hero-float b{color:#172033!important}body .hero-float small{color:#5a6678!important}
+/* CTA + all footer copy stay high contrast on dark blue/green surfaces. */
+body .home-cta :is(h2,p,.home-cta-link,.section-overline){color:#fff!important}
+body .home-cta p{color:#e8edfa!important}
+body footer{color:#f1f5ff!important}
+body footer :is(h4,.footer-brand,.footer-brand span,p,li,small,.online-note,.footer-empty,a:not(.btn)){color:#e4ebf8!important}
+body footer h4{color:#fff!important}
+body footer a:not(.btn):hover{color:#fff!important}
+/* Common light panels across inner pages. */
+body :is(.card,.scard,.catcard,.st,.tile,.account-panel,.auth-card,.content-section,.service-list-panel,.service-editor,.package-editor,.package-list-panel,.package-card,.package-group,.stat-card,.admin-shortcut,.review-item,.review-compose,.reviews-empty,.review-thanks,.review-signin,.account-review-row,.admin-review,.pay,.drop,.qrdoc){color:#172033!important}
+body :is(.card,.scard,.catcard,.st,.tile,.account-panel,.auth-card,.content-section,.service-list-panel,.service-editor,.package-editor,.package-list-panel,.package-card,.package-group,.stat-card,.admin-shortcut,.review-item,.review-compose,.reviews-empty,.review-thanks,.review-signin,.account-review-row,.admin-review,.pay,.drop,.qrdoc) :is(h1,h2,h3,h4,h5,h6,b,strong){color:#172033!important}
+body :is(.card,.scard,.catcard,.st,.tile,.account-panel,.auth-card,.content-section,.service-list-panel,.service-editor,.package-editor,.package-list-panel,.package-card,.package-group,.stat-card,.admin-shortcut,.review-item,.review-compose,.reviews-empty,.review-thanks,.review-signin,.account-review-row,.admin-review,.pay,.drop,.qrdoc) :is(p,li,small,label,.muted,.sub,.sdesc){color:#526178!important}
+/* Dark panels must win over the light defaults above. */
+body :is(.hero,.home-hero,.home-cta,.panel,footer,.wallet-balance) :is(h1,h2,h3,h4,h5,h6,b,strong){color:#fff!important}
+body :is(.hero,.home-hero,.home-cta,.panel,footer,.wallet-balance) :is(p,li,small,label,.muted,.sub,.trust){color:#e4ebf8!important}
+body :is(.hero,.home-hero,.home-cta,.panel,footer,.wallet-balance) a:not(.btn){color:#e4ebf8!important}

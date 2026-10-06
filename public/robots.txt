@@ -1,4 +1,8 @@
 User-agent: *
 Allow: /
 Disallow: /admin
-Sitemap: https://YOUR-DOMAIN.com/sitemap.xml
+Disallow: /account
+Disallow: /cart
+Disallow: /order
+Disallow: /order-success/
+Sitemap: https://stationery-dot-com.stdc.workers.dev/sitemap.xml

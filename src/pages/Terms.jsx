@@ -14,7 +14,7 @@ export default function Terms() {
     <h2>Your information and files</h2>
     <p>You are responsible for the accuracy of the details and for having permission to provide any documents, images, or other materials you upload. Do not submit another person's sensitive information unless you are authorized to do so.</p>
     <h2>Payment references</h2>
-    <p>Where bKash or Nagad Send Money is offered, follow the payment instructions shown at checkout and enter the transaction ID from your receipt. The store reviews the payment reference; entering an ID or ticking the payment checkbox does not by itself confirm payment or guarantee that an order has been accepted. Never share your wallet PIN, password, or one-time code.</p>
+    <p>Where bKash, Nagad or bank payment is offered, follow the payment instructions shown at checkout and upload a clear screenshot of the successful receipt. The store reviews the screenshot manually; submitting a receipt does not automatically confirm payment or guarantee that an order has been accepted. Never share your wallet PIN, password, or one-time code.</p>
     <h2>Order status and support</h2>
     <p>Use the order tracking page or contact the store for status questions. If you need to change or cancel a request, contact us as soon as possible. Whether a change, cancellation, or refund can be made depends on the order status and work already started; contact the store to discuss your specific order.</p>
     <h2>Accounts and website use</h2>

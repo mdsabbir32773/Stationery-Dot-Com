@@ -27,10 +27,13 @@ Customer sign-up is available using email/password. Supabase → **Authenticatio
 Run `supabase/customer-accounts.sql` once in SQL Editor after the main schema and other migrations. It creates customer profiles and safely links future signed-in orders to their account. Older guest orders remain guest orders.
 
 ### SMM panel catalogue
-Run `supabase/smm-panel.sql` once in SQL Editor after the main schema and `customer-accounts.sql`. It adds SMM catalogue fields and a server-priced SMM order function. Open `/admin/smm` to publish services and `/smm` to see the customer catalogue. Customer SMM checkout charges the signed-in customer wallet in the same database transaction that creates the order. Deposits use manual payment channels and admin review; the wallet is credited only after an admin approves the transaction ID. Configure verified payment account details in Admin > Settings. Provider IDs and costs can be mapped in the admin form, but provider API connection, imports, automatic order placement, refills, cancellation and status sync need a server-side provider adapter and credentials.
+Run `supabase/smm-panel.sql` once in SQL Editor after the main schema and `customer-accounts.sql`. It adds SMM catalogue fields and a server-priced SMM order function. Open `/admin/smm` to publish services and `/smm` to see the customer catalogue. Customer SMM checkout charges the signed-in customer wallet in the same database transaction that creates the order. Deposits use manual payment channels and admin review; the wallet is credited only after an admin approves the request. Configure verified payment account details in Admin > Settings. Provider IDs and costs can be mapped in the admin form, but provider API connection, imports, automatic order placement, refills, cancellation and status sync need a server-side provider adapter and credentials.
 
 ### Customer service reviews
 Run `supabase/migrations/20261006140000_add_service_reviews.sql` in Supabase SQL Editor after `customer-accounts.sql`. Signed-in customers can rate and review services after a completed order; reviews appear publicly only after admin approval in `/admin/reviews`.
+
+### Payment receipt screenshots and supplied brand logo
+Run `supabase/migrations/20261006170000_payment_screenshot_proofs.sql` to accept private JPG/PNG/WEBP receipts for orders and wallet deposits; admins review the receipt in order details or `/admin/deposits`. The bundled Stationery Dot Com logo and blue brand theme are enabled by default; the admin can upload a replacement logo in Settings. Payment receipt screenshots are stored in the private `order-files` bucket.
 
 To enable Google/Gmail sign-in:
 1. Supabase → **Authentication → Sign In / Providers → Google** → enable Google and save the Client ID and Client Secret from Google Cloud's OAuth setup.
@@ -95,7 +98,7 @@ Payment options support manual Send Money and Transaction ID submission; admin r
 2. Everything else (services, packages, orders, admin) stays as it was.
 
 ### bKash/Nagad payment and automatic verification
-Customers can submit a bKash/Nagad Transaction ID now, but it is recorded as **Verification Pending**. Admin must confirm it in the order screen. The website cannot safely verify a personal-wallet “Send Money” ID by looking at its format; it needs an official bKash/Nagad merchant API or an authenticated transaction notification. No merchant account or API credentials were included in this project, so automatic verification is not active.
+Customers upload a bKash/Nagad receipt screenshot; it is recorded as **Verification Pending** until an admin reviews it. The website cannot safely confirm a personal-wallet “Send Money” payment from a receipt image; automatic verification requires an official bKash/Nagad merchant API or an authenticated transaction notification. No merchant account or API credentials were included in this project, so automatic verification is not active.
 
 To enable it, first obtain merchant onboarding and API/webhook documentation and credentials from the payment provider. Then implement that provider's documented signature/transaction verification in `functions/_lib/providers.js`, deploy the Cloudflare Pages Functions, and set encrypted Cloudflare variables `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` and the provider secrets (never `VITE_` variables). The webhook endpoint is `https://YOUR-SITE/api/payment-webhook/PROVIDERNAME`. Configure the provider to call it. The server function and `apply_payment_event` validate the verified amount against the order total and ignore duplicate provider events. Do not mark a payment paid based only on a customer-entered Transaction ID or client-side request.
 

@@ -10,11 +10,11 @@ export default function Privacy() {
     <p className="legal-updated">Last updated: {updated}</p>
     <p>This notice explains the information this website asks you to provide when you create an account, place an order, or contact us.</p>
     <h2>Information you provide</h2>
-    <p>Depending on how you use the website, this can include your name, email address, phone or WhatsApp number, account details, service and package selection, quantity, order notes, files you choose to upload, payment method, and the transaction ID you enter. Google sign-in provides basic account information such as your email address and, when available, your name. This website does not request access to your Gmail inbox.</p>
+    <p>Depending on how you use the website, this can include your name, email address, phone or WhatsApp number, account details, service and package selection, quantity, order notes, files you choose to upload, payment method, and the payment receipt screenshot you submit. Google sign-in provides basic account information such as your email address and, when available, your name. This website does not request access to your Gmail inbox.</p>
     <h2>How we use it</h2>
     <p>We use these details to create and manage your account, receive and fulfil orders, review payment references, communicate with you about an order, provide customer support, and protect the service against misuse.</p>
     <h2>Payments</h2>
-    <p>For bKash or Nagad Send Money orders, you enter a transaction ID so the store can review the payment. A submitted transaction ID is not itself confirmation that payment has been received. Do not enter or share your mobile-wallet PIN, password, or one-time code on this website.</p>
+    <p>For mobile wallet or bank payments, you may upload a receipt screenshot so the store can review the payment manually. Receipt images are stored privately and are available to authorized store administrators for payment verification. Do not enter or share your mobile-wallet PIN, password, or one-time code on this website.</p>
     <h2>Files and order access</h2>
     <p>Files you attach to an order are stored for the order process and can be accessed by the store administrator for that purpose. Do not upload information that is unrelated to your request. Contact us if you want to ask about correcting or removing information associated with your account or order.</p>
     <h2>Service providers and retention</h2>

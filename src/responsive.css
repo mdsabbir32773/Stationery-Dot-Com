@@ -1,0 +1,194 @@
+/* Stationery Dot Com — responsive layout safety net
+   Mobile-first overrides for phones, tablets, laptops, desktops and ultra-wide screens.
+   Keep content flexible instead of targeting individual device models. */
+
+html{width:100%;overflow-x:hidden}
+body{width:100%;min-width:0;overflow-x:hidden}
+*,*::before,*::after{min-width:0}
+img,svg,video,canvas{max-width:100%}
+button,input,select,textarea{max-width:100%}
+button,.btn,.chip{touch-action:manipulation}
+.wrap{width:100%;padding-inline:clamp(14px,3vw,24px)}
+main{min-width:0}
+.grid,.catalog-service-grid,.catalog-category-grid,.stats,.steps5,.package-stats,.account-grid,.account-review-list{min-width:0}
+.grid>*,.catalog-service-grid>* ,.catalog-category-grid>* ,.checkout>* ,.cart-layout>* ,.two>* ,.stats>*{min-width:0}
+.sbody,.sbody h3,.sdesc,.cart-item,.cart-item>div:first-child,.package-option-main,.package-option-main>div:first-child{min-width:0}
+.sbody h3 a,.sdesc,.cart-item>div:first-child b,.package-option-main p{overflow-wrap:anywhere}
+.cover img,.package-card-image,.service-image-preview{max-width:100%}
+
+/* Public navigation: switch before the links become cramped. */
+@media (max-width:900px){
+  .nav .wrap{min-height:64px;flex-wrap:nowrap}
+  .nav .brand{min-width:0;max-width:calc(100% - 56px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .nav .brand-image{flex:none}
+  .burger{display:grid;flex:none}
+  .links.menu{display:none;position:absolute;left:14px;right:14px;top:calc(100% + 8px);z-index:60;max-height:calc(100dvh - 82px);overflow:auto;overscroll-behavior:contain}
+  .links.menu.open{display:flex}
+  .links.menu a{width:100%;min-height:46px;display:flex!important;align-items:center}
+  .links.menu .btn{width:100%}
+}
+
+/* Large marketing layouts should become one comfortable column when space is tight. */
+@media (max-width:1050px){
+  .home-hero-grid{grid-template-columns:1fr;gap:26px}
+  .hero-art{min-height:320px}
+  .home-hero-copy{max-width:760px}
+  .home-main{max-width:none}
+  .checkout{grid-template-columns:minmax(0,1fr)!important}
+  .checkout .summary{position:static}
+  .cart-layout{grid-template-columns:minmax(0,1fr)}
+  .cart-layout .summary{position:static;order:-1}
+}
+
+/* Tablet / small laptop */
+@media (max-width:760px){
+  main{padding-top:18px;padding-bottom:46px}
+  .wrap{padding-inline:15px}
+  .home-hero{padding:48px 0 42px}
+  .home-hero-grid{gap:20px}
+  .home-hero h1{font-size:clamp(34px,9vw,54px);line-height:1.04}
+  .home-hero-copy>p{font-size:15px;line-height:1.65}
+  .hero-search{width:100%;max-width:none}
+  .home-hero-actions{flex-wrap:wrap;gap:10px 14px}
+  .home-hero-actions .btn{max-width:100%}
+  .home-trust{gap:9px 14px}
+  .hero-art{min-height:270px;overflow:hidden}
+  .hero-art-orbit{width:min(310px,82vw);height:min(310px,82vw)}
+  .orbit-two{width:min(250px,66vw);height:min(250px,66vw)}
+  .hero-paper{max-width:72vw}
+  .hero-float{max-width:45vw}
+  .mosaic{grid-template-columns:1fr}
+  .tile:first-child{grid-column:auto;flex-direction:row}
+  .catalog-head{padding-top:24px}
+  .catalog-results-head{align-items:flex-start;flex-direction:column;gap:8px}
+  .catalog-results-count{white-space:normal}
+  .catalog-service-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .catalog-category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .service-smm-facts{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .two{grid-template-columns:1fr!important}
+  .summary{order:-1}
+  .checkout{grid-template-columns:1fr!important}
+  .cart-layout{grid-template-columns:1fr}
+  .cart-layout .summary{order:-1}
+  .cart-item{flex-wrap:wrap}
+  .cart-item-actions{width:100%;justify-content:flex-start}
+  .reviews-heading{align-items:flex-start;flex-direction:column}
+  .reviews-score{text-align:left}
+  .review-compose{align-items:flex-start}
+  .review-form-top,.review-form-actions{flex-wrap:wrap}
+  .service-editor-heading,.service-list-heading,.package-editor-heading,.package-list-heading{display:grid}
+  .service-list-heading .search,.package-list-heading .search{width:100%;max-width:none}
+  .service-admin-row{grid-template-columns:minmax(0,1fr) auto}
+  .package-option{grid-template-columns:1fr}
+  .package-option-actions{justify-content:flex-start}
+  .package-filters{flex-wrap:wrap}
+  .package-filters label{min-width:0;flex:1 1 180px}
+  .admin-heading{align-items:flex-start}
+  .admin-heading>.btn{max-width:100%}
+  .auth-page{border-radius:16px}
+  .auth-story{display:none}
+  .account-grid{grid-template-columns:1fr!important}
+  .account-reviews{grid-column:auto}
+}
+
+/* Phones */
+@media (max-width:560px){
+  h1{font-size:clamp(27px,8vw,38px)}
+  h2{font-size:clamp(20px,6vw,28px)}
+  .wrap{padding-inline:13px}
+  .nav .wrap{min-height:60px;padding-inline:13px}
+  .nav .brand{font-size:15px}
+  .nav .brand-image{width:40px!important;height:40px!important;max-width:40px!important;max-height:40px!important}
+  .links.menu{left:10px;right:10px;top:calc(100% + 6px)}
+  .home-hero{padding:40px 0 34px}
+  .home-hero h1{font-size:clamp(32px,10vw,48px)}
+  .home-hero-actions{display:grid;grid-template-columns:1fr;width:100%}
+  .home-hero-actions>*{width:100%;justify-content:center}
+  .hero-art{min-height:230px}
+  .hero-paper{max-width:68vw}
+  .hero-float{display:none}
+  .catalog-service-grid,.catalog-category-grid{grid-template-columns:1fr}
+  .catalog-category-card{min-height:155px}
+  .service-smm-facts{grid-template-columns:1fr}
+  .service-smm-details{margin-top:20px}
+  .package-actions{grid-template-columns:1fr}
+  .cart-item{padding:14px}
+  .cart-item-actions{display:grid;grid-template-columns:auto auto 1fr;gap:8px;align-items:center}
+  .cart-item-actions strong{margin-left:0;text-align:right}
+  .cart-item .qty{max-width:100%}
+  .cart-item .qty input{width:38px}
+  .cart-layout .checkout .sec,.cart-layout .summary{padding:14px}
+  .cart-layout .summary .ln{font-size:14px}
+  .ln.tot{font-size:19px}
+  .drop{padding:12px}
+  .drop input[type=file]{width:100%;font-size:12px}
+  .pay{padding:12px}
+  .pay .qrbox{width:min(100%,240px)}
+  .scroll{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{min-width:620px}
+  .stepper{margin-inline:-2px}
+  .cta{padding:24px 18px}
+  .home-category,.catcard,.scard,.card{max-width:100%}
+  .sbody{padding:15px 16px 17px}
+  .sbody h3{font-size:17px}
+  .sfoot{align-items:flex-start;flex-wrap:wrap}
+  .package-card{padding:16px}
+  .package-card-image{margin-bottom:14px}
+  .service-reviews{margin-top:36px;padding-top:24px}
+  .review-compose{display:block}
+  .review-compose-icon{margin-bottom:10px}
+  .review-form-actions{display:grid}
+  .review-form-actions>*{width:100%}
+  .review-form-actions .btn{width:100%}
+  .admin-settings,.service-list-panel,.package-list-panel{padding:14px}
+  .service-admin-row{grid-template-columns:1fr}
+  .service-row-actions{justify-content:flex-start}
+  .service-status{grid-column:auto}
+  .package-stats{grid-template-columns:1fr}
+  .package-option{padding:13px}
+  .package-group>header{align-items:flex-start;flex-direction:column}
+  .package-option-main{display:grid}
+  .package-option-actions{width:100%}
+  .package-option-actions .btn{flex:1 1 auto}
+  .wafab{right:10px;bottom:max(10px,env(safe-area-inset-bottom));width:48px;height:48px;min-height:48px}
+}
+
+/* Very narrow phones */
+@media (max-width:380px){
+  .wrap{padding-inline:11px}
+  .nav .brand{font-size:14px}
+  .home-hero h1{font-size:30px}
+  .catalog-category-card{padding:14px}
+  .catalog-category-count{right:12px;top:14px;font-size:10px}
+  .cart-item-actions{grid-template-columns:1fr 1fr}
+  .cart-item-actions strong{grid-column:1/-1;text-align:left}
+  .btn{font-size:14px}
+  .btn.lg{font-size:15px;padding-inline:14px}
+}
+
+/* Landscape phones: use the extra width without forcing desktop UI. */
+@media (max-width:760px) and (orientation:landscape){
+  .home-hero-grid{grid-template-columns:minmax(0,1.1fr) minmax(220px,.9fr)}
+  .hero-art{min-height:250px}
+  .catalog-service-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .catalog-category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+/* Safe-area support for modern phones with display cutouts. */
+@supports (padding: max(0px)){
+  .nav .wrap{padding-left:max(13px,env(safe-area-inset-left));padding-right:max(13px,env(safe-area-inset-right))}
+  .wafab{bottom:max(10px,env(safe-area-inset-bottom));right:max(10px,env(safe-area-inset-right))}
+}
+
+/* Admin workspace: collapse sidebar and keep dense tables/forms usable on small screens. */
+.admin-shell{min-height:100dvh;min-width:0}
+.admin-main{min-width:0;width:100%;overflow-x:hidden}
+.admin-mobile-top{display:none}
+@media (max-width:900px){
+  .admin-shell{display:block}
+  .admin-sidebar{display:none}
+  .admin-mobile-top{display:flex;position:sticky;top:0;z-index:25;align-items:center;justify-content:space-between;gap:10px;padding:11px 14px;background:#fff;border-bottom:1px solid var(--line)}
+  .admin-mobile-top b{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .admin-mobile-top a{flex:none;font-size:12px;color:var(--g);font-weight:700}
+  .admin-main>.wrap,.admin-main>.admin-heading,.admin-main>section{max-width:100%}
+}

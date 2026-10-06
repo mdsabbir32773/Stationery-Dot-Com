@@ -83,3 +83,39 @@ footer{background:#171e3b}
  .home-trust{color:#e6e8fb}
  .home-benefits{padding:26px 18px}
 }
+
+/* Online-only brand and service management refinements */
+.brand-image{display:block;width:auto;max-width:148px;height:auto;max-height:42px;object-fit:contain;border-radius:8px}
+.nav .brand .brand-image{max-width:116px;max-height:38px}
+.footer-brand{display:flex;align-items:center;gap:10px;color:#fff;font-size:18px}
+.footer-brand .brand-image{max-width:160px;max-height:46px}
+.online-note{display:flex;align-items:center;gap:8px;color:#d7ddf1}
+.footer-empty{color:#c0c7dc;font-size:14px}
+.catalogue-empty{max-width:680px;margin:18px auto 58px;padding:clamp(26px,5vw,46px);text-align:center}
+.catalogue-empty .account-icon{margin:0 auto 12px}
+.catalogue-empty h2{margin:8px 0;font-size:clamp(22px,3vw,30px)}
+.catalogue-empty p{max-width:490px;margin:0 auto 20px;color:var(--mut)}
+.service-admin{max-width:1100px}
+.service-editor{padding:clamp(18px,3vw,28px);margin:20px 0 30px}
+.service-editor-heading,.service-list-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}
+.service-editor-heading h2,.service-list-heading h2{margin:0 0 5px}
+.service-editor-heading p,.service-list-heading p{margin:0;color:var(--mut)}
+.service-editor .content-fields{margin-bottom:18px}
+.service-editor .check-label{display:flex;align-items:center;gap:9px}
+.service-editor .check-label input{width:auto}
+.service-image-preview{width:min(280px,100%);aspect-ratio:16/9;object-fit:cover;border-radius:12px}
+.service-list-panel{background:#fff;border:1px solid var(--line);border-radius:18px;padding:clamp(16px,3vw,24px);margin-bottom:40px}
+.service-list-heading .search{max-width:320px}
+.service-admin-list{margin-top:16px;display:grid;gap:9px}
+.service-admin-row{display:grid;grid-template-columns:minmax(200px,1fr) auto auto;align-items:center;gap:18px;padding:12px 14px;border:1px solid var(--line);border-radius:13px}
+.service-admin-row>div:first-child{display:flex;align-items:center;gap:12px;min-width:0}
+.service-admin-row .thumb{width:52px;height:40px;object-fit:cover;border-radius:8px}
+.service-admin-row small{display:block;color:var(--mut);margin-top:3px}
+.service-status{font-size:12px;border-radius:999px;padding:5px 9px;background:#f1f2f6;color:#596178}
+.service-status.visible{background:#e9f8f0;color:#28764e}
+.service-row-actions{display:flex;gap:7px}
+.logo-upload{border:1px dashed var(--line);border-radius:14px;padding:16px;display:grid;gap:10px}
+.logo-upload-preview{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.logo-upload-preview img{max-width:min(280px,100%);max-height:100px;object-fit:contain;background:#f8f9fc;border:1px solid var(--line);border-radius:10px;padding:10px}
+.logo-upload .muted{font-size:13px;font-weight:400}
+@media(max-width:700px){.service-list-heading{display:grid}.service-list-heading .search{max-width:none}.service-admin-row{grid-template-columns:1fr auto;gap:10px}.service-status{grid-column:1}.service-row-actions{grid-column:1/-1;justify-content:flex-end}.service-editor-heading{display:grid}.footer-brand{font-size:16px}}

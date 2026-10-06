@@ -8,6 +8,7 @@ body :is(h1,h2,h3,h4,.home-hero h1,.section-heading h2,.home-cta h2,.paper-title
 .home-kicker,.text-link,.category-go,.shortcut-link,.eyebrow,.admin-main .admin-heading .eyebrow,.auth-forgot,.auth-switch button,.account-checkout-note a{color:#31569b}
 .home-proof .proof-inner span:first-child,.home-trust svg,.home-trust,.section-overline,.category-count{color:#526789}.category-tone-1 .category-icon,.category-tone-2 .category-icon,.category-tone-3 .category-icon,.category-tone-4 .category-icon{background:#edf3ff;color:#31569b}.category-tone-1 .category-icon svg,.category-tone-2 .category-icon svg,.category-tone-3 .category-icon svg,.category-tone-4 .category-icon svg{color:#31569b}.home-benefits{background:#f2f6fd}.benefit-icon,.step-icon{background:#e7eef9;color:#31569b}.home-step{border-color:#e3eaf4}.step-track{border-color:#e3eaf4}.home-hero .hero-search>svg{color:#7184a4}.hero-paper{border-color:#e6ebf3}.paper-lines i{background:#edf1f7}.paper-stamp{background:#31569b}
 .home-hero h1 em,.auth-story-copy h1 em{color:#31569b}.home-cta{background:#203b70}.home-cta:before{background:radial-gradient(ellipse at 90% 15%,#5776b966,transparent 35%)}
+.home-cta h2,.home-cta p,.home-cta .home-cta-link{color:#fff}
 .nav{border-color:#e2e8f2}.admin-sidebar nav a.active{background:#edf3ff}.admin-brand,.admin-sidebar nav a{color:#344867}
 .admin-main .stat-card{border-left-color:#7894c3}.auth-story{background:#eef3fb}.account-icon{color:#31569b}
 footer{background:#203b70}footer a:hover{color:#dce8ff}

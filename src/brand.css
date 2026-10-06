@@ -19,62 +19,67 @@ input:focus,select:focus,textarea:focus{border-color:#5678b5;box-shadow:0 0 0 3p
 .proof-upload-hint{display:block;margin-top:6px;font-size:12px;color:var(--mut)}
 
 
-/* Contextual contrast tuning — preserve the existing palette, fix only low-contrast pairs. */
-/* Homepage light hero */
-.home-hero .home-kicker{color:#53698a!important}
-.home-hero h1{color:#1d3152!important}
-.home-hero h1 em{color:#31569b!important}
-.home-hero-copy>p{color:#52627a!important}
-.home-hero .home-hero-actions .text-link{color:#31569b!important}
-.home-hero .home-hero-actions .text-link:hover{color:#24447f!important}
-.home-hero .home-trust{color:#64748a!important}
-.home-hero .home-trust svg{color:#31569b!important}
+/* Contrast audit — colors chosen per actual surface; normal text targets WCAG AA 4.5:1+. */
+/* Hero: pale blue surface */
+.home-hero .home-kicker{color:#53698a}
+.home-hero h1{color:#1d3152}
+.home-hero h1 em{color:#31569b}
+.home-hero-copy>p{color:#52627a}
+.home-hero .home-hero-actions .text-link{color:#31569b}
+.home-hero .home-hero-actions .text-link:hover{color:#24447f}
+.home-hero .home-trust{color:#526789}
+.home-hero .home-trust svg{color:#31569b}
 .home-hero .hero-search{background:#fff;border-color:#d7dfeb}
-.home-hero .hero-search>svg{color:#6a7890!important}
-.home-hero .hero-search input{color:#1d3152!important}
-.home-hero .hero-search input::placeholder{color:#78869a!important}
-/* Hero artwork labels */
-.home-hero .hero-float b{color:#263a57!important}
-.home-hero .hero-float small{color:#687589!important}
-/* White/light sections: hierarchy, not one universal color */
-.home-proof .proof-inner{color:#738096}
+.home-hero .hero-search>svg{color:#526178}
+.home-hero .hero-search input{color:#1d3152}
+.home-hero .hero-search input::placeholder{color:#5f6c80}
+.home-hero .hero-float b{color:#263a57}
+.home-hero .hero-float small{color:#526178}
+/* White proof strip */
+.home-proof .proof-inner{color:#5b687c}
 .home-proof .proof-inner span:first-child{color:#415878}
-.section-heading h2{color:#1f2f49!important}
-.section-heading p{color:#66758a!important}
-.section-overline{color:#66789a!important}
-.home-category h3{color:#26374f!important}
-.home-category p{color:#69778a!important}
-.home-category .category-count{color:#7a8798!important}
-.home-category .category-go{color:#3f5fa0!important}
-.featured-section .sbody h3{color:#26374f!important}
-.featured-section .sbody .sdesc{color:#68778b!important}
-.featured-section .sfoot{color:#516177!important}
-.home-benefits .benefit h3{color:#26374f!important}
-.home-benefits .benefit p{color:#667589!important}
-.home-steps .home-step b{color:#26374f!important}
-.home-steps .home-step small{color:#68778b!important}
-.home-steps .step-number{color:#8490a0!important}
-/* Dark CTA/footer: white hierarchy with softer secondary copy */
-.home-cta h2{color:#fff!important}
-.home-cta p{color:#d9e2ee!important}
-.home-cta .section-overline{color:#b9cbe1!important}
-.home-cta .home-cta-link{color:#f5f8fc!important}
-.home-cta .home-cta-link:hover{color:#d7e6ff!important}
-footer{color:#cbd8e7!important}
-footer h4{color:#fff!important}
-footer p,footer li,footer .online-note,footer .footer-empty{color:#cbd8e7!important}
-footer a:not(.btn){color:#dbe6f3!important}
-footer a:not(.btn):hover{color:#fff!important}
-/* Floating WhatsApp: brand color belongs to the action, never inherit page link color. */
-a.wafab{background:#16a34a!important;color:#fff!important}
-a.wafab:hover{background:#15803d!important;color:#fff!important}
-/* Shared light-page hierarchy */
-.pagehead h1,.account-top h1,.content-admin h1,.settings-admin h1{color:#1f2f49!important}
+/* Shared section heading hierarchy */
+.section-heading h2{color:#1f2f49}
+.section-heading p{color:#56657a}
+.section-overline{color:#526789}
+/* Category cards use their warm light surface */
+.home-category h3{color:#26374f}
+.home-category p{color:#5b675e}
+.home-category .category-count{color:#637066}
+.home-category .category-go{color:#3f6f52}
+/* Featured cards */
+.featured-section .sbody h3{color:#26374f}
+.featured-section .sbody .sdesc{color:#56657a}
+.featured-section .sfoot{color:#516177}
+/* Benefits sit on the pale green surface */
+.home-benefits .benefit h3{color:#26374f}
+.home-benefits .benefit p{color:#5f6c63}
+/* Steps sit on white */
+.home-steps .home-step b{color:#26374f}
+.home-steps .home-step small{color:#56657a}
+.home-steps .step-number{color:#65736a}
+/* Dark blue CTA: distinct heading, supporting, and action colors */
+.home-cta h2{color:#fff}
+.home-cta p{color:#d9e2ee}
+.home-cta .section-overline{color:#b9cbe1}
+.home-cta .home-cta-link{color:#fff}
+.home-cta .home-cta-link:hover{color:#d7e6ff}
+/* Dark blue footer */
+footer{color:#cbd8e7}
+footer h4{color:#fff}
+footer p,footer li,footer .online-note,footer .footer-empty{color:#cbd8e7}
+footer a:not(.btn){color:#dbe6f3}
+footer a:not(.btn):hover{color:#fff}
+/* WhatsApp keeps its own brand treatment */
+a.wafab{background:#16a34a;color:#fff}
+a.wafab:hover{background:#15803d;color:#fff}
+/* Shared inner-page surfaces */
+.pagehead h1,.account-top h1,.content-admin h1,.settings-admin h1{color:#1f2f49}
 .pagehead p,.account-top p,.content-section-title p,.settings-admin p{color:#68778b}
 .card h3,.scard h3,.catcard h3,.package-card h3{color:#26374f}
 .card p,.scard .sdesc,.catcard p,.package-card-description{color:#68778b}
-.muted{color:#68778b!important}
-/* Inputs: readable text while retaining each component's surface. */
-input,select,textarea{color:#26374f!important;background:#fff}
-input::placeholder,textarea::placeholder{color:#7b8798!important}
+.muted{color:#68778b}
+/* Form text */
+input,select,textarea{color:#26374f;background:#fff}
+input::placeholder,textarea::placeholder{color:#5f6c80}
 label,label.fld>span{color:#4d5d73}

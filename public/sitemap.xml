@@ -1,2 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-<url><loc>https://YOUR-DOMAIN.com/</loc></url><url><loc>https://YOUR-DOMAIN.com/services</loc></url><url><loc>https://YOUR-DOMAIN.com/track-order</loc></url><url><loc>https://YOUR-DOMAIN.com/contact</loc></url></urlset>
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://stationery-dot-com.stdc.workers.dev/</loc></url>
+  <url><loc>https://stationery-dot-com.stdc.workers.dev/services</loc></url>
+  <url><loc>https://stationery-dot-com.stdc.workers.dev/smm</loc></url>
+  <url><loc>https://stationery-dot-com.stdc.workers.dev/track-order</loc></url>
+  <url><loc>https://stationery-dot-com.stdc.workers.dev/contact</loc></url>
+  <url><loc>https://stationery-dot-com.stdc.workers.dev/privacy-policy</loc></url>
+  <url><loc>https://stationery-dot-com.stdc.workers.dev/terms-of-service</loc></url>
+</urlset>

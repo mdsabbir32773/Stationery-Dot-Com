@@ -49,3 +49,5 @@
 .service-smm-instructions{margin:15px 0;color:#526789;font-size:13px;line-height:1.65}
 .service-smm-details>.btn{display:inline-flex;align-items:center;gap:8px;margin-top:6px}
 @media(max-width:600px){.catalog-head{padding:25px 0 19px}.catalog-chips{flex-wrap:nowrap;overflow-x:auto;padding-bottom:5px;scrollbar-width:thin}.catalog-chips .chip{flex:none}.catalog-category-grid{grid-template-columns:1fr;gap:10px}.catalog-category-card{min-height:170px;padding:17px}.catalog-category-card h2{margin-top:13px;font-size:16px}.catalog-service-grid{grid-template-columns:1fr;gap:12px}.catalog-main{padding-top:19px;padding-bottom:45px}.service-smm-details{padding:17px}.service-smm-facts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.service-order-count{display:inline-flex;align-items:center;width:max-content;margin:5px 0 8px;padding:4px 9px;border:1px solid #dbe5f2;border-radius:999px;background:#f4f7fc;color:#405372;font-size:12px;font-weight:700;line-height:1}.service-order-count-detail{margin:4px 0 8px}

@@ -12,7 +12,7 @@ export default function ServiceCard({s}){
   return <article className={`scard${isSmm?' scard-smm':''}`}>
     <Link to={`/services/${s.slug}`} aria-label={s.name}><ServiceCover s={s}/></Link>
     <div className="sbody">
-      <div className="service-card-kicker">{isSmm?s.smm_platform:s.category}</div>
+      <div className="service-card-kicker">{isSmm?s.smm_platform:s.category}</div>{Number(s.order_count||0)>0&&<div className="service-order-count">{Number(s.order_count).toLocaleString()} orders</div>}
       <h3><Link to={`/services/${s.slug}`}>{s.name}</Link></h3>
       {isSmm&&<div className="service-card-tags"><span>{s.smm_category||'Social service'}</span><span><Globe2 size={12}/>{s.smm_country||'Worldwide'}</span></div>}
       <p className="muted sdesc">{s.description||'Choose a package and order online.'}</p>

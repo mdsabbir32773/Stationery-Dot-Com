@@ -18,7 +18,7 @@ export function OrderReviewForm({ order, existing, onSubmitted }) {
   async function submit(e) {
     e.preventDefault(); if (!rating) return setMessage('Choose a star rating first.'); if (!review.trim()) return setMessage('Please write a short review.');
     setBusy(true); setMessage('');
-    const { error } = await supabase.from('service_reviews').insert({ order_id: order.id, service_id: order.service_id, rating, review: review.trim() });
+    const { error } = await supabase.from('service_reviews').insert({ user_id: (await supabase.auth.getUser()).data.user?.id, order_id: order.id, service_id: order.service_id, rating, review: review.trim() });
     setBusy(false);
     if (error) return setMessage(error.code === '23505' ? 'A review has already been sent for this order.' : 'Could not submit your review. Please try again.');
     setMessage('Thanks! Your review will appear after a quick review.'); onSubmitted?.();

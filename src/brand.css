@@ -40,3 +40,28 @@ body .home-hero :is(h1,h2,h3,p){color:inherit}body .home-hero-copy>p{color:#5262
 body .home-cta :is(h1,h2,h3,p,.home-cta-link){color:#fff!important}
 body .smm-card,.smm-modal{background:#fff!important;color:#1c2d4e!important}.smm-card :is(h3,p,.muted),.smm-modal :is(h2,p,.muted){color:#1c2d4e!important}.smm-card p,.smm-modal .muted{color:#52627a!important}
 body .admin-sidebar{background:#fff;color:#344867}body .admin-sidebar nav a{color:#52627a}body .admin-sidebar nav a.active{color:#24447f;background:#edf3ff}
+
+/* Contrast correction v2 — explicit surface rules, including footer and all secondary text. */
+body{color:#172033;background:#fff}
+/* light surfaces */
+body :is(.pagehead,.home-proof,.featured-section,.home-category,.home-benefits,.step-track,.home-step,.account-panel,.auth-card,.content-section,.package-editor,.package-list-panel,.service-list-panel,.admin-main .card,.admin-main .stat-card,.scard,.catcard,.st,.tile,.review-item,.account-review-row,.admin-review,.package-card,.package-group,.package-stats>div){color:#172033}
+body :is(.pagehead,.home-proof,.featured-section,.home-category,.home-benefits,.step-track,.home-step,.account-panel,.auth-card,.content-section,.package-editor,.package-list-panel,.service-list-panel,.admin-main .card,.admin-main .stat-card,.scard,.catcard,.st,.tile,.review-item,.account-review-row,.admin-review,.package-card,.package-group,.package-stats>div) :is(h1,h2,h3,h4,b,strong){color:#172033}
+body :is(.pagehead,.home-proof,.featured-section,.home-category,.home-benefits,.step-track,.home-step,.account-panel,.auth-card,.content-section,.package-editor,.package-list-panel,.service-list-panel,.admin-main .card,.admin-main .stat-card,.scard,.catcard,.st,.tile,.review-item,.account-review-row,.admin-review,.package-card,.package-group,.package-stats>div) :is(p,.muted,.sub,small,.sdesc){color:#56657a}
+body .home-category p,body .benefit p,body .home-step small,body .section-heading p{color:#5d6b63}
+/* dark surfaces: never inherit the global link color */
+body :is(.hero,.home-cta,.cta,.band,.panel,footer){color:#fff}
+body :is(.hero,.home-cta,.cta,.band,.panel,footer) :is(h1,h2,h3,h4,b,strong){color:#fff}
+body :is(.hero,.home-cta,.cta,.band,.panel,footer) :is(p,li,small,span,.muted,.sub){color:#dce5ef}
+body :is(.hero,.home-cta,.cta,.band,.panel,footer) a:not(.btn){color:#dce5ef!important}
+body footer a:not(.btn):hover{color:#fff!important}
+body .home-cta .section-overline,body .hero .eyebrow{color:#a9c7ff}
+body .home-cta .btn{color:#24447f!important}
+/* navigation */
+body .nav{color:#26364f}body .nav .brand{color:#1c2d4e}body .nav .links a:not(.btn){color:#405372!important}body .nav .links a:not(.btn):hover,body .nav .links a[aria-current="page"]:not(.btn){color:#24447f!important}
+/* forms */
+body label{color:#405372}body input,body select,body textarea{color:#172033;background:#fff}body input::placeholder,body textarea::placeholder{color:#71809a!important}
+/* links on light surfaces */
+body :is(main,.pagehead,.home-main,.account-page,.content-admin,.settings-admin) a:not(.btn){color:#31569b}
+/* SMM */
+body .smm-hero{color:#1c2d4e}body .smm-hero :is(h1,h2,h3){color:#1c2d4e!important}body .smm-hero p,body .smm-highlights,body .smm-trust{color:#52627a!important}
+body .smm-card,body .smm-modal{background:#fff!important;color:#1c2d4e!important}body .smm-card :is(h3,b,strong){color:#1c2d4e!important}body .smm-card :is(p,.muted,small){color:#52627a!important}

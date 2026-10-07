@@ -100,8 +100,8 @@ export default function Footer() {
       </div>
       <div className="footer-bottom">
         <div className="footer-bottom-inner">
-          <span>© {new Date().getFullYear()} {name}. All rights reserved.</span>
-          <span className="footer-credit">Built with care by <a href="https://www.facebook.com/share/1DJjJZKWaA/" target="_blank" rel="noopener noreferrer">Crafting Stations</a></span>
+          <div className="footer-rights">© {new Date().getFullYear()} {name} · All rights reserved.</div>
+          <div className="footer-credit"><span>Built with care by</span><a href="https://www.facebook.com/share/1DJjJZKWaA/" target="_blank" rel="noopener noreferrer" aria-label="Crafting Stations on Facebook">Crafting Stations</a></div>
         </div>
       </div>
     </footer>

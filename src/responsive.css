@@ -332,3 +332,210 @@ footer p,footer li,footer a{overflow-wrap:anywhere}
 /* Prevent accidental horizontal overflow from long URLs, IDs and user content. */
 p,a,b,small,span,h1,h2,h3,h4,td,th{overflow-wrap:anywhere}
 pre,code{max-width:100%;overflow:auto}
+
+
+/* ===== SDC SECTION POLISH: SERVICES + SERVICE DETAILS ===== */
+.catalog-head,.service-detail-head,.service-detail-body{min-width:0}
+.catalog-head{padding-bottom:8px}
+.catalog-results-head{gap:14px}
+.catalog-results-count{font-size:13px;color:var(--mut)}
+.catalog-service-grid{align-items:stretch}
+.catalog-service-grid>*{height:100%}
+.catalog-category-grid>*{height:100%}
+.scard,.catcard{height:100%;display:flex;flex-direction:column;overflow:hidden}
+.sbody{display:flex;flex:1;flex-direction:column}
+.sbody>p,.sdesc{overflow-wrap:anywhere}
+.sfoot{margin-top:auto;gap:10px}
+.service-detail-head{display:flex;align-items:flex-start;justify-content:space-between;gap:24px}
+.service-detail-head>div{min-width:0}
+.service-detail-head h1{overflow-wrap:anywhere}
+.service-detail-actions{display:flex;gap:9px;flex-wrap:wrap;flex:none}
+.service-detail-content{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(280px,.7fr);gap:20px;align-items:start}
+.service-detail-content>*{min-width:0}
+.service-image-preview,.service-detail-image{width:100%;height:auto;object-fit:cover}
+.service-smm-facts>div{min-width:0}
+@media(max-width:900px){
+  .service-detail-content{grid-template-columns:1fr}
+  .service-detail-actions{width:100%}
+}
+@media(max-width:760px){
+  .catalog-service-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .catalog-category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .service-detail-head{display:grid;gap:14px}
+  .service-detail-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .service-detail-actions>*{width:100%}
+}
+@media(max-width:560px){
+  .catalog-service-grid,.catalog-category-grid{grid-template-columns:1fr}
+  .catalog-head{padding-top:18px}
+  .catalog-results-head{gap:5px}
+  .service-detail-actions{grid-template-columns:1fr}
+  .service-detail-content{gap:14px}
+  .scard,.catcard{border-radius:15px}
+}
+
+/* ===== SDC SECTION POLISH: CART ===== */
+.cart-layout{align-items:start;gap:20px}
+.cart-layout>.checkout{min-width:0}
+.cart-item{gap:14px;align-items:center}
+.cart-item img,.cart-item .cover{flex:none;max-width:100%}
+.cart-item>div:first-child{flex:1;min-width:0}
+.cart-item>div:first-child b{display:block;overflow-wrap:anywhere}
+.cart-item-actions{gap:9px;flex-wrap:wrap}
+.cart-item-actions strong{white-space:nowrap}
+.cart-layout .summary{position:sticky;top:88px}
+@media(max-width:1050px){
+  .cart-layout .summary{position:static}
+}
+@media(max-width:760px){
+  .cart-layout{gap:14px}
+  .cart-item{align-items:flex-start}
+  .cart-item-actions{align-items:center}
+  .cart-item-actions .qty{flex:none}
+}
+@media(max-width:560px){
+  .cart-item{display:grid;grid-template-columns:minmax(0,1fr);gap:11px}
+  .cart-item-actions{width:100%;display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:8px}
+  .cart-item-actions strong{text-align:right;min-width:0}
+  .cart-layout .summary{order:-1}
+  .cart-layout .checkout .sec,.cart-layout .summary{border-radius:14px}
+}
+
+/* ===== SDC SECTION POLISH: CHECKOUT ===== */
+.checkout{align-items:start}
+.checkout .sec{min-width:0}
+.checkout .summary{position:sticky;top:88px}
+.checkout .two{min-width:0}
+.checkout .two>*{min-width:0}
+.checkout .pay{overflow:hidden}
+.checkout .pay .qrbox img{max-width:100%;height:auto}
+.checkout .drop{min-width:0}
+.checkout .drop input[type=file]{max-width:100%}
+.stepper{min-width:0;overflow-x:auto;scrollbar-width:none}
+.stepper::-webkit-scrollbar{display:none}
+@media(max-width:1050px){
+  .checkout .summary{position:static}
+}
+@media(max-width:760px){
+  .checkout{gap:12px}
+  .checkout .sec{padding:16px}
+  .checkout .sech{font-size:16px}
+  .checkout .two{grid-template-columns:1fr!important}
+  .checkout .summary{order:-1}
+}
+@media(max-width:560px){
+  .checkout .sec{padding:14px}
+  .checkout .pay{padding:12px}
+  .checkout .pay .amt{font-size:23px}
+  .checkout .pay .qrbox{width:min(100%,220px)}
+  .checkout .summary .tot{font-size:20px}
+  .checkout .stepper{margin-inline:-2px;padding-inline:2px}
+}
+
+/* ===== SDC SECTION POLISH: ACCOUNT ===== */
+.account-page{min-width:0}
+.account-top{display:flex;justify-content:space-between;align-items:flex-start;gap:18px}
+.account-top>div{min-width:0}
+.account-grid>*{min-width:0}
+.account-panel{height:100%;min-width:0}
+.account-order,.account-review-row{min-width:0}
+.account-order-header,.account-review-title{gap:10px;flex-wrap:wrap}
+.account-order-header>*{min-width:0}
+.account-review-list{align-items:stretch}
+.account-review-row{height:100%}
+@media(max-width:760px){
+  .account-top{display:grid;gap:12px}
+  .account-top .btn{width:100%}
+  .account-grid{grid-template-columns:1fr!important}
+  .account-review-list{grid-template-columns:1fr}
+}
+@media(max-width:560px){
+  .account-page{padding-inline:0}
+  .account-panel{padding:14px}
+  .account-order{padding:13px}
+  .account-order-header{display:grid}
+  .account-order-header .row{width:100%}
+  .account-order-header .btn{width:100%}
+}
+
+/* ===== SDC SECTION POLISH: TRACK ORDER ===== */
+.track-page,.track-card,.track-order{min-width:0}
+.track-card{overflow:hidden}
+.track-order-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.track-order-head>*{min-width:0}
+.track-order-head h1,.track-order-head h2{overflow-wrap:anywhere}
+.tl{min-width:0}
+.tl li>div{min-width:0}
+.tl li p,.tl li small{overflow-wrap:anywhere}
+.track-actions{display:flex;gap:8px;flex-wrap:wrap}
+@media(max-width:760px){
+  .track-order-head{display:grid;gap:10px}
+  .track-actions{display:grid;grid-template-columns:1fr 1fr}
+  .track-actions>*{width:100%}
+}
+@media(max-width:480px){
+  .track-actions{grid-template-columns:1fr}
+  .tl li{gap:9px}
+  .tl li .dot{width:26px;height:26px}
+}
+
+/* ===== SDC SECTION POLISH: SMM PANEL ===== */
+.smm-page,.smm-card,.smm-service-grid,.service-smm-details{min-width:0}
+.service-smm-facts{align-items:stretch}
+.service-smm-facts>*{min-width:0}
+.service-smm-details{overflow:hidden}
+.smm-service-grid>*{min-width:0}
+.smm-service-grid .card{height:100%}
+.smm-form{min-width:0}
+.smm-form input,.smm-form select,.smm-form textarea{min-width:0}
+.smm-actions{display:flex;gap:9px;flex-wrap:wrap}
+@media(max-width:760px){
+  .service-smm-facts{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .smm-service-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .smm-actions{display:grid;grid-template-columns:1fr}
+  .smm-actions>*{width:100%}
+}
+@media(max-width:560px){
+  .service-smm-facts{grid-template-columns:1fr}
+  .smm-service-grid{grid-template-columns:1fr}
+  .service-smm-details{margin-top:14px}
+  .smm-card{padding:14px}
+}
+
+/* ===== SDC SECTION POLISH: ADMIN PANEL ===== */
+.admin-main{min-width:0}
+.admin-main .wrap{min-width:0}
+.admin-heading{gap:14px;flex-wrap:wrap}
+.admin-heading>div{min-width:0}
+.admin-heading h1,.admin-heading p{overflow-wrap:anywhere}
+.admin-settings{min-width:0}
+.admin-settings form{min-width:0}
+.admin-main .grid{align-items:stretch}
+.admin-main .card{height:100%;min-width:0}
+.admin-main .scroll{max-width:100%;overflow:auto}
+.admin-main table{min-width:680px}
+.admin-mobile-top{box-shadow:0 3px 12px #17203b0b}
+.admin-sidebar{overflow-y:auto;overscroll-behavior:contain}
+.service-editor,.package-editor,.service-list-panel,.package-list-panel{min-width:0}
+@media(max-width:900px){
+  .admin-main{width:100%}
+  .admin-mobile-top{display:flex}
+  .admin-main>.wrap{padding-inline:15px}
+  .admin-heading{display:flex;align-items:flex-start}
+  .admin-heading>.btn{width:auto}
+  .admin-sidebar{display:none}
+}
+@media(max-width:760px){
+  .admin-heading{display:grid}
+  .admin-heading>.btn{width:100%;justify-self:stretch}
+  .admin-main .grid{grid-template-columns:1fr!important}
+  .admin-main .scroll{border-radius:13px}
+  .admin-main table{font-size:13px}
+  .admin-main th,.admin-main td{padding:9px}
+}
+@media(max-width:560px){
+  .admin-main>.wrap{padding-inline:13px}
+  .admin-settings,.service-editor,.service-list-panel,.package-editor,.package-list-panel{border-radius:14px}
+  .admin-main table{min-width:620px}
+  .admin-main th,.admin-main td{padding:8px}
+}

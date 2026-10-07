@@ -14,7 +14,6 @@ export function initMetaPixel(){
     window.fbq=window.fbq||function(){(window.fbq.q=window.fbq.q||[]).push(arguments)};
     window._fbq=window._fbq||window.fbq;
     window.fbq('init',PIXEL_ID);
-    window.fbq('track','PageView');
     const existing=document.querySelector('script[data-meta-pixel]');
     if(existing){initialized=true;resolve(true);return;}
     const script=document.createElement('script');

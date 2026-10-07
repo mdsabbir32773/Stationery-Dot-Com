@@ -192,3 +192,33 @@ main{min-width:0}
   .admin-mobile-top a{flex:none;font-size:12px;color:var(--g);font-weight:700}
   .admin-main>.wrap,.admin-main>.admin-heading,.admin-main>section{max-width:100%}
 }
+
+
+/* Footer refinement: clean, responsive, centered legal/credit area. */
+footer{position:relative;overflow:hidden}
+footer:before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 8% 15%,#ffffff0b,transparent 28%),radial-gradient(circle at 92% 10%,#ffffff08,transparent 25%)}
+footer>.wrap,footer>.footer-bottom{position:relative;z-index:1}
+footer .cols{grid-template-columns:minmax(0,1.45fr) minmax(170px,.8fr) minmax(150px,.7fr);align-items:start}
+.footer-brand{display:flex;align-items:center;gap:9px;font-size:16px;color:#fff}
+.footer-brand .logo{flex:none}
+footer .cols>div:first-child>p{max-width:480px;color:#b7c4b9;line-height:1.7}
+.online-note{display:flex;align-items:center;gap:7px}
+.footer-socials{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:14px}
+.footer-social-label{margin-right:3px}
+.footer-bottom{margin-top:28px;border-top:1px solid #ffffff18;padding:16px 0 18px;background:#162d55}
+.footer-bottom-inner{width:min(100% - 28px,1180px);margin:0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;text-align:center;color:#b9c9dd;font-size:11px;line-height:1.5}
+.footer-rights{display:flex;align-items:center;justify-content:center;min-height:32px;padding:6px 14px;border:1px solid #ffffff20;border-radius:999px;background:#ffffff08}
+.footer-credit{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:34px;padding:7px 14px;border:1px solid #ffffff24;border-radius:999px;background:#ffffff0c;box-shadow:0 4px 14px #00000012}
+.footer-credit a{font-weight:800;color:#fff!important;text-decoration:none}
+.footer-credit a:hover{text-decoration:underline;text-underline-offset:3px}
+@media(max-width:760px){
+  footer{padding-top:30px}
+  footer .cols{grid-template-columns:1fr;gap:24px}
+  footer .cols>div:not(:first-child){padding-top:18px;border-top:1px solid #ffffff12}
+  .footer-bottom{margin-top:24px}
+  .footer-rights,.footer-credit{max-width:100%;text-align:center}
+}
+@media(max-width:380px){
+  .footer-bottom-inner{width:min(100% - 20px,1180px)}
+  .footer-rights,.footer-credit{font-size:10px;padding-inline:11px}
+}

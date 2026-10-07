@@ -222,3 +222,22 @@ footer .cols>div:first-child>p{max-width:480px;color:#b7c4b9;line-height:1.7}
   .footer-bottom-inner{width:min(100% - 20px,1180px)}
   .footer-rights,.footer-credit{font-size:10px;padding-inline:11px}
 }
+
+
+/* ===== SDC RESPONSIVE PASS: NAVBAR ===== */
+@media (max-width: 900px){
+  .nav .wrap{gap:10px;min-height:64px}
+  .nav .brand{flex:1 1 auto;max-width:calc(100% - 54px);overflow:hidden;text-overflow:ellipsis}
+  .burger{display:grid;width:44px;height:44px;flex:0 0 44px}
+  .links.menu{left:10px;right:10px;top:calc(100% + 8px);padding:10px;border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:0 18px 50px #17203b1f;gap:4px}
+  .links.menu.open{display:flex;flex-direction:column;align-items:stretch}
+  .links.menu a:not(.btn){min-height:46px;padding:11px 13px;border-radius:11px}
+  .links.menu .account-nav{justify-content:flex-start}
+  .links.menu .btn{margin-top:4px;min-height:46px}
+}
+@media (max-width: 480px){
+  .nav .wrap{min-height:58px}
+  .nav .brand{font-size:14px;gap:6px}
+  .nav .brand .brand-image{max-width:96px!important;max-height:34px!important}
+  .links.menu{left:8px;right:8px;max-height:calc(100dvh - 72px);overflow:auto}
+}

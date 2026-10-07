@@ -5,4 +5,4 @@ Disallow: /account
 Disallow: /cart
 Disallow: /order
 Disallow: /order-success/
-Sitemap: https://stationery-dot-com.stdc.workers.dev/sitemap.xml
+Sitemap: https://stationerydotcom.stdc.workers.dev/sitemap.xml

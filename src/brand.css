@@ -1,4 +1,3 @@
-undefined
 /* Premium homepage pass */
 .section-heading{display:flex;align-items:end;justify-content:space-between;gap:24px}.section-heading>div{min-width:0}.section-heading .text-link,.section-heading .btn{flex:0 0 auto}
 .category-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}.home-category{min-height:205px;padding:24px!important;display:flex!important;flex-direction:column;align-items:flex-start;justify-content:flex-start}.home-category .category-icon{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;margin-bottom:20px}.home-category .category-count{margin-left:auto;margin-top:-66px;font-size:11px;font-weight:700}.home-category h3{margin:20px 0 7px;font-size:20px}.home-category p{font-size:12px;line-height:1.55;min-height:38px}.home-category .category-go{display:inline-flex;align-items:center;gap:5px;margin-top:auto;padding-top:16px;font-size:12px;font-weight:800}
@@ -96,3 +95,107 @@ footer a:hover{color:#fff}
   .links.menu a:not(.btn){color:#344867}
   .links.menu a[aria-current="page"]:not(.btn){color:#24447f}
 }
+
+
+/* ===== FINAL READABILITY FIX =====
+   Final cascade wins over older visual passes. */
+body{color:#26312b;background:#fbfcfa}
+body p,body li,body td,body th{color:#435449}
+body .muted,body .mut,body .sub{color:#66756b}
+body h1,body h2,body h3,body h4,body h5,body h6{color:#26312b}
+
+/* Light homepage hero: dark text on the pale surface. */
+.home-hero{background:#f1f5ef!important;color:#26312b!important}
+.home-hero:before{background:radial-gradient(ellipse at 83% 45%,#e2ece0 0,transparent 37%),radial-gradient(ellipse at 0 100%,#f3eade 0,transparent 28%)!important}
+.home-hero h1,.home-hero h2,.home-hero h3,.home-hero h4{color:#26312b!important}
+.home-hero h1 em{color:#397452!important}
+.home-kicker{color:#56715d!important}
+.home-hero-copy>p{color:#526057!important}
+.home-trust{color:#647268!important}
+.home-trust svg{color:#397452!important}
+.home-hero-actions .text-link{color:#397452!important}
+.home-hero-actions .text-link:hover{color:#2c5f42!important}
+.hero-search{background:#fff!important;border-color:#d8e0d8!important}
+.hero-search input{color:#26392e!important}
+.hero-search input::placeholder{color:#7a887f!important}
+.hero-search>svg{color:#718077!important}
+.hero-search button{background:#397452!important;color:#fff!important}
+
+/* All light surfaces. */
+.card,.panel,.sec,.summary,.account-panel,.account-order,.account-review-row,
+.service-editor,.service-list-panel,.package-editor,.package-list-panel,
+.catalog-category-card,.scard,.catcard,.package-card,.package-group,
+.review-card,.review-compose,.auth-card,.checkout-error,.cart-list,
+.content-section,.admin-main .card,.stat-card,.tcard,.stepper{color:#26312b}
+.card p,.panel p,.sec p,.summary p,.account-panel p,.account-order p,
+.account-review-row p,.service-editor p,.service-list-panel p,
+.package-editor p,.package-list-panel p,.package-card p,.package-group p,
+.review-card p,.review-compose p,.auth-card p,.checkout-error p,
+.cart-list p,.content-section p,.admin-main .card p{color:#435449}
+
+/* Forms and controls. */
+input,select,textarea{color:#26392e!important;background:#fff!important}
+input::placeholder,textarea::placeholder{color:#7a887f!important;opacity:1}
+label,label.fld>span{color:#405449!important}
+.search svg{color:#718077!important}
+.icon-btn,.burger{color:#405449!important;background:#fff}
+
+/* Navigation. */
+.nav,.links.menu{color:#26312b}
+.brand{color:#26312b!important}
+.links a:not(.btn){color:#566159!important}
+.links a:not(.btn):hover{color:#2c5f42!important}
+.links a.active:not(.btn),.links a[aria-current="page"]:not(.btn){color:#2c5f42!important;background:#edf5ef!important}
+
+/* Catalog / service. */
+.catalog-head h1,.catalog-results-head h2,.catalog-category-card h2,
+.sbody h3,.sbody h3 a,.service-smm-details h2,
+.package-card-heading h3,.package-option h3{color:#26312b!important}
+.catalog-intro,.sdesc,.service-card-kicker,.service-price-caption,
+.catalog-results-count,.catalog-category-count,.service-smm-instructions,
+.package-option-main p,.package-price small,.package-document-note,
+.service-admin-row small,.cart-item>div:first-child span,
+.cart-item>div:first-child small{color:#526057!important}
+.catalog-category-link,.category-go,.shortcut-link,.text-link{color:#397452!important}
+
+/* SMM light hero. */
+.smm-hero{color:#26312b!important}
+.smm-hero h1,.smm-section-head h2,.smm-admin-list-head h2{color:#26312b!important}
+.smm-hero p,.smm-highlights,.smm-trust{color:#526057!important}
+
+/* Account / checkout / tracking / admin. */
+.account-top p,.track-order-head p,.tl li p,.tl li small,
+.admin-heading p,.admin-main small,.admin-main .muted{color:#526057!important}
+.checkout .sech,.cart-layout .checkout .sec .sech,
+.cart-layout .summary h3{color:#26312b!important}
+.tl li{color:#66756b}
+.tl li.done{color:#26312b}
+.admin-sidebar nav a,.admin-sidebar-bottom a,.admin-sidebar-bottom button{color:#57685d!important}
+.admin-sidebar nav a.active{color:#2c5f42!important;background:#edf5ef!important}
+.admin-nav-label{color:#8a958c!important}
+.admin-mobile-top{color:#26312b!important}
+
+/* Badges and status text. */
+.badge{color:#334155}
+.b-ok{color:#166534}.b-wait{color:#92400e}.b-bad{color:#991b1b}.b-run{color:#1e40af}
+.service-status{color:#596178}.service-status.visible{color:#28764e}
+.package-tip{color:#35458f}
+.package-tags span,.package-plan-details span,.package-plan-badge{color:#356b4d}
+
+/* Dark CTA/footer only: light text. */
+.home-cta{color:#fff!important}
+.home-cta h2,.home-cta h3,.home-cta h4,.home-cta p,.home-cta-link{color:#fff!important}
+.home-cta .section-overline{color:#dbe8d8!important}
+footer{color:#d7e0d8!important}
+footer h1,footer h2,footer h3,footer h4{color:#fff!important}
+footer p,footer li{color:#c7d3c9!important}
+footer a{color:#dbe5dd!important}
+footer a:hover{color:#fff!important}
+.footer-social-label{color:#c7d3c9!important}
+.footer-bottom-inner{color:#b9c9dd!important}
+.footer-credit a{color:#fff!important}
+
+/* Error/notice banners retain intentional status contrast. */
+.err{color:#b91c1c!important}
+.ok{color:#166534!important}
+.announcement{color:#365d43!important}

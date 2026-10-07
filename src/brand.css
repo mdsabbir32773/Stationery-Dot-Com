@@ -8,3 +8,91 @@ undefined
 .home-cta{position:relative;padding:56px 48px!important}.home-cta .row{position:relative;z-index:1}.hero-paper{box-shadow:0 28px 70px #14284b1c!important}.hero-float{box-shadow:0 15px 35px #14284b16!important;border:1px solid #ffffffcc}
 @media(max-width:1000px){.category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.featured-section .grid{grid-template-columns:repeat(2,minmax(0,1fr))}.benefit-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.step-track{grid-template-columns:repeat(3,minmax(0,1fr))}.hero-art{display:none}}
 @media(max-width:700px){.section-heading{align-items:flex-start;flex-direction:column;gap:14px}.section-heading h2{line-height:1.1}.category-grid,.featured-section .grid,.benefit-grid{grid-template-columns:1fr}.home-category{min-height:180px}.step-track{grid-template-columns:1fr;gap:10px}.home-step{min-height:0;padding:18px}.home-step b{margin-top:17px}.home-cta{padding:38px 24px!important}.home-cta h2{font-size:29px;line-height:1.12}}
+
+
+/* ===== SDC CONTRAST + TEXT LEGIBILITY PASS =====
+   Keep text readable on every card, panel, input, badge and colored section. */
+:root{
+  --text-strong:#172b4d;
+  --text-body:#405372;
+  --text-muted:#64748b;
+  --surface:#ffffff;
+  --surface-soft:#f7f9fd;
+}
+body{color:var(--text-strong);background:#f7f9fd}
+body p,body li,body td,body th,body label{color:var(--text-body)}
+body small,.muted,.mut{color:var(--text-muted)}
+body h1,body h2,body h3,body h4,body h5,body h6{color:var(--text-strong)}
+
+/* White/surface cards: never inherit a low-contrast parent color. */
+.card,.panel,.sec,.summary,.account-panel,.account-order,.account-review-row,
+.service-editor,.service-list-panel,.package-editor,.package-list-panel,
+.catalog-category-card,.scard,.catcard,.package-card,.package-group,
+.admin-settings,.admin-main .card,.review-card,.review-compose,
+.auth-page,.auth-card,.checkout-error,.cart-list{
+  color:var(--text-strong);
+}
+.card p,.panel p,.sec p,.summary p,.account-panel p,.account-order p,
+.account-review-row p,.service-editor p,.service-list-panel p,
+.package-editor p,.package-list-panel p,.package-card p,.package-group p,
+.admin-settings p,.admin-main .card p,.review-card p,.review-compose p,
+.auth-page p,.checkout-error p,.cart-list p{color:var(--text-body)}
+
+/* Form controls: labels, placeholders and values stay visible. */
+input,select,textarea{color:var(--text-strong);background:#fff}
+input::placeholder,textarea::placeholder{color:#7b879a;opacity:1}
+label{color:var(--text-body)}
+input:disabled,select:disabled,textarea:disabled{color:#6b778c;background:#f1f4f8}
+input[type=checkbox],input[type=radio]{accent-color:#31569b}
+
+/* Navigation + utility text. */
+.nav,.links.menu{color:var(--text-strong)}
+.links a:not(.btn){color:#344867}
+.links a:not(.btn):hover{color:#24447f}
+.cart-item>div:first-child b,.package-option h3,.package-card-heading h3,
+.service-admin-row b,.catalog-category-card h2{color:#1c2d4e}
+
+/* Catalog/service readable hierarchy. */
+.catalog-intro,.sdesc,.service-card-kicker,.service-price-caption,
+.catalog-results-count,.catalog-category-count,.service-smm-instructions,
+.package-option-main p,.package-price small,.package-document-note,
+.cart-item>div:first-child span,.cart-item>div:first-child small{color:#526789}
+
+/* Account / checkout / tracking / admin text. */
+.account-top p,.track-order-head p,.tl li p,.tl li small,
+.admin-heading p,.admin-main .muted,.admin-main small{color:#526789}
+.checkout .sech,.cart-layout .checkout .sec .sech,
+.cart-layout .summary h3{color:#1c2d4e}
+.admin-mobile-top{color:#1c2d4e}
+
+/* SMM surfaces. */
+.smm-card,.smm-service-grid .card,.service-smm-details{color:#1c2d4e}
+.smm-card p,.smm-service-grid .card p{color:#526789}
+
+/* Dark hero / CTA / footer: force light text so it cannot inherit dark body text. */
+.home-hero,.home-cta,footer{color:#fff}
+.home-hero p,.home-hero li,.home-hero small,.home-hero .home-trust,
+.home-cta p,.home-cta li,.home-cta small{color:#e7ecf7}
+.home-hero h1,.home-hero h2,.home-hero h3,.home-hero h4,
+.home-cta h2,.home-cta h3,.home-cta h4,footer h1,footer h2,footer h3,footer h4{color:#fff}
+footer p,footer li{color:#c7d3e5}
+footer a{color:#dbe6f5}
+footer a:hover{color:#fff}
+
+/* Colored badges/buttons: explicit contrast. */
+.btn,.btn:hover,.home-hero-actions .btn.lg,.home-cta .btn{color:#fff}
+.home-cta .btn{color:#281f36}
+.catalog-chips .chip[aria-pressed=true],.cart-count{color:#fff}
+.service-status.visible{color:#28764e}
+.package-tip{color:#35458f}
+
+/* Avoid accidental transparent/inherited text on white icon buttons. */
+.icon-btn,.burger{color:#405372}
+.icon-btn:hover{color:#b42318}
+
+/* Mobile menu is white, so its text must remain dark. */
+@media(max-width:900px){
+  .links.menu{background:#fff;color:#1c2d4e}
+  .links.menu a:not(.btn){color:#344867}
+  .links.menu a[aria-current="page"]:not(.btn){color:#24447f}
+}

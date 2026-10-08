@@ -252,3 +252,25 @@ footer .cols li a:hover{opacity:1;transform:translateX(2px)}
 .coupon-editor{padding:22px;margin-bottom:28px}.coupon-list h2{margin-bottom:14px}.coupon-card{padding:18px}.coupon-card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.coupon-card strong{font-size:22px;display:block;margin-bottom:5px}
 .admin-insight-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.admin-insight-grid .card{padding:18px;display:flex;flex-direction:column;gap:5px}.admin-insight-grid b{font-size:22px}.admin-insight-grid small{color:var(--muted,#64748b)}
 @media(max-width:700px){.coupon-row{flex-direction:column}.admin-insight-grid{grid-template-columns:1fr}.coupon-editor{padding:16px}}
+
+
+/* ===== MOBILE-FIRST NAV + ACCOUNT TIMELINE ===== */
+.sdc-mobile-nav{display:none}
+.account-order-rich{padding:16px}
+.account-order-head{display:flex;justify-content:space-between;gap:16px}
+.account-mini-timeline{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:14px 0 10px;padding-top:10px;border-top:1px solid var(--line,#e5e7eb)}
+.account-mini-timeline span{display:flex;flex-direction:column;gap:5px;font-size:10px;line-height:1.25;color:#8a948d}
+.account-mini-timeline span.is-done{color:#397452;font-weight:700}
+.account-mini-timeline i{display:flex;align-items:center;gap:3px;font-style:normal}
+.account-order-link{display:inline-flex;align-items:center;gap:3px;font-size:12px;font-weight:700;color:#397452}
+@media(max-width:760px){
+  body{padding-bottom:68px}
+  .sdc-mobile-nav{position:fixed;display:grid;grid-template-columns:repeat(5,1fr);left:10px;right:10px;bottom:10px;height:58px;z-index:1000;background:rgba(255,255,255,.96);backdrop-filter:blur(16px);border:1px solid #dfe7e1;border-radius:18px;box-shadow:0 12px 35px rgba(31,55,39,.16);padding:5px}
+  .sdc-mobile-nav a{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;color:#68746c;font-size:18px;border-radius:13px}
+  .sdc-mobile-nav a span{font-size:9px;font-weight:750;line-height:1}
+  .sdc-mobile-nav a.active{background:#edf5ef;color:#2f6946}
+  .sdc-mobile-nav a b{position:absolute;top:3px;right:22%;min-width:14px;height:14px;padding:0 3px;border-radius:999px;background:#2f6946;color:#fff;font-size:8px;display:grid;place-items:center}
+  .account-order-head{align-items:flex-start}
+  .account-mini-timeline span{font-size:9px}
+}
+@media(min-width:761px){.sdc-mobile-nav{display:none!important}}

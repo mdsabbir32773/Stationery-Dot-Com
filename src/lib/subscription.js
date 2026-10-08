@@ -1,5 +1,6 @@
 export const SUBSCRIPTION_DURATIONS=[
   {months:1,label:'1 Month'},
+  {months:2,label:'2 Months'},
   {months:6,label:'6 Months'},
   {months:12,label:'1 Year'},
   {months:24,label:'2 Years'},

@@ -24,11 +24,11 @@ drop policy if exists "admin coupons" on public.coupons;
 create policy "admin coupons" on public.coupons for all to authenticated using(is_admin()) with check(is_admin());
 
 create or replace function public.validate_coupon(p_code text,p_subtotal numeric,p_service_id uuid,p_package_id uuid)
-returns jsonb language plpgsql security definer stable set search_path=public as $$
-declare c coupons; d numeric:=0; code text:=upper(trim(coalesce(p_code,'')));
+returns jsonb language plpgsql stable set search_path=public as $
+declare c coupons; d numeric:=0; coupon_code text:=upper(trim(coalesce(p_code,'')));
 begin
- if code='' then return jsonb_build_object('valid',false,'message','Enter a coupon code.'); end if;
- select * into c from coupons where upper(coupons.code)=code and is_active
+ if coupon_code='' then return jsonb_build_object('valid',false,'message','Enter a coupon code.'); end if;
+ select * into c from coupons where upper(coupons.code)=coupon_code and is_active
    and (starts_at is null or starts_at<=now()) and (expires_at is null or expires_at>now())
    and (usage_limit is null or used_count<usage_limit) and min_order<=coalesce(p_subtotal,0)
    and (service_id is null or service_id=p_service_id) and (package_id is null or package_id=p_package_id) limit 1;

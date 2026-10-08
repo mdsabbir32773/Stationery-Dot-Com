@@ -94,3 +94,22 @@
  .cart-layout .checkout .two{grid-template-columns:1fr}
  .catalog-category-grid{grid-template-columns:1fr}
 }
+
+
+/* ===== SEARCH + CATEGORY UX POLISH ===== */
+.catalog-search{position:relative}
+.catalog-search input{padding-right:38px}
+.catalog-search-clear{position:absolute;right:10px;display:grid;place-items:center;width:30px;height:30px;border:0;border-radius:8px;background:#f1f5f1;color:#607067;cursor:pointer}
+.catalog-search-clear:hover{background:#e6efe7;color:#2c5f42}
+.active-filter-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.active-filter{display:inline-flex;align-items:center;gap:5px;border:1px solid #d6e5d8;background:#f0f7f1;color:#356b4d;border-radius:999px;padding:5px 8px;font-size:10px;font-weight:750;cursor:pointer}
+.active-filter:hover{background:#e6f2e8}
+.catalog-results-head{padding-bottom:2px}
+.catalog-results-count{background:#f0f6f1;border-color:#dbe8dd;color:#356b4d}
+.catalog-category-card{overflow:hidden}
+.catalog-category-card:after{content:"";position:absolute;right:-35px;bottom:-45px;width:130px;height:130px;border-radius:50%;background:#edf5ef;transition:transform .3s ease;opacity:.8}
+.catalog-category-card:hover:after{transform:scale(1.25)}
+.catalog-category-card>*{position:relative;z-index:1}
+.catalog-category-icon{transition:transform .25s ease,box-shadow .25s ease}
+.catalog-category-card:hover .catalog-category-icon{transform:translateY(-2px) scale(1.05);box-shadow:0 8px 20px #31569b14}
+@media(max-width:600px){.active-filter-row{max-width:100%;overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px}.active-filter{flex:none}}

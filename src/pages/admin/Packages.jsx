@@ -3,7 +3,7 @@ import {Search,Plus,PackageOpen,Eye,EyeOff,Trash2,PenLine} from 'lucide-react';
 import {supabase,taka} from '../../lib/supabase';
 
 const fresh=()=>({service_id:'',name:'',description:'',price:'',unit:'per order',is_active:true,sort_order:0,access_type:null,duration_months:null});
-const SUBSCRIPTION_DURATIONS=[{months:1,label:'1 Month'},{months:6,label:'6 Months'},{months:12,label:'1 Year'},{months:24,label:'2 Years'},{months:36,label:'3 Years'},{months:48,label:'4 Years'},{months:60,label:'5 Years'},{months:0,label:'Lifetime'}];
+const SUBSCRIPTION_DURATIONS=[{months:1,label:'1 Month'},{months:2,label:'2 Months'},{months:6,label:'6 Months'},{months:12,label:'1 Year'},{months:24,label:'2 Years'},{months:36,label:'3 Years'},{months:48,label:'4 Years'},{months:60,label:'5 Years'},{months:0,label:'Lifetime'}];
 const durationLabel=n=>SUBSCRIPTION_DURATIONS.find(d=>d.months===Number(n))?.label||'';
 const isSubscription=s=>s?.category?.trim().toLowerCase()==='digital subscriptions';
 

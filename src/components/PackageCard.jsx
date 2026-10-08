@@ -1,6 +1,6 @@
 import {useState} from 'react';
 import {Link} from 'react-router-dom';
-import {ShoppingCart,Star,Sparkles} from 'lucide-react';
+import {ShoppingCart,Star} from 'lucide-react';
 import {taka} from '../lib/supabase';
 import {waLink} from '../lib/whatsapp';
 import {subscriptionDurationLabel} from '../lib/subscription';

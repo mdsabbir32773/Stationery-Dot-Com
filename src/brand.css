@@ -224,3 +224,21 @@ footer a:hover{color:#fff!important}
 .package-card-description{line-height:1.65}
 .package-actions{margin-top:auto}
 @media(max-width:600px){.hero-intents{overflow-x:auto;flex-wrap:nowrap;padding-bottom:3px}.hero-intents>span{flex:none}.hero-intents button{flex:none}.package-card .price{font-size:22px}}
+
+
+/* ===== TRUST / FOOTER / SKELETON FINAL POLISH ===== */
+.home-proof{position:relative;overflow:hidden}
+.home-proof:before{content:"";position:absolute;left:8%;right:8%;top:0;height:1px;background:#e4ebe4}
+.proof-inner span{font-weight:650}
+.home-cta{overflow:hidden}
+.home-cta:after{content:"";position:absolute;inset:auto -10% -70% auto;width:320px;height:220px;border-radius:50%;background:#ffffff08;pointer-events:none}
+footer .cols{padding-top:4px}
+footer .cols h4{font-size:13px;letter-spacing:.02em;margin-bottom:12px}
+footer .cols ul{display:grid;gap:7px}
+footer .cols li a{opacity:.9;transition:opacity .18s,transform .18s}
+footer .cols li a:hover{opacity:1;transform:translateX(2px)}
+.footer-social-link{border:1px solid #ffffff1c;background:#ffffff08;color:#dbe5dd;transition:transform .18s,background .18s,border-color .18s}
+.footer-social-link:hover{background:#ffffff14;border-color:#ffffff32;transform:translateY(-2px)}
+.sk{position:relative;overflow:hidden;background:linear-gradient(100deg,#eef2ee 25%,#f8faf8 37%,#eef2ee 63%);background-size:400% 100%;animation:sdc-skeleton 1.35s ease-in-out infinite;border:1px solid #e5ebe5;border-radius:14px}
+@keyframes sdc-skeleton{0%{background-position:100% 0}100%{background-position:0 0}}
+@media(prefers-reduced-motion:reduce){.sk{animation:none;background:#eef2ee}}

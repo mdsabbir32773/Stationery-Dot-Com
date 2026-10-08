@@ -1,112 +1,106 @@
-/* Keep the dedicated SMM catalogue aligned with Stationery Dot Com's blue identity. */
-.smm-hero{background:#f3f6fc!important;color:#1c2d4e!important}
-.smm-hero h1,.smm-section-head h2,.smm-admin-list-head h2{font-family:Inter,"Noto Sans Bengali","Segoe UI",Arial,sans-serif!important;color:#1c2d4e!important;letter-spacing:-.03em}
-.smm-hero h1 em,.smm-kicker,.smm-overline,.smm-trust svg,.smm-chart-caption span{color:#31569b!important}
-.smm-kicker{background:#fff!important;border-color:#dce5f2!important}
-.smm-hero-cta,.smm-order-btn{background:#31569b!important;color:#fff!important;box-shadow:0 8px 18px #31569b24!important}
-.smm-hero-cta:hover,.smm-order-btn:hover{background:#24447f!important}
-.smm-hero-bottom{background:#f4f7fd!important;border-color:#e2e8f2!important}
-.smm-highlights,.smm-trust{color:#526789!important}
-.smm-highlights>span,.smm-platform,.smm-card-foot>div>b,.smm-total>b,.smm-admin-total,.smm-admin-total b,.smm-adapter-note a{color:#31569b!important}
-.smm-highlights i{background:#b9c8df!important}
-.smm-orbit{border-color:#d8e2f2!important}
-.smm-social-card,.smm-phone{border-color:#e3eaf4!important}
-.smm-social-avatar,.smm-float>span,.smm-float.float-two>span,.smm-platform,.smm-empty>div{background:#edf3ff!important;color:#31569b!important}
-.smm-chart span,.smm-chart span:nth-child(2n){background:linear-gradient(180deg,#7895c5,#e4ebf6)!important}
-.smm-progress i{background:#31569b!important}
-.smm-filter-panel,.smm-card,.smm-modal{border-color:#e3eaf4!important;box-shadow:0 8px 24px #203b700b!important}
-.smm-card h3,.smm-modal h2{color:#1c2d4e!important}
-.smm-service-icon,.smm-total,.smm-card-foot{border-color:#e3eaf4!important}
-.smm-service-icon,.smm-rules svg,.smm-order-btn svg{color:#31569b!important}
-.smm-consent input{accent-color:#31569b!important}
-.smm-admin-callout{background:#f3f6fc!important;border-color:#dfe7f4!important;color:#526789!important}
-.smm-admin-callout b{color:#31569b!important}
-.smm-status.is-on{background:#edf3ff!important;color:#31569b!important}
-.smm-adapter-note>svg{color:#31569b!important}
+/* Stationery Dot Com — SMM Marketplace v2 */
+.smm-hero{
+  background:linear-gradient(135deg,#081a36 0%,#0d2b57 58%,#174a83 100%)!important;
+  color:#fff!important;border:0!important;position:relative;
+}
+.smm-hero:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 78% 35%,#4f9cff26 0,transparent 34%),linear-gradient(90deg,#081a3600,#081a361c);pointer-events:none}
+.smm-hero-grid{max-width:1280px!important;min-height:560px!important;padding:70px 20px 58px!important;position:relative;z-index:1}
+.smm-kicker{background:#ffffff12!important;border:1px solid #ffffff22!important;color:#a9ceff!important;box-shadow:none!important;padding:9px 13px!important;font-size:9px!important;letter-spacing:.18em!important}
+.smm-hero h1{font-family:Inter,"Segoe UI",Arial,sans-serif!important;color:#fff!important;font-size:clamp(48px,5.7vw,78px)!important;line-height:.98!important;font-weight:760!important;letter-spacing:-.065em!important;margin:24px 0 20px!important}
+.smm-hero h1 em{color:#7db9ff!important;font-weight:430!important}
+.smm-hero p{color:#b7c8df!important;max-width:570px!important;font-size:14px!important;line-height:1.8!important}
+.smm-hero-cta{background:#fff!important;color:#123b6f!important;border-radius:12px!important;padding:13px 18px!important;box-shadow:0 12px 30px #00000022!important}
+.smm-hero-cta:hover{background:#eaf3ff!important}
+.smm-trust{color:#a9bad0!important;gap:20px!important}
+.smm-trust svg{color:#70b2ff!important}
+.smm-art{height:410px!important}
+.smm-orbit{border-color:#ffffff17!important}
+.smm-phone{border:1px solid #ffffff18!important;background:#f8fbff!important;box-shadow:0 35px 90px #0000003d!important}
+.smm-social-card{background:#f1f6fd!important;border-color:#dce7f5!important}
+.smm-social-avatar{background:#dcecff!important;color:#1e5a9c!important}
+.smm-chart{border-color:#e1e9f4!important}
+.smm-chart span,.smm-chart span:nth-child(2n){background:linear-gradient(180deg,#4d8dd1,#dceafa)!important}
+.smm-progress{background:#e3ebf5!important}.smm-progress i{background:#2f6fae!important}
+.smm-float{border-color:#ffffff24!important;box-shadow:0 18px 45px #00000025!important;background:#ffffff!important}
+.smm-float>span,.smm-float.float-two>span{background:#eaf3ff!important;color:#2566a4!important}
+.smm-star{color:#70b2ff!important}
+.smm-hero-bottom{background:#fff!important;border-color:#e5eaf1!important}
+.smm-highlights{max-width:1280px!important;min-height:68px!important;justify-content:flex-start!important;color:#667993!important}
+.smm-highlights>span{color:#173b68!important}.smm-highlights i{background:#b8c8dc!important}
 
+.smm-main{max-width:1280px!important;padding-top:72px!important}
+.smm-section-head{margin-bottom:28px!important}
+.smm-overline{color:#2f6da8!important;letter-spacing:.16em!important;font-size:9px!important}
+.smm-section-head h2{font-family:Inter,"Segoe UI",Arial,sans-serif!important;color:#122b4c!important;font-size:36px!important;font-weight:760!important;letter-spacing:-.05em!important}
+.smm-section-head p{color:#71829a!important;font-size:12px!important}
+.smm-live-count{background:#f2f7fd!important;border:1px solid #dbe7f4!important;color:#2e659d!important;padding:9px 13px!important}
 
-/* ===== PREMIUM SMM MARKETPLACE REDESIGN ===== */
-.smm-hero{background:linear-gradient(135deg,#f7f9fd 0%,#eef3fb 52%,#f9fafc 100%)!important;border-bottom:1px solid #e2e8f2}
-.smm-hero-grid{max-width:1240px;min-height:500px;padding-top:56px;padding-bottom:48px}
-.smm-kicker{font-family:Inter,"Segoe UI",Arial,sans-serif;font-size:10px;letter-spacing:.16em!important;font-weight:800!important;color:#31569b!important;background:#fff!important;box-shadow:0 6px 18px #203b7009}
-.smm-hero h1{font-size:clamp(46px,5.2vw,72px)!important;line-height:1.02!important;font-weight:750!important;letter-spacing:-.055em!important;margin:22px 0 17px!important}
-.smm-hero h1 em{font-style:normal!important;font-weight:450!important;color:#31569b!important}
-.smm-hero p{max-width:560px!important;font-size:15px!important;line-height:1.75!important;color:#526789!important}
-.smm-hero-cta{min-height:45px;padding:0 18px!important;border-radius:11px!important;font-size:12px!important;box-shadow:0 12px 26px #31569b22!important}
-.smm-trust{gap:22px!important;margin-top:26px!important;font-size:10px!important;color:#60728d!important}
-.smm-art{height:390px}
-.smm-phone{width:238px!important;border-radius:28px!important;box-shadow:0 30px 75px #203b7020!important;transform:rotate(-4deg)!important}
-.smm-social-card{background:#f7f9fd!important;border-color:#e7edf6!important}
-.smm-social-avatar{background:#e8eef9!important;color:#31569b!important}
-.smm-float{border-color:#e3eaf4!important;box-shadow:0 16px 38px #203b7015!important;border-radius:14px!important}
-.smm-float>span{background:#edf3ff!important;color:#31569b!important}
-.smm-float.float-two>span{background:#f0f4fb!important;color:#31569b!important}
-.smm-star{color:#9bb0d2!important}
-.smm-hero-bottom{background:#fff!important;border-color:#e4eaf2!important}
-.smm-highlights{min-height:64px!important;justify-content:flex-start!important;gap:17px!important;color:#526789!important;font-size:10px!important}
-.smm-highlights>span{color:#1c2d4e!important}
-.smm-highlights i{background:#b8c6da!important}
+.smm-filter-panel{
+  grid-template-columns:minmax(300px,1.8fr) repeat(3,minmax(150px,.7fr))!important;
+  padding:12px!important;border:1px solid #dce6f1!important;border-radius:16px!important;
+  background:#f7faff!important;box-shadow:0 14px 40px #183c650c!important;margin-bottom:25px!important
+}
+.smm-filter-panel label{color:#647893!important}
+.smm-filter-panel input,.smm-filter-panel select{
+  min-height:45px!important;border:1px solid #dce5ef!important;background:#fff!important;border-radius:11px!important;color:#243c5d!important
+}
+.smm-filter-panel input:focus,.smm-filter-panel select:focus{border-color:#4c8ac7!important;box-shadow:0 0 0 3px #3e7fbd12!important}
 
-.smm-main{max-width:1240px!important;padding-top:68px!important}
-.smm-section-head{margin-bottom:25px!important}
-.smm-section-head h2{font-size:34px!important;font-weight:750!important;letter-spacing:-.04em!important}
-.smm-section-head p{font-size:13px!important;color:#667995!important}
-.smm-live-count{padding:9px 12px!important;background:#f7f9fd!important;border-color:#dfe6f0!important;color:#31569b!important}
+.smm-cards{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:20px!important}
+.smm-card{
+  padding:22px!important;border:1px solid #dfe7f0!important;border-radius:20px!important;
+  box-shadow:0 10px 35px #183c650b!important;background:#fff!important
+}
+.smm-card:hover{transform:translateY(-5px)!important;border-color:#b9cee5!important;box-shadow:0 22px 48px #183c6517!important}
+.smm-platform{background:#eaf3ff!important;color:#2565a0!important;padding:7px 11px!important;font-size:9px!important}
+.smm-country{color:#7789a0!important}
+.smm-card-title{margin:20px 0 10px!important}
+.smm-service-icon{width:46px!important;height:46px!important;border-radius:14px!important;background:#f3f7fb!important;border:1px solid #e0e8f1!important;color:#2869a5!important}
+.smm-card-title h3{font-size:15px!important;color:#152f50!important;font-weight:750!important}
+.smm-card-title span{color:#73859d!important}
+.smm-description{color:#697c95!important;min-height:45px!important;font-size:11px!important;line-height:1.7!important}
+.smm-id{display:none!important}
+.smm-specs{padding:17px 0!important;border-top:1px solid #edf1f6!important;grid-template-columns:repeat(4,1fr)!important;gap:8px!important}
+.smm-specs small{color:#8b9aaf!important;font-size:7px!important}.smm-specs b{color:#304966!important;font-size:9px!important}
+.smm-card-foot{padding-top:17px!important;border-color:#e8eef5!important}
+.smm-card-foot>div>b{font-family:Inter,"Segoe UI",Arial,sans-serif!important;font-size:22px!important;color:#163e70!important}
+.smm-card-foot>div>small{color:#8292a7!important}
+.smm-order-btn{min-height:42px!important;padding:0 16px!important;border-radius:11px!important;background:#1f5f9e!important;font-size:10px!important;box-shadow:0 8px 20px #1f5f9e22!important}
+.smm-order-btn:hover{background:#174b7e!important}
 
-.smm-filter-panel{grid-template-columns:minmax(280px,1.7fr) repeat(3,minmax(145px,.7fr))!important;padding:10px!important;border-radius:14px!important;background:#f9fbfd!important;border-color:#dfe6f0!important;box-shadow:0 10px 30px #203b7009!important}
-.smm-filter-panel label{font-size:9px!important;color:#60728d!important}
-.smm-filter-panel input,.smm-filter-panel select{min-height:43px!important;border:1px solid #dfe6f0!important;background:#fff!important;border-radius:10px!important;font-size:11px!important}
-.smm-filter-panel input:focus,.smm-filter-panel select:focus{border-color:#7894c3!important;box-shadow:0 0 0 3px #31569b12!important}
+.smm-rules{background:#f4f8fc!important;border-color:#dfe8f2!important;color:#71839a!important;padding:15px 17px!important}
+.smm-rules svg{color:#2d70aa!important}.smm-rules b{color:#365574!important}
 
-.smm-cards{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:18px!important}
-.smm-card{padding:20px!important;border-radius:18px!important;border-color:#e0e7f0!important;box-shadow:0 10px 30px #203b700b!important;min-height:100%}
-.smm-card:hover{transform:translateY(-4px)!important;border-color:#b9c9df!important;box-shadow:0 20px 42px #203b7015!important}
-.smm-platform{font-size:9px!important;padding:6px 10px!important;background:#edf3ff!important;color:#31569b!important}
-.smm-country{font-size:10px!important;color:#71829a!important}
-.smm-card-title{margin:18px 0 9px!important}
-.smm-service-icon{width:42px!important;height:42px!important;border-radius:12px!important;background:#f4f7fb!important;border-color:#e0e7f0!important;color:#31569b!important}
-.smm-card-title h3{font-size:14px!important;line-height:1.4!important}
-.smm-card-title span{font-size:10px!important;color:#72839b!important}
-.smm-description{min-height:48px!important;font-size:11px!important;line-height:1.65!important;color:#60728d!important}
-.smm-id{padding:9px 0!important;border-color:#edf1f6!important;font-size:8px!important;color:#8898ad!important}
-.smm-id b{color:#50627c!important}
-.smm-specs{gap:12px 10px!important;padding:15px 0!important}
-.smm-specs small{font-size:8px!important;color:#8998ac!important}
-.smm-specs b{font-size:10px!important;color:#344a69!important}
-.smm-card-foot{padding-top:15px!important;border-color:#e9eef5!important}
-.smm-card-foot>div>b{font:750 20px Inter,"Segoe UI",Arial,sans-serif!important;color:#1c3f77!important}
-.smm-card-foot>div>small{font-size:9px!important;color:#7c8da4!important}
-.smm-order-btn{min-height:39px!important;padding:0 13px!important;border-radius:10px!important;font-size:10px!important}
-
-.smm-rules{margin-top:22px!important;padding:15px 16px!important;border-radius:13px!important;background:#f7f9fd!important;border-color:#e0e7f0!important;color:#687a92!important}
-.smm-rules p{font-size:10px!important}
-
-.smm-modal-back{background:#14233d80!important;backdrop-filter:blur(8px)!important}
-.smm-modal{width:min(640px,100%)!important;padding:28px!important;border-radius:22px!important;border-color:#dfe6f0!important;box-shadow:0 30px 100px #101e3540!important}
-.smm-modal h2{font-family:Inter,"Segoe UI",Arial,sans-serif!important;font-weight:750!important;font-size:27px!important}
-.smm-modal-info{background:#f5f8fc!important;border-color:#e2e8f0!important;color:#61738c!important}
-.smm-wallet-strip{background:#f5f8fc!important;border-color:#dfe6f0!important}
-.smm-wallet-strip b{font-family:Inter,"Segoe UI",Arial,sans-serif!important;color:#31569b!important}
-.smm-total{background:#f7f9fd!important;border-color:#dfe6f0!important}
-.smm-total>b{font-family:Inter,"Segoe UI",Arial,sans-serif!important;color:#1c3f77!important}
-.smm-modal form>label{color:#405574!important}
-.smm-modal input:not([type=checkbox]),.smm-modal textarea{min-height:43px!important;border-color:#dfe6f0!important}
-.smm-modal form>.btn{min-height:45px!important}
+.smm-modal-back{background:#07172bc7!important;backdrop-filter:blur(10px)!important}
+.smm-modal{
+  width:min(680px,100%)!important;padding:30px!important;border-radius:24px!important;
+  border:1px solid #dce6f0!important;box-shadow:0 35px 110px #00000045!important
+}
+.smm-modal h2{font-family:Inter,"Segoe UI",Arial,sans-serif!important;color:#102b4c!important;font-size:27px!important;font-weight:760!important}
+.smm-modal-info,.smm-wallet-strip,.smm-total{background:#f4f8fc!important;border-color:#dce6f0!important}
+.smm-wallet-strip b,.smm-total>b{font-family:Inter,"Segoe UI",Arial,sans-serif!important;color:#1f5f9e!important}
+.smm-modal form>label{color:#405976!important}
+.smm-modal input:not([type=checkbox]),.smm-modal select,.smm-modal textarea{border-color:#d9e4ef!important;border-radius:11px!important;min-height:44px!important}
+.smm-modal form>.btn{min-height:46px!important;background:#1f5f9e!important;border-radius:11px!important}
+.smm-consent input{accent-color:#1f5f9e!important}
 
 @media(max-width:1000px){
- .smm-cards{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .smm-cards{grid-template-columns:1fr 1fr!important}
  .smm-filter-panel{grid-template-columns:1fr 1fr!important}
  .smm-filter-panel .smm-search{grid-column:1/-1}
 }
 @media(max-width:650px){
- .smm-hero-grid{min-height:auto!important;padding-top:38px!important}
+ .smm-hero-grid{min-height:auto!important;padding:42px 18px 25px!important}
  .smm-hero h1{font-size:44px!important}
  .smm-hero p{font-size:12px!important}
- .smm-art{height:300px!important}
- .smm-main{padding-top:42px!important}
- .smm-section-head h2{font-size:28px!important}
+ .smm-art{height:290px!important}
+ .smm-main{padding-top:44px!important}
+ .smm-section-head h2{font-size:29px!important}
  .smm-cards{grid-template-columns:1fr!important;gap:13px!important}
  .smm-card{padding:18px!important}
- .smm-highlights{padding-block:13px!important}
- .smm-modal{padding:22px 17px!important}
+ .smm-specs{grid-template-columns:1fr 1fr!important}
+ .smm-filter-panel{grid-template-columns:1fr!important}
+ .smm-filter-panel .smm-search{grid-column:auto}
+ .smm-highlights{padding:14px 18px!important}
+ .smm-modal{padding:23px 17px!important}
 }

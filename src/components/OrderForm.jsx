@@ -1,62 +1,237 @@
-import {useEffect,useState} from 'react';import {Link,useNavigate} from 'react-router-dom';import {Lock,Minus,Plus,Loader2,AlertCircle,UserRound} from 'lucide-react';import {supabase,taka} from '../lib/supabase';import PaymentQR from './PaymentQR';import {subscriptionDurationLabel} from '../lib/subscription';import CouponBox from './CouponBox';import {trackInitiateCheckout} from '../lib/metaPixel';
+import {useEffect,useState} from 'react';
+import {Link,useNavigate} from 'react-router-dom';
+import {Lock,Minus,Plus,Loader2,AlertCircle,UserRound} from 'lucide-react';
+import {supabase,taka} from '../lib/supabase';
+import PaymentQR from './PaymentQR';
+import {subscriptionDurationLabel} from '../lib/subscription';
+import CouponBox from './CouponBox';
+import {trackInitiateCheckout} from '../lib/metaPixel';
+
 const OK=['image/jpeg','image/png','image/webp','application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
 const MIME={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',pdf:'application/pdf',doc:'application/msword',docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'};
 const ct=x=>OK.includes(x.type)?x.type:MIME[x.name.split('.').pop().toLowerCase()];
 const Fld=({l,children})=><label className="fld"><span>{l}</span>{children}</label>;
-export default function OrderForm({service,pkg,settings}){const nav=useNavigate();const methods=[settings.payment_qr_url?{name:'Bangla QR',number:'Scan the QR to pay',qr:settings.payment_qr_url}:null].filter(Boolean);if(!methods.length&&(settings.payment_number||settings.payment_method_name))methods.push({name:settings.payment_method_name||'Mobile banking',number:settings.payment_number,qr:settings.payment_qr_url});const[f,setF]=useState({customer_name:'',phone:'',whatsapp:'',email:'',quantity:1,notes:'',method:'',transaction_id:''});
-const[files,setFiles]=useState([]);const[proof,setProof]=useState(null);const[err,setErr]=useState('');const[coupon,setCoupon]=useState(null);const[busy,setBusy]=useState(false);const[step,setStep]=useState(1);const[paid,setPaid]=useState(false);const[customer,setCustomer]=useState(null);const set=k=>e=>setF({...f,[k]:e.target.value});const selectedMethod=methods.find(x=>x.name===f.method)||methods[0]||{name:'Contact us for payment details',number:''};
-useEffect(()=>{supabase.auth.getSession().then(({data})=>{const u=data.session?.user;if(!u)return;setCustomer(u);setF(v=>({...v,customer_name:v.customer_name||u.user_metadata?.full_name||u.user_metadata?.name||'',email:v.email||u.email||''}));});},[]);
-const q=Number(f.quantity)||1;const subtotal=pkg.price*q;const discount=Number(coupon?.discount||0);const total=Math.max(0,subtotal-discount);const setQ=n=>{setCoupon(null);setF({...f,quantity:Math.min(100000,Math.max(1,n||1))})};
-function pick(e){const l=[...e.target.files];if(l.length>5){setFiles([]);return setErr('Max 5 files');}for(const x of l){if(!ct(x)){setFiles([]);return setErr('Allowed: jpg, png, webp, pdf, doc, docx');}if(x.size>10*1024*1024){setFiles([]);return setErr('Each file must be under 10MB');}}setErr('');setFiles(l);}
-async function submit(e){e.preventDefault();setErr('');const ph=f.phone.replace(/\D/g,'');
-if(f.customer_name.trim().length<2)return setErr('Enter your name');if(!/^(880|0)?1\d{9}$/.test(ph))return setErr('Enter a valid Bangladeshi mobile number (e.g. 01XXXXXXXXX)');
-if(f.email&&!/^\S+@\S+\.\S+$/.test(f.email))return setErr('Email is not valid');if(!Number.isInteger(q)||q<1||q>100000)return setErr('Quantity must be a whole number, 1 or more');
-if(service.requires_file&&files.length===0)return setErr('Please upload the required documents');if(!methods.length)return setErr('The store has not configured the Bangla QR payment yet. Please contact support.');if(!proof)return setErr('Upload a screenshot of your successful payment');if(!paid)return setErr('Please confirm that you have completed the payment');
-setBusy(true);trackInitiateCheckout({contentIds:[pkg.id],value:total,numItems:q});let proofPath='';try{const up=[];for(const x of files){const path=`uploads/${crypto.randomUUID()}-${x.name.replace(/[^\w.\-]/g,'_')}`;const{error}=await supabase.storage.from('order-files').upload(path,x,{contentType:ct(x)});if(error)throw error;up.push({path,name:x.name});}
-const ext=proof.name.split('.').pop().toLowerCase();proofPath=`uploads/payproof-${crypto.randomUUID()}.${ext}`;const{error:proofError}=await supabase.storage.from('order-files').upload(proofPath,proof,{contentType:proof.type});if(proofError)throw proofError;
-const{data,error}=await supabase.rpc('create_order',{p:{...f,transaction_id:`PROOF:${proofPath}`,payment_proof_path:proofPath,method:selectedMethod.name,quantity:q,package_id:pkg.id,files:up,coupon_code:coupon?.code||''}});if(error)throw error;nav(`/order-success/${data}?value=${encodeURIComponent(total)}&items=${encodeURIComponent(pkg.id)}`);}catch(x){if(proofPath)await supabase.storage.from('order-files').remove([proofPath]);setErr(x.message||'Something went wrong. Please try again.');}setBusy(false);}
-function pickProof(e){const x=e.target.files?.[0];if(!x){setProof(null);return;}if(!['image/jpeg','image/png','image/webp'].includes(x.type))return setErr('Payment screenshot must be JPG, PNG or WEBP');if(x.size>5*1024*1024)return setErr('Payment screenshot must be 5MB or smaller');setErr('');setProof(x);}
-const D=[['Details',f.customer_name.trim().length>1&&/^(880|0)?1\d{9}$/.test(f.phone.replace(/\D/g,''))],['Requirements',!service.requires_file||files.length>0],['Payment',Boolean(proof)&&paid]];
-const validateStep=(step)=>{
- if(step===1){
-  if(f.customer_name.trim().length<2)return 'Enter your name';
-  if(!/^(880|0)?1\d{9}$/.test(f.phone.replace(/\D/g,'')))return 'Enter a valid Bangladeshi mobile number (e.g. 01XXXXXXXXX)';
-  if(f.email&&!/^\S+@\S+\.\S+$/.test(f.email))return 'Email is not valid';
- }
- if(step===2){
-  if(service.requires_file&&files.length===0)return 'Please upload the required documents';
- }
- if(step===3){
-  if(!methods.length)return 'The store has not configured the Bangla QR payment yet. Please contact support.';
-  if(!proof)return 'Upload a screenshot of your successful payment';
-  if(!paid)return 'Please confirm that you have completed the payment';
- }
- return '';
-};
-function next(){const e=validateStep(step);if(e)return setErr(e);setErr('');setStep(Math.min(3,step+1));window.scrollTo({top:0,behavior:'smooth'});}
-function back(){setErr('');setStep(Math.max(1,step-1));window.scrollTo({top:0,behavior:'smooth'});}
-async function submit(e){e.preventDefault();setErr('');for(const s of [1,2,3]){const problem=validateStep(s);if(problem){setStep(s);return setErr(problem);}}
-if(!Number.isInteger(q)||q<1||q>100000)return setErr('Quantity must be a whole number, 1 or more');
-setBusy(true);trackInitiateCheckout({contentIds:[pkg.id],value:total,numItems:q});let proofPath='';try{const up=[];for(const x of files){const path=`uploads/${crypto.randomUUID()}-${x.name.replace(/[^\w.\-]/g,'_')}`;const{error}=await supabase.storage.from('order-files').upload(path,x,{contentType:ct(x)});if(error)throw error;up.push({path,name:x.name});}
-const ext=proof.name.split('.').pop().toLowerCase();proofPath=`uploads/payproof-${crypto.randomUUID()}.${ext}`;const{error:proofError}=await supabase.storage.from('order-files').upload(proofPath,proof,{contentType:proof.type});if(proofError)throw proofError;
-const{data,error}=await supabase.rpc('create_order',{p:{...f,transaction_id:`PROOF:${proofPath}`,payment_proof_path:proofPath,method:selectedMethod.name,quantity:q,package_id:pkg.id,files:up,coupon_code:coupon?.code||''}});if(error)throw error;nav(`/order-success/${data}?value=${encodeURIComponent(total)}&items=${encodeURIComponent(pkg.id)}`);}catch(x){if(proofPath)await supabase.storage.from('order-files').remove([proofPath]);setErr(x.message||'Something went wrong. Please try again.');}setBusy(false);}
-function pickProof(e){const x=e.target.files?.[0];if(!x){setProof(null);return;}if(!['image/jpeg','image/png','image/webp'].includes(x.type))return setErr('Payment screenshot must be JPG, PNG or WEBP');if(x.size>5*1024*1024)return setErr('Payment screenshot must be 5MB or smaller');setErr('');setProof(x);}
-const summary=<aside className="card summary checkout-summary"><div className="summary-top"><div><span className="summary-kicker">YOUR ORDER</span><h3>Order summary</h3></div><span className="summary-secure"><Lock size={13}/> Secure</span></div>
-<div className="summary-product"><div className="summary-product-icon">{service.name?.slice(0,1)}</div><div><b>{service.name}</b><span>{pkg.name}</span>{pkg.access_type&&<small>{pkg.access_type==='shared'?'Shared':'Personal'} · {subscriptionDurationLabel(pkg.duration_months)}</small>}</div></div>
-<dl><div className="ln"><dt>Price</dt><dd style={{margin:0}}>{taka(pkg.price)} <span className="muted">{pkg.unit}</span></dd></div>
-<div className="ln"><dt>Quantity</dt><dd style={{margin:0}}><div className="qty"><button type="button" aria-label="Decrease" onClick={()=>setQ(q-1)}><Minus size={16}/></button><input aria-label="Quantity" inputMode="numeric" value={f.quantity} onChange={e=>setF({...f,quantity:e.target.value.replace(/\D/g,'')})} onBlur={()=>setQ(q)}/><button type="button" aria-label="Increase" onClick={()=>setQ(q+1)}><Plus size={16}/></button></div></dd></div>
-<div className="ln"><dt>Subtotal</dt><dd style={{margin:0}}>{taka(subtotal)}</dd></div>{discount>0&&<div className="ln coupon-discount"><dt>Discount</dt><dd style={{margin:0}}>−{taka(discount)}</dd></div>}<div className="ln tot"><dt>Total</dt><dd style={{margin:0}}>{taka(total)}</dd></div></dl>
-<CouponBox subtotal={subtotal} serviceId={service.id} packageId={pkg.id} onApplied={setCoupon}/>
-<div className="summary-trust"><span>✓ Secure payment review</span><span>✓ Private file handling</span></div></aside>;
-return <form className="checkout premium-checkout" onSubmit={submit} noValidate>
-<header className="checkout-head"><div><span className="summary-kicker">CHECKOUT</span><h1>Complete your order</h1><p>Simple, secure and transparent. It only takes a few steps.</p></div><Link to="/cart" className="checkout-back">← Back to cart</Link></header>
-<nav className="checkout-stepper" aria-label="Checkout progress">{D.map(([t,d],i)=>{const n=i+1;return <button key={t} type="button" className={'checkout-step '+(step===n?'active ':'')+(d?'done':'')} onClick={()=>{if(n<step){setErr('');setStep(n)}}} disabled={n>step}><span>{d?'✓':n}</span><strong>{t}</strong><small>{n===1?'Contact details':n===2?'Files & notes':'Payment'}</small></button>})}</nav>
-<div className="checkout-grid"><main className="checkout-main">
-<section className={'card sec checkout-panel '+(step===1?'is-active':'')}><div className="panel-head"><span className="num">1</span><div><h2>Your details</h2><p>Tell us how we can contact you.</p></div></div>{customer?<p className="account-checkout-note"><UserRound size={16}/> This order will be saved to your account ({customer.email}).</p>:<p className="account-checkout-note"><UserRound size={16}/>Have an account? <Link to={`/account?next=${encodeURIComponent(window.location.pathname+window.location.search)}`}>Sign in</Link> to save this order to your history.</p>}<div className="two"><Fld l="Full name *"><input autoComplete="name" value={f.customer_name} onChange={set('customer_name')}/></Fld><Fld l="Mobile number *"><input autoComplete="tel" inputMode="tel" placeholder="01XXXXXXXXX" value={f.phone} onChange={set('phone')}/></Fld><Fld l="WhatsApp number"><input inputMode="tel" value={f.whatsapp} onChange={set('whatsapp')}/></Fld><Fld l="Email (optional)"><input type="email" autoComplete="email" value={f.email} onChange={set('email')}/></Fld></div></section>
-<section className={'card sec checkout-panel '+(step===2?'is-active':'')}><div className="panel-head"><span className="num">2</span><div><h2>Requirements &amp; documents</h2><p>Upload anything we need to process your request.</p></div></div><Fld l="Notes / requirements"><textarea rows="5" value={f.notes} onChange={set('notes')} placeholder="Tell us what you need"/></Fld><div className="drop"><b>{service.requires_file?'Upload documents *':'Attach files (optional)'}</b><p className="muted">JPG, PNG, WEBP, PDF, DOC, DOCX · up to 5 files · 10MB each · stored privately</p><input type="file" multiple accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx" onChange={pick}/>{files.length>0&&<ul className="files">{files.map((x,i)=><li key={i}>{x.name} ({Math.ceil(x.size/1024)} KB)</li>)}</ul>}</div></section>
-<section className={'card sec checkout-panel '+(step===3?'is-active':'')}><div className="panel-head"><span className="num">3</span><div><h2>Payment</h2><p>Pay the total shown in the order summary, then upload proof.</p></div></div>{methods.length>1&&<Fld l="Choose payment method *"><select value={selectedMethod.name} onChange={e=>setF({...f,method:e.target.value})}>{methods.map(x=><option key={x.name}>{x.name}</option>)}</select></Fld>}<PaymentQR settings={settings} total={total} method={selectedMethod}/><div className="two" style={{marginTop:16}}><Fld l="Payment method"><input value={selectedMethod.name} readOnly/></Fld><Fld l="Payment screenshot *"><input type="file" accept="image/jpeg,image/png,image/webp" onChange={pickProof} required/><small className="muted">JPG, PNG or WEBP · max 5MB{proof?` · Selected: ${proof.name}`:''}</small></Fld></div><label className="payment-confirm"><input type="checkbox" checked={paid} onChange={e=>setPaid(e.target.checked)}/><span>I have completed the payment shown above</span></label></section>
-{err&&<p className="err checkout-error" role="alert"><AlertCircle size={16} style={{flex:'none'}}/>{err}</p>}
-<div className="checkout-actions">{step>1&&<button type="button" className="btn secondary" onClick={back}>Back</button>}{step<3?<button type="button" className="btn lg" onClick={next}>Continue <span>→</span></button>:<button className="btn lg" disabled={busy}>{busy?<><Loader2 size={18} className="spin"/>Placing order…</>:<><Lock size={16}/>Place order</>}</button>}</div>
-</main>{summary}</div>
-<div className="checkout-mobile-bar"><div><span>Total</span><strong>{taka(total)}</strong></div>{step<3?<button type="button" className="btn" onClick={next}>Continue →</button>:<button className="btn" disabled={busy}>{busy?'Placing…':'Place order'}</button>}</div>
-</form>;
+
+export default function OrderForm({service,pkg,settings}){
+  const nav=useNavigate();
+  const methods=[settings.payment_qr_url?{name:'Bangla QR',number:'Scan the QR to pay',qr:settings.payment_qr_url}:null].filter(Boolean);
+  if(!methods.length&&(settings.payment_number||settings.payment_method_name))methods.push({name:settings.payment_method_name||'Mobile banking',number:settings.payment_number,qr:settings.payment_qr_url});
+  const[f,setF]=useState({customer_name:'',phone:'',whatsapp:'',email:'',quantity:1,notes:'',method:'',transaction_id:''});
+  const[files,setFiles]=useState([]);
+  const[proof,setProof]=useState(null);
+  const[err,setErr]=useState('');
+  const[coupon,setCoupon]=useState(null);
+  const[busy,setBusy]=useState(false);
+  const[step,setStep]=useState(1);
+  const[paid,setPaid]=useState(false);
+  const[customer,setCustomer]=useState(null);
+  const set=k=>e=>setF(v=>({...v,[k]:e.target.value}));
+  const selectedMethod=methods.find(x=>x.name===f.method)||methods[0]||{name:'Contact us for payment details',number:''};
+  const q=Math.max(1,Math.min(100000,Number(f.quantity)||1));
+  const subtotal=Number(pkg.price||0)*q;
+  const discount=Math.min(subtotal,Number(coupon?.discount||0));
+  const total=Math.max(0,subtotal-discount);
+
+  useEffect(()=>{
+    supabase.auth.getSession().then(({data})=>{
+      const u=data.session?.user;
+      if(!u)return;
+      setCustomer(u);
+      setF(v=>({...v,customer_name:v.customer_name||u.user_metadata?.full_name||u.user_metadata?.name||'',email:v.email||u.email||''}));
+    }).catch(()=>{});
+  },[]);
+
+  function setQ(n){
+    setCoupon(null);
+    setF(v=>({...v,quantity:Math.min(100000,Math.max(1,Number(n)||1))}));
+  }
+
+  function pick(e){
+    const list=[...e.target.files];
+    if(list.length>5){setFiles([]);return setErr('Max 5 files');}
+    for(const x of list){
+      if(!ct(x)){setFiles([]);return setErr('Allowed: jpg, png, webp, pdf, doc, docx');}
+      if(x.size>10*1024*1024){setFiles([]);return setErr('Each file must be under 10MB');}
+    }
+    setErr('');
+    setFiles(list);
+  }
+
+  function pickProof(e){
+    const x=e.target.files?.[0];
+    if(!x){setProof(null);return;}
+    if(!['image/jpeg','image/png','image/webp'].includes(x.type))return setErr('Payment screenshot must be JPG, PNG or WEBP');
+    if(x.size>5*1024*1024)return setErr('Payment screenshot must be 5MB or smaller');
+    setErr('');
+    setProof(x);
+  }
+
+  function validateStep(n){
+    const ph=f.phone.replace(/\D/g,'');
+    if(n===1){
+      if(f.customer_name.trim().length<2)return 'Enter your name';
+      if(!/^(880|0)?1\d{9}$/.test(ph))return 'Enter a valid Bangladeshi mobile number (e.g. 01XXXXXXXXX)';
+      if(f.email&&!/^\S+@\S+\.\S+$/.test(f.email))return 'Email is not valid';
+    }
+    if(n===2&&service.requires_file&&files.length===0)return 'Please upload the required documents';
+    if(n===3){
+      if(!methods.length)return 'The store has not configured the Bangla QR payment yet. Please contact support.';
+      if(!proof)return 'Upload a screenshot of your successful payment';
+      if(!paid)return 'Please confirm that you have completed the payment';
+    }
+    return '';
+  }
+
+  function next(){
+    const problem=validateStep(step);
+    if(problem)return setErr(problem);
+    setErr('');
+    setStep(Math.min(3,step+1));
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  function back(){
+    setErr('');
+    setStep(Math.max(1,step-1));
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  async function submit(e){
+    e.preventDefault();
+    setErr('');
+    for(const n of [1,2,3]){
+      const problem=validateStep(n);
+      if(problem){setStep(n);return setErr(problem);}
+    }
+    if(!Number.isInteger(q)||q<1||q>100000)return setErr('Quantity must be a whole number, 1 or more');
+    setBusy(true);
+    trackInitiateCheckout({contentIds:[pkg.id],value:total,numItems:q});
+    let proofPath='';
+    try{
+      const uploaded=[];
+      for(const x of files){
+        const path='uploads/'+Date.now()+'-'+Math.random().toString(36).slice(2)+'-'+x.name.replace(/[^\w.\-]/g,'_');
+        const{error}=await supabase.storage.from('order-files').upload(path,x,{contentType:ct(x)});
+        if(error)throw error;
+        uploaded.push({path,name:x.name});
+      }
+      const ext=proof.name.split('.').pop().toLowerCase();
+      proofPath='uploads/payproof-'+Date.now()+'-'+Math.random().toString(36).slice(2)+'.'+ext;
+      const{error:proofError}=await supabase.storage.from('order-files').upload(proofPath,proof,{contentType:proof.type});
+      if(proofError)throw proofError;
+      const{data,error}=await supabase.rpc('create_order',{p:{...f,transaction_id:'PROOF:'+proofPath,payment_proof_path:proofPath,method:selectedMethod.name,quantity:q,package_id:pkg.id,files:uploaded,coupon_code:coupon?.code||''}});
+      if(error)throw error;
+      nav('/order-success/'+data+'?value='+encodeURIComponent(total)+'&items='+encodeURIComponent(pkg.id));
+    }catch(x){
+      if(proofPath)await supabase.storage.from('order-files').remove([proofPath]);
+      setErr(x.message||'Something went wrong. Please try again.');
+    }
+    setBusy(false);
+  }
+
+  const steps=[
+    ['Details',f.customer_name.trim().length>1&&/^(880|0)?1\d{9}$/.test(f.phone.replace(/\D/g,'')),'Contact details'],
+    ['Requirements',!service.requires_file||files.length>0,'Files & notes'],
+    ['Payment',Boolean(proof)&&paid,'Payment']
+  ];
+
+  const summary=(
+    <aside className="card summary checkout-summary">
+      <div className="summary-top">
+        <div><span className="summary-kicker">YOUR ORDER</span><h3>Order summary</h3></div>
+        <span className="summary-secure"><Lock size={13}/> Secure</span>
+      </div>
+      <div className="summary-product">
+        <div className="summary-product-icon">{service.name?.slice(0,1)}</div>
+        <div>
+          <b>{service.name}</b><span>{pkg.name}</span>
+          {pkg.access_type&&<small>{pkg.access_type==='shared'?'Shared':'Personal'} · {subscriptionDurationLabel(pkg.duration_months)}</small>}
+        </div>
+      </div>
+      <dl>
+        <div className="ln"><dt>Price</dt><dd style={{margin:0}}>{taka(pkg.price)} <span className="muted">{pkg.unit}</span></dd></div>
+        <div className="ln">
+          <dt>Quantity</dt>
+          <dd style={{margin:0}}>
+            <div className="qty">
+              <button type="button" aria-label="Decrease" onClick={()=>setQ(q-1)}><Minus size={16}/></button>
+              <input aria-label="Quantity" inputMode="numeric" value={f.quantity} onChange={e=>setF(v=>({...v,quantity:e.target.value.replace(/\D/g,'')}))} onBlur={()=>setQ(q)}/>
+              <button type="button" aria-label="Increase" onClick={()=>setQ(q+1)}><Plus size={16}/></button>
+            </div>
+          </dd>
+        </div>
+        <div className="ln"><dt>Subtotal</dt><dd style={{margin:0}}>{taka(subtotal)}</dd></div>
+        {discount>0&&<div className="ln coupon-discount"><dt>Discount</dt><dd style={{margin:0}}>−{taka(discount)}</dd></div>}
+        <div className="ln tot"><dt>Total</dt><dd style={{margin:0}}>{taka(total)}</dd></div>
+      </dl>
+      <CouponBox subtotal={subtotal} serviceId={service.id} packageId={pkg.id} onApplied={setCoupon}/>
+      <div className="summary-trust"><span>✓ Secure payment review</span><span>✓ Private file handling</span></div>
+    </aside>
+  );
+
+  return (
+    <form className="checkout premium-checkout" onSubmit={submit} noValidate>
+      <header className="checkout-head">
+        <div><span className="summary-kicker">CHECKOUT</span><h1>Complete your order</h1><p>Simple, secure and transparent. It only takes a few steps.</p></div>
+        <Link to="/cart" className="checkout-back">← Back to cart</Link>
+      </header>
+
+      <nav className="checkout-stepper" aria-label="Checkout progress">
+        {steps.map(([label,done,sub],i)=>{
+          const n=i+1;
+          return <button key={label} type="button" className={'checkout-step '+(step===n?'active ':'')+(done?'done':'')} onClick={()=>{if(n<step){setErr('');setStep(n);}}} disabled={n>step}><span>{done?'✓':n}</span><strong>{label}</strong><small>{sub}</small></button>;
+        })}
+      </nav>
+
+      <div className="checkout-grid">
+        <main className="checkout-main">
+          <section className={'card sec checkout-panel '+(step===1?'is-active':'')}>
+            <div className="panel-head"><span className="num">1</span><div><h2>Your details</h2><p>Tell us how we can contact you.</p></div></div>
+            {customer?<p className="account-checkout-note"><UserRound size={16}/> This order will be saved to your account ({customer.email}).</p>:<p className="account-checkout-note"><UserRound size={16}/> Have an account? <Link to={'/account?next='+encodeURIComponent(window.location.pathname+window.location.search)}>Sign in</Link> to save this order to your history.</p>}
+            <div className="two">
+              <Fld l="Full name *"><input autoComplete="name" value={f.customer_name} onChange={set('customer_name')}/></Fld>
+              <Fld l="Mobile number *"><input autoComplete="tel" inputMode="tel" placeholder="01XXXXXXXXX" value={f.phone} onChange={set('phone')}/></Fld>
+              <Fld l="WhatsApp number"><input inputMode="tel" value={f.whatsapp} onChange={set('whatsapp')}/></Fld>
+              <Fld l="Email (optional)"><input type="email" autoComplete="email" value={f.email} onChange={set('email')}/></Fld>
+            </div>
+          </section>
+
+          <section className={'card sec checkout-panel '+(step===2?'is-active':'')}>
+            <div className="panel-head"><span className="num">2</span><div><h2>Requirements &amp; documents</h2><p>Upload anything we need to process your request.</p></div></div>
+            <Fld l="Notes / requirements"><textarea rows="5" value={f.notes} onChange={set('notes')} placeholder="Tell us what you need"/></Fld>
+            <div className="drop">
+              <b>{service.requires_file?'Upload documents *':'Attach files (optional)'}</b>
+              <p className="muted">JPG, PNG, WEBP, PDF, DOC, DOCX · up to 5 files · 10MB each · stored privately</p>
+              <input type="file" multiple accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx" onChange={pick}/>
+              {files.length>0&&<ul className="files">{files.map((x,i)=><li key={i}>{x.name} ({Math.ceil(x.size/1024)} KB)</li>)}</ul>}
+            </div>
+          </section>
+
+          <section className={'card sec checkout-panel '+(step===3?'is-active':'')}>
+            <div className="panel-head"><span className="num">3</span><div><h2>Payment</h2><p>Pay the total shown in the order summary, then upload proof.</p></div></div>
+            {methods.length>1&&<Fld l="Choose payment method *"><select value={selectedMethod.name} onChange={e=>setF(v=>({...v,method:e.target.value}))}>{methods.map(x=><option key={x.name}>{x.name}</option>)}</select></Fld>}
+            <PaymentQR settings={settings} total={total} method={selectedMethod}/>
+            <div className="two" style={{marginTop:16}}>
+              <Fld l="Payment method"><input value={selectedMethod.name} readOnly/></Fld>
+              <Fld l="Payment screenshot *"><input type="file" accept="image/jpeg,image/png,image/webp" onChange={pickProof}/><small className="muted">JPG, PNG or WEBP · max 5MB{proof?' · Selected: '+proof.name:''}</small></Fld>
+            </div>
+            <label className="payment-confirm"><input type="checkbox" checked={paid} onChange={e=>setPaid(e.target.checked)}/><span>I have completed the payment shown above</span></label>
+          </section>
+
+          {err&&<p className="err checkout-error" role="alert"><AlertCircle size={16} style={{flex:'none'}}/>{err}</p>}
+
+          <div className="checkout-actions">
+            {step>1&&<button type="button" className="btn secondary" onClick={back}>Back</button>}
+            {step<3?<button type="button" className="btn lg" onClick={next}>Continue <span>→</span></button>:<button className="btn lg" disabled={busy}>{busy?<><Loader2 size={18} className="spin"/>Placing order…</>:<><Lock size={16}/>Place order</>}</button>}
+          </div>
+        </main>
+        {summary}
+      </div>
+
+      <div className="checkout-mobile-bar">
+        <div><span>Total</span><strong>{taka(total)}</strong></div>
+        {step<3?<button type="button" className="btn" onClick={next}>Continue →</button>:<button className="btn" disabled={busy}>{busy?'Placing…':'Place order'}</button>}
+      </div>
+    </form>
+  );
+}

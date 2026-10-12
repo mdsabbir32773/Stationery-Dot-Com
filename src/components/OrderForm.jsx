@@ -164,7 +164,7 @@ export default function OrderForm({service,pkg,settings}){
         {discount>0&&<div className="ln coupon-discount"><dt>Discount</dt><dd style={{margin:0}}>−{taka(discount)}</dd></div>}
         <div className="ln tot"><dt>Total</dt><dd style={{margin:0}}>{taka(total)}</dd></div>
       </dl>
-      <CouponBox subtotal={subtotal} serviceId={service.id} packageId={pkg.id} onApplied={setCoupon}/>
+      <CouponBox subtotal={subtotal} serviceId={service.id} packageId={pkg.id} phone={f.phone} onApplied={setCoupon}/>
       <div className="summary-trust"><span>✓ Secure payment review</span><span>✓ Private file handling</span></div>
     </aside>
   );

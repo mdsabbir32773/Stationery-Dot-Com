@@ -539,3 +539,116 @@ pre,code{max-width:100%;overflow:auto}
   .admin-main table{min-width:620px}
   .admin-main th,.admin-main td{padding:8px}
 }
+
+
+/* ===== Full admin responsive usability pass ===== */
+.admin-shell{grid-template-columns:244px minmax(0,1fr)}
+.admin-main{min-width:0;overflow-x:clip}
+.admin-main>*{min-width:0}
+.admin-mobile-nav{display:none}
+.admin-mobile-menu-toggle{display:none}
+.admin-main .content-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+.admin-main .content-fields>*{min-width:0}
+.admin-main .content-fields input,.admin-main .content-fields select,.admin-main .content-fields textarea{width:100%;min-width:0}
+.admin-main .content-section-title>*{min-width:0}
+.admin-main .content-section-title p{overflow-wrap:anywhere}
+.admin-main .content-save{position:sticky;bottom:max(10px,env(safe-area-inset-bottom));z-index:8;flex-wrap:wrap}
+.admin-main .admin-filter{width:100%;max-width:100%}
+.admin-main .admin-filter input{min-width:0}
+.admin-main .scroll{width:100%;max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+.admin-main .scroll table{width:max-content;min-width:100%;table-layout:auto}
+.admin-main .scroll th,.admin-main .scroll td{overflow-wrap:anywhere}
+.admin-main button,.admin-main .btn,.admin-mobile-nav a,.admin-mobile-nav button{touch-action:manipulation}
+.admin-main input,.admin-main select,.admin-main textarea{font-size:16px}
+.admin-main .row{align-items:center}
+.admin-main .row .btn{white-space:normal}
+.admin-main .admin-review-list{min-width:0}
+.admin-main .admin-review{overflow-wrap:anywhere}
+@media(max-width:1100px){
+  .admin-main{padding:28px clamp(16px,3vw,28px) 56px}
+  .admin-shell{grid-template-columns:220px minmax(0,1fr)}
+  .admin-sidebar{padding:18px 10px}
+  .admin-sidebar nav a{gap:9px;padding-inline:9px}
+}
+@media(max-width:900px){
+  .admin-shell{display:block;min-height:100dvh}
+  .admin-sidebar{display:none}
+  .admin-main{width:100%;max-width:none;margin:0;padding:18px 18px 48px;overflow-x:clip}
+  .admin-mobile-top{display:flex;position:sticky;top:0;margin:-18px -18px 22px;padding:10px 14px;min-height:60px;gap:10px;align-items:center;background:#ffffffed;border-bottom:1px solid var(--line);backdrop-filter:blur(12px);z-index:40}
+  .admin-mobile-menu-toggle{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:42px;flex:none;padding:0 9px;border:1px solid var(--line);border-radius:11px;background:#fff;color:var(--ink);font:600 12px inherit}
+  .admin-mobile-top>b{flex:1;min-width:0;font-size:12px;line-height:1.25;white-space:normal;overflow-wrap:anywhere}
+  .admin-mobile-top>a{font-size:12px;flex:none;white-space:nowrap}
+  .admin-mobile-top .admin-notifications{flex:none}
+  .admin-mobile-nav{display:none;position:sticky;top:60px;z-index:39;margin:-22px -18px 22px;padding:10px 12px 13px;background:#fff;border-bottom:1px solid var(--line);box-shadow:0 14px 24px #17203b12;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;max-height:calc(100dvh - 70px);overflow-y:auto;overscroll-behavior:contain}
+  .admin-mobile-nav.open{display:grid}
+  .admin-mobile-nav a,.admin-mobile-nav button{display:flex;align-items:center;gap:9px;min-height:46px;padding:10px 11px;border:1px solid var(--line);border-radius:11px;background:#fff;color:var(--ink2);font-size:13px;font-weight:650;text-align:left}
+  .admin-mobile-nav a.active{background:var(--gl);border-color:#d8d9ff;color:var(--gd)}
+  .admin-mobile-nav button{font-family:inherit;width:100%}
+  .admin-main .admin-heading{align-items:flex-start;gap:12px}
+  .admin-main .admin-heading>.btn{max-width:100%;white-space:normal}
+  .admin-main .stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .admin-main .admin-shortcuts .grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .admin-main .content-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .admin-main .content-section-title{align-items:flex-start;padding:15px}
+  .admin-main .content-fields{padding:15px;gap:13px}
+  .admin-main .smm-admin-list-head,.admin-main .package-list-heading,.admin-main .service-list-heading{gap:12px;flex-wrap:wrap}
+}
+@media(max-width:600px){
+  .admin-main{padding:14px 13px 36px}
+  .admin-mobile-top{margin:-14px -13px 18px;padding:9px 10px;gap:7px;min-height:56px}
+  .admin-mobile-menu-toggle{min-height:42px;padding:0 8px}
+  .admin-mobile-menu-toggle span{display:none}
+  .admin-mobile-top>b{font-size:11px}
+  .admin-mobile-top>a{font-size:11px}
+  .admin-mobile-nav{top:56px;margin:-18px -13px 18px;padding:9px;gap:6px}
+  .admin-mobile-nav a,.admin-mobile-nav button{font-size:12px;min-height:44px;padding:9px}
+  .admin-main .admin-heading{display:flex;flex-direction:column;align-items:stretch;margin-bottom:18px}
+  .admin-main .admin-heading h1,.admin-main .content-admin h1,.admin-main .settings-admin h1{font-size:clamp(27px,7vw,36px)}
+  .admin-main .admin-heading>.btn{width:100%;justify-content:center}
+  .admin-main .admin-total,.admin-main .smm-admin-total{align-self:flex-start}
+  .admin-main .stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .admin-main .stat-card{padding:12px}
+  .admin-main .stat-card b{font-size:19px;overflow-wrap:anywhere}
+  .admin-main .admin-shortcuts .grid{grid-template-columns:1fr!important}
+  .admin-main .content-fields{grid-template-columns:minmax(0,1fr)}
+  .admin-main .content-fields .form-wide{grid-column:auto}
+  .admin-main .content-section{border-radius:13px}
+  .admin-main .content-section-title{padding:13px;gap:8px}
+  .admin-main .content-section-title h2{font-size:19px}
+  .admin-main .content-fields{padding:13px;gap:10px}
+  .admin-main .content-save{width:100%;align-items:stretch;bottom:max(8px,env(safe-area-inset-bottom));padding:8px}
+  .admin-main .content-save .btn{width:100%}
+  .admin-main .content-save>span{width:100%;overflow-wrap:anywhere}
+  .admin-main .sect{margin-top:27px}
+  .admin-main .sect>.head{align-items:flex-start}
+  .admin-main .admin-shortcut{min-height:0;padding:16px}
+  .admin-main .admin-review-header{align-items:flex-start;gap:10px;flex-wrap:wrap}
+  .admin-main .admin-review-header>div{min-width:0;overflow-wrap:anywhere}
+  .admin-main .admin-review .btn{margin:4px 6px 0 0}
+  .admin-main .scroll{border-radius:12px}
+  .admin-main .scroll table{min-width:640px}
+  .admin-main .smm-admin-form,.admin-main .smm-admin-list{min-width:0}
+  .admin-main .smm-admin-heading{display:flex;flex-direction:column}
+  .admin-main .smm-admin-list-head{align-items:flex-start}
+  .admin-main .service-admin-row{grid-template-columns:minmax(0,1fr)}
+  .admin-main .service-row-actions{display:flex;flex-wrap:wrap}
+  .admin-main .package-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .admin-main .package-stats>div{min-width:0}
+  .admin-main .package-option-main{gap:8px}
+  .admin-main .package-price{white-space:normal}
+  .admin-main .package-option-actions{display:flex;flex-wrap:wrap}
+  .admin-main .package-option-actions .btn{flex:1 1 110px}
+  .admin-main .logo-upload-preview{align-items:flex-start}
+  .admin-main .logo-upload-preview .btn{max-width:100%}
+}
+@media(max-width:380px){
+  .admin-main{padding-inline:10px}
+  .admin-mobile-top{margin-inline:-10px;padding-inline:8px}
+  .admin-mobile-top>a{display:none}
+  .admin-mobile-nav{margin-inline:-10px;grid-template-columns:1fr}
+  .admin-main .stats{grid-template-columns:1fr 1fr}
+  .admin-main .package-stats{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){
+  .admin-mobile-nav{scroll-behavior:auto}
+}

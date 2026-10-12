@@ -7,7 +7,7 @@ export default function CouponBox({subtotal,serviceId,packageId,phone,onApplied}
   useEffect(()=>{setState(null);onApplied?.(null)},[phone,onApplied]);
   async function apply(){
     const value=code.trim().toUpperCase();if(!value)return setState({ok:false,message:'Enter a coupon code.'});
-    if(!/^(880|0)?1\\d{9}$/.test(phone.replace(/\\D/g,'')))return setState({ok:false,message:'Enter your valid mobile number before applying this coupon.'});
+    if(!/^(880|0)?1\d{9}$/.test(phone.replace(/\D/g,'')))return setState({ok:false,message:'Enter your valid mobile number before applying this coupon.'});
     setBusy(true);setState(null);
     const{data,error}=await supabase.rpc('validate_coupon',{p_code:value,p_subtotal:Number(subtotal)||0,p_service_id:serviceId,p_package_id:packageId,p_phone:phone});
     setBusy(false);

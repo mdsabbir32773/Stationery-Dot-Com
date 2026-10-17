@@ -1,4 +1,4 @@
-const PIXEL_ID=String(import.meta.env.VITE_META_PIXEL_ID||'').trim();
+const PIXEL_ID=String(import.meta.env.VITE_META_PIXEL_ID||'1095343416430829').trim();
 
 let initialized=false;
 let initPromise=null;
@@ -8,28 +8,55 @@ function enabled(){
 }
 
 export function initMetaPixel(){
-  if(!enabled()||initialized)return Promise.resolve(Boolean(PIXEL_ID));
+  if(!enabled())return Promise.resolve(false);
+  if(initialized)return Promise.resolve(true);
   if(initPromise)return initPromise;
+
   initPromise=new Promise(resolve=>{
-    window.fbq=window.fbq||function(){(window.fbq.q=window.fbq.q||[]).push(arguments)};
-    window._fbq=window._fbq||window.fbq;
+    // Use Meta's standard queue so events are retained while fbevents.js loads.
+    if(!window.fbq){
+      const fbq=function(){
+        if(fbq.callMethod){
+          fbq.callMethod.apply(fbq,arguments);
+        }else{
+          fbq.queue.push(arguments);
+        }
+      };
+      fbq.push=fbq;
+      fbq.loaded=true;
+      fbq.version='2.0';
+      fbq.queue=[];
+      window.fbq=fbq;
+      window._fbq=fbq;
+    }
+
     window.fbq('init',PIXEL_ID);
+
     const existing=document.querySelector('script[data-meta-pixel]');
-    if(existing){initialized=true;resolve(true);return;}
+    if(existing){
+      initialized=true;
+      resolve(true);
+      return;
+    }
+
     const script=document.createElement('script');
     script.async=true;
     script.src='https://connect.facebook.net/en_US/fbevents.js';
     script.dataset.metaPixel='true';
-    script.onload=()=>{initialized=true;resolve(true)};
+    script.onload=()=>{
+      initialized=true;
+      resolve(true);
+    };
     script.onerror=()=>resolve(false);
     document.head.appendChild(script);
   });
+
   return initPromise;
 }
 
 export function trackMetaEvent(eventName,params={}){
-  if(!enabled())return false;
-  window.fbq=window.fbq||function(){(window.fbq.q=window.fbq.q||[]).push(arguments)};
+  if(!enabled()||typeof window==='undefined')return false;
+  window.fbq=window.fbq||function(){(window.fbq.queue=window.fbq.queue||[]).push(arguments)};
   window.fbq('track',eventName,params);
   return true;
 }

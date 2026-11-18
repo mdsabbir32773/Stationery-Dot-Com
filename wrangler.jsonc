@@ -11,5 +11,10 @@
     "binding": "ASSETS",
     "not_found_handling": "single-page-application"
   },
-  "previews": {}
+  "previews": {},
+  "triggers": {
+    "crons": [
+      "* * * * *"
+    ]
+  }
 }

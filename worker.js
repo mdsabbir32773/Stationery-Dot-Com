@@ -146,34 +146,51 @@ async function processWebhook(env, payload) {
   }
 }
 
+
+async function setupMetaWebhooks(env) {
+  const appId = "3024451134569102";
+  const callback = "https://stationerydotcom.stdc.workers.dev/webhooks/meta";
+  const appToken = appId + "|" + env.META_APP_SECRET;
+  const appForm = new URLSearchParams({
+    object: "page",
+    callback_url: callback,
+    fields: "feed,messages",
+    verify_token: env.META_VERIFY_TOKEN,
+    access_token: appToken
+  });
+  const appResponse = await fetch("https://graph.facebook.com/" + GRAPH_VERSION + "/" + appId + "/subscriptions", {
+    method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: appForm
+  });
+  const appData = await appResponse.json();
+  if (!appResponse.ok || appData.error) return json({ step: "app_webhook_subscription", success: false, error: appData.error || appData }, 502);
+  const meResponse = await fetch("https://graph.facebook.com/" + GRAPH_VERSION + "/me?fields=id&access_token=" + encodeURIComponent(env.META_PAGE_ACCESS_TOKEN));
+  const meData = await meResponse.json();
+  if (!meResponse.ok || meData.error || !meData.id) return json({ step: "page_identity", success: false, error: meData.error || meData }, 502);
+  const pageUrl = "https://graph.facebook.com/" + GRAPH_VERSION + "/" + meData.id + "/subscribed_apps?subscribed_fields=feed,messages&access_token=" + encodeURIComponent(env.META_PAGE_ACCESS_TOKEN);
+  const pageResponse = await fetch(pageUrl, { method: "POST" });
+  const pageData = await pageResponse.json();
+  if (!pageResponse.ok || pageData.error) return json({ step: "page_install", success: false, page_id: meData.id, app_subscription: appData, error: pageData.error || pageData }, 502);
+  await db(env, "sdc_fb_automation_settings?id=eq.true", {
+    method: "PATCH", headers: { prefer: "return=minimal" },
+    body: JSON.stringify({ page_id: meData.id, updated_at: new Date().toISOString() })
+  });
+  return json({ success: true, app_subscription: appData, page_installation: pageData, page_id: meData.id, fields: ["feed", "messages"] });
+}
 export default {
+  async scheduled(controller, env) {
+    if (controller.cron !== "* * * * *") return;
+    const settings = await getSettings(env);
+    if (settings?.page_id) return;
+    const response = await setupMetaWebhooks(env);
+    const result = await response.json();
+    console.log("One-time Meta webhook setup:", JSON.stringify(result));
+    if (!result.success) throw new Error("Meta webhook setup failed at " + result.step + ": " + JSON.stringify(result.error));
+  },
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     if (url.pathname === "/_internal/meta-webhook-setup" && request.method === "GET") {
       if (url.searchParams.get("key") !== env.META_VERIFY_TOKEN) return new Response("Forbidden", { status: 403 });
-      const appId = "3024451134569102";
-      const callback = "https://stationerydotcom.stdc.workers.dev/webhooks/meta";
-      const appToken = appId + "|" + env.META_APP_SECRET;
-      const appForm = new URLSearchParams({
-        object: "page",
-        callback_url: callback,
-        fields: "feed,messages",
-        verify_token: env.META_VERIFY_TOKEN,
-        access_token: appToken
-      });
-      const appResponse = await fetch("https://graph.facebook.com/" + GRAPH_VERSION + "/" + appId + "/subscriptions", {
-        method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: appForm
-      });
-      const appData = await appResponse.json();
-      if (!appResponse.ok || appData.error) return json({ step: "app_webhook_subscription", success: false, error: appData.error || appData }, 502);
-      const meResponse = await fetch("https://graph.facebook.com/" + GRAPH_VERSION + "/me?fields=id&access_token=" + encodeURIComponent(env.META_PAGE_ACCESS_TOKEN));
-      const meData = await meResponse.json();
-      if (!meResponse.ok || meData.error || !meData.id) return json({ step: "page_identity", success: false, error: meData.error || meData }, 502);
-      const pageUrl = "https://graph.facebook.com/" + GRAPH_VERSION + "/" + meData.id + "/subscribed_apps?subscribed_fields=feed,messages&access_token=" + encodeURIComponent(env.META_PAGE_ACCESS_TOKEN);
-      const pageResponse = await fetch(pageUrl, { method: "POST" });
-      const pageData = await pageResponse.json();
-      if (!pageResponse.ok || pageData.error) return json({ step: "page_install", success: false, page_id: meData.id, app_subscription: appData, error: pageData.error || pageData }, 502);
-      return json({ success: true, app_subscription: appData, page_installation: pageData, page_id: meData.id, fields: ["feed", "messages"] });
+      return setupMetaWebhooks(env);
     }
     if (url.pathname === META_WEBHOOK_PATH) {
       if (request.method === "GET") {

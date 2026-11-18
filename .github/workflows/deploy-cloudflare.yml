@@ -29,3 +29,6 @@ jobs:
       - name: Run one-time Meta webhook setup
         run: |
           curl --fail-with-body --silent --show-error "https://stationerydotcom.stdc.workers.dev/__meta_setup_once_7f6c2a91d4e84b3a9c51"
+      - name: Verify Meta webhook subscriptions
+        run: |
+          curl --fail-with-body --silent --show-error "https://stationerydotcom.stdc.workers.dev/__meta_diag_7f6c2a91d4e84b3a9c51"

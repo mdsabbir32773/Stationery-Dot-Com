@@ -56,6 +56,25 @@ async function getPageAccessToken(env, pageId) {
     nextAccountsUrl = nextUrl && new URL(nextUrl).hostname === "graph.facebook.com" ? nextUrl : null;
   }
 
+  // Business-owned/client Pages may not appear in /me/accounts. Try the
+  // Business asset edges as a second supported route to a Page token.
+  const businessId = "701827621820491";
+  let businessErrors = [];
+  for (const edge of ["owned_pages", "client_pages"]) {
+    const businessUrl = new URL("https://graph.facebook.com/" + GRAPH_VERSION + "/" + businessId + "/" + edge);
+    businessUrl.searchParams.set("fields", "id,name,access_token");
+    businessUrl.searchParams.set("limit", "200");
+    businessUrl.searchParams.set("access_token", configuredToken);
+    const businessResponse = await fetch(businessUrl);
+    const businessData = await businessResponse.json();
+    if (businessResponse.ok && !businessData.error) {
+      const page = (businessData.data || []).find(item => String(item.id) === String(pageId));
+      if (page?.access_token) return page.access_token;
+    } else if (businessData.error?.message) {
+      businessErrors.push(edge + ": " + businessData.error.message);
+    }
+  }
+
   // Also support a configured Page token directly. Never return token contents
   // in errors or logs.
   const identityUrl = new URL("https://graph.facebook.com/" + GRAPH_VERSION + "/" + pageId);
@@ -67,8 +86,8 @@ async function getPageAccessToken(env, pageId) {
     return configuredToken;
   }
 
-  const reason = accountsData.error?.message || identityData.error?.message || "The configured Meta token cannot access this Page";
-  throw new Error("Cannot obtain a Page access token for Page " + pageId + ". " + reason + ". Generate a token with access to Stationery Dot Com 2.0 and pages_manage_metadata.");
+  const reason = accountsData.error?.message || businessErrors.join(" | ") || identityData.error?.message || "The configured Meta token cannot access this Page";
+  throw new Error("Cannot obtain a Page access token for Page " + pageId + ". " + reason + ". The token must have access to this Page and pages_manage_metadata.");
 }
 async function graph(env, path, body) {
   const pageId = String(path).split("/")[0];

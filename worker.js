@@ -181,10 +181,16 @@ export default {
     if (controller.cron !== "* * * * *") return;
     const settings = await getSettings(env);
     if (settings?.page_id) return;
-    const response = await setupMetaWebhooks(env);
-    const result = await response.json();
-    console.log("One-time Meta webhook setup:", JSON.stringify(result));
-    if (!result.success) throw new Error("Meta webhook setup failed at " + result.step + ": " + JSON.stringify(result.error));
+    const eventId = "meta_setup_" + Math.floor(controller.scheduledTime / 60000);
+    try {
+      const response = await setupMetaWebhooks(env);
+      const result = await response.json();
+      await logEvent(env, "meta_setup", eventId, "Meta webhook registration attempt", result.success ? "replied" : "failed", result.success ? null : JSON.stringify(result.error || result).slice(0, 1000), JSON.stringify(result).slice(0, 1800));
+      console.log("One-time Meta webhook setup:", JSON.stringify(result));
+    } catch (error) {
+      await logEvent(env, "meta_setup", eventId, "Meta webhook registration attempt", "failed", String(error).slice(0, 1000));
+      console.error("Meta webhook setup exception:", String(error));
+    }
   },
   async fetch(request, env, ctx) {
     const url = new URL(request.url);

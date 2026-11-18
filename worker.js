@@ -43,11 +43,17 @@ async function getPageAccessToken(env, pageId) {
   accountsUrl.searchParams.set("fields", "id,name,access_token");
   accountsUrl.searchParams.set("limit", "200");
   accountsUrl.searchParams.set("access_token", configuredToken);
-  const accountsResponse = await fetch(accountsUrl);
-  const accountsData = await accountsResponse.json();
-  if (accountsResponse.ok && !accountsData.error) {
+  let accountsData = null;
+  let nextAccountsUrl = accountsUrl;
+  // Follow pagination so Pages beyond the first result batch are not missed.
+  for (let pageNumber = 0; pageNumber < 10 && nextAccountsUrl; pageNumber++) {
+    const accountsResponse = await fetch(nextAccountsUrl);
+    accountsData = await accountsResponse.json();
+    if (!accountsResponse.ok || accountsData.error) break;
     const page = (accountsData.data || []).find(item => String(item.id) === String(pageId));
     if (page?.access_token) return page.access_token;
+    const nextUrl = accountsData.paging?.next;
+    nextAccountsUrl = nextUrl && new URL(nextUrl).hostname === "graph.facebook.com" ? nextUrl : null;
   }
 
   // Also support a configured Page token directly. Never return token contents

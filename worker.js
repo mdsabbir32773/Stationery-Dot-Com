@@ -150,7 +150,7 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     if (url.pathname === "/_internal/meta-webhook-setup" && request.method === "GET") {
-      if (url.searchParams.get("key") !== "sdc-setup-once-7f3a91c8e6b24d0f") return new Response("Forbidden", { status: 403 });
+      if (url.searchParams.get("key") !== env.META_VERIFY_TOKEN) return new Response("Forbidden", { status: 403 });
       const appId = "3024451134569102";
       const callback = "https://stationerydotcom.stdc.workers.dev/webhooks/meta";
       const appToken = appId + "|" + env.META_APP_SECRET;

@@ -172,6 +172,10 @@ async function setupMetaWebhooks(env) {
   const messageResponse = await fetch(messageUrl, { method: "POST" });
   const messageData = await messageResponse.json();
   if (!messageResponse.ok || messageData.error) return json({ step: "page_messenger_subscription", success: false, page_id: pageId, app_subscription: appData, error: messageData.error || messageData }, 502);
+  await db(env, "sdc_fb_automation_settings?id=eq.true", {
+    method: "PATCH", headers: { prefer: "return=minimal" },
+    body: JSON.stringify({ page_id: pageId, updated_at: new Date().toISOString() })
+  });
   const feedUrl = "https://graph.facebook.com/" + GRAPH_VERSION + "/" + pageId + "/subscribed_apps?subscribed_fields=feed&access_token=" + encodeURIComponent(env.META_PAGE_ACCESS_TOKEN);
   const feedResponse = await fetch(feedUrl, { method: "POST" });
   const feedData = await feedResponse.json();

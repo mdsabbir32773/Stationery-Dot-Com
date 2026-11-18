@@ -206,6 +206,19 @@ export default {
   },
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+    if (url.pathname === "/__meta_diag_7f6c2a91d4e84b3a9c51" && request.method === "GET") {
+      if (url.searchParams.get("key") !== env.META_VERIFY_TOKEN) return new Response("Forbidden", { status: 403 });
+      const appId = "3024451134569102";
+      const pageId = "917752031418611";
+      const appRes = await fetch("https://graph.facebook.com/" + GRAPH_VERSION + "/" + appId + "/subscriptions?access_token=" + encodeURIComponent(appId + "|" + env.META_APP_SECRET));
+      const appJson = await appRes.json();
+      const pageToken = await getPageAccessToken(env, pageId);
+      const pageRes = await fetch("https://graph.facebook.com/" + GRAPH_VERSION + "/" + pageId + "/subscribed_apps?access_token=" + encodeURIComponent(pageToken));
+      const pageJson = await pageRes.json();
+      const appData = (appJson.data || []).filter(x => x.object === "page").map(x => ({ object: x.object, callback_url: x.callback_url, fields: x.fields, active: x.active }));
+      const pageData = (pageJson.data || []).map(x => ({ id: x.id, name: x.name, subscribed_fields: x.subscribed_fields }));
+      return json({ app_http_ok: appRes.ok, app_error: appJson.error?.message || null, app_subscriptions: appData, page_http_ok: pageRes.ok, page_error: pageJson.error?.message || null, page_subscriptions: pageData });
+    }
     if (url.pathname === "/_internal/meta-webhook-setup" && request.method === "GET") {
       if (url.searchParams.get("key") !== env.META_VERIFY_TOKEN) return new Response("Forbidden", { status: 403 });
       return setupMetaWebhooks(env);

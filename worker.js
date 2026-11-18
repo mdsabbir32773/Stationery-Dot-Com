@@ -50,10 +50,10 @@ async function graph(env, path, body) {
   return data;
 }
 async function makeReply(env, userText, settings, channel) {
-  const normalizedText = String(userText || "").toLowerCase().replace(/[\\s\\p{P}]+/gu, " ").trim();
+  const normalizedText = String(userText || "").toLowerCase().replace(/[\s\p{P}]+/gu, " ").trim();
   const asksServices = /(?:কি কি সার্ভিস|কী কী সার্ভিস|কি সার্ভিস|কী সার্ভিস|সেবাসমূহ|কি কি সেবা|কী কী সেবা|what services|services do you offer|list your services|available services)/u.test(normalizedText);
   if (asksServices) {
-    const isBangla = /[\\u0980-\\u09ff]/u.test(userText) || /bangla|banglish/u.test(normalizedText);
+    const isBangla = /[\u0980-\u09ff]/u.test(userText) || /bangla|banglish/u.test(normalizedText);
     return isBangla
       ? "আমাদের প্রধান সেবাগুলো হলো ডিজিটাল সাবস্ক্রিপশন, ফেসবুক ও ইনস্টাগ্রাম পেজ সেটআপ ও পরিচালনা, বিজ্ঞাপন প্রচার, ভিসা সহায়তা, বিমান টিকিট ও হোটেল বুকিং, জন্মনিবন্ধন, জাতীয় পরিচয়পত্র ও পাসপোর্ট সংক্রান্ত সহায়তা, এবং লোগো, ব্যানার ও ভিডিও সম্পাদনা। কোন সেবাটি নিতে চান জানালে বিস্তারিত জানাতে পারব।"
       : "We offer digital subscriptions, Facebook and Instagram page setup and management, advertising support, visa assistance, air tickets, hotel bookings, document application support, graphic design, video editing, and website creation. Which service would you like to know more about?";

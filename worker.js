@@ -248,9 +248,6 @@ export default {
   },
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-    if (url.pathname === "/_internal/one-time-meta-setup-7c9d1e4a6b2f" && request.method === "GET") {
-      return setupMetaWebhooks(env);
-    }
     if (url.pathname === "/_internal/meta-webhook-setup" && request.method === "GET") {
       if (url.searchParams.get("key") !== env.META_VERIFY_TOKEN) return new Response("Forbidden", { status: 403 });
       return setupMetaWebhooks(env);

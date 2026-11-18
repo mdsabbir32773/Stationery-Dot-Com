@@ -163,18 +163,20 @@ async function setupMetaWebhooks(env) {
   });
   const appData = await appResponse.json();
   if (!appResponse.ok || appData.error) return json({ step: "app_webhook_subscription", success: false, error: appData.error || appData }, 502);
-  const meResponse = await fetch("https://graph.facebook.com/" + GRAPH_VERSION + "/me?fields=id&access_token=" + encodeURIComponent(env.META_PAGE_ACCESS_TOKEN));
-  const meData = await meResponse.json();
-  if (!meResponse.ok || meData.error || !meData.id) return json({ step: "page_identity", success: false, error: meData.error || meData }, 502);
-  const pageUrl = "https://graph.facebook.com/" + GRAPH_VERSION + "/" + meData.id + "/subscribed_apps?subscribed_fields=feed,messages&access_token=" + encodeURIComponent(env.META_PAGE_ACCESS_TOKEN);
+  const debugUrl = "https://graph.facebook.com/" + GRAPH_VERSION + "/debug_token?input_token=" + encodeURIComponent(env.META_PAGE_ACCESS_TOKEN) + "&access_token=" + encodeURIComponent(appToken);
+  const debugResponse = await fetch(debugUrl);
+  const debugResult = await debugResponse.json();
+  const pageId = debugResult.data?.profile_id || (debugResult.data?.type === "PAGE" ? debugResult.data?.user_id : null);
+  if (!debugResponse.ok || debugResult.error || !pageId) return json({ step: "page_identity", success: false, error: debugResult.error || { message: "Page ID was not present in the token metadata", token_type: debugResult.data?.type || null, is_valid: debugResult.data?.is_valid ?? null, scopes: debugResult.data?.scopes || [] } }, 502);
+  const pageUrl = "https://graph.facebook.com/" + GRAPH_VERSION + "/" + pageId + "/subscribed_apps?subscribed_fields=feed,messages&access_token=" + encodeURIComponent(env.META_PAGE_ACCESS_TOKEN);
   const pageResponse = await fetch(pageUrl, { method: "POST" });
   const pageData = await pageResponse.json();
-  if (!pageResponse.ok || pageData.error) return json({ step: "page_install", success: false, page_id: meData.id, app_subscription: appData, error: pageData.error || pageData }, 502);
+  if (!pageResponse.ok || pageData.error) return json({ step: "page_install", success: false, page_id: pageId, app_subscription: appData, error: pageData.error || pageData }, 502);
   await db(env, "sdc_fb_automation_settings?id=eq.true", {
     method: "PATCH", headers: { prefer: "return=minimal" },
-    body: JSON.stringify({ page_id: meData.id, updated_at: new Date().toISOString() })
+    body: JSON.stringify({ page_id: pageId, updated_at: new Date().toISOString() })
   });
-  return json({ success: true, app_subscription: appData, page_installation: pageData, page_id: meData.id, fields: ["feed", "messages"] });
+  return json({ success: true, app_subscription: appData, page_installation: pageData, page_id: pageId, fields: ["feed", "messages"] });
 }
 export default {
   async scheduled(controller, env) {

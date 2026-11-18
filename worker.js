@@ -189,8 +189,6 @@ async function setupMetaWebhooks(env) {
 export default {
   async scheduled(controller, env) {
     if (controller.cron !== "* * * * *") return;
-    const settings = await getSettings(env);
-    if (settings?.page_id) return;
     const eventId = "meta_setup_" + Math.floor(controller.scheduledTime / 60000);
     try {
       const response = await setupMetaWebhooks(env);

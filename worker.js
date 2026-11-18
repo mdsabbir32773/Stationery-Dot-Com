@@ -34,10 +34,35 @@ async function db(env, path, options = {}) {
   return text ? JSON.parse(text) : null;
 }
 async function getPageAccessToken(env, pageId) {
-  // META_PAGE_ACCESS_TOKEN is already the Page token used by the working Messenger reply.
-  // Do not exchange it by querying the Page object: Meta rejects that lookup for Page tokens.
-  if (!env.META_PAGE_ACCESS_TOKEN) throw new Error("META_PAGE_ACCESS_TOKEN is not configured");
-  return env.META_PAGE_ACCESS_TOKEN;
+  const configuredToken = env.META_PAGE_ACCESS_TOKEN;
+  if (!configuredToken) throw new Error("META_PAGE_ACCESS_TOKEN is not configured");
+
+  // The configured value may be a User token. Resolve the actual Page token
+  // for the configured Page instead of passing a User token to /subscribed_apps.
+  const accountsUrl = new URL("https://graph.facebook.com/" + GRAPH_VERSION + "/me/accounts");
+  accountsUrl.searchParams.set("fields", "id,name,access_token");
+  accountsUrl.searchParams.set("limit", "200");
+  accountsUrl.searchParams.set("access_token", configuredToken);
+  const accountsResponse = await fetch(accountsUrl);
+  const accountsData = await accountsResponse.json();
+  if (accountsResponse.ok && !accountsData.error) {
+    const page = (accountsData.data || []).find(item => String(item.id) === String(pageId));
+    if (page?.access_token) return page.access_token;
+  }
+
+  // Also support a configured Page token directly. Never return token contents
+  // in errors or logs.
+  const identityUrl = new URL("https://graph.facebook.com/" + GRAPH_VERSION + "/" + pageId);
+  identityUrl.searchParams.set("fields", "id,name");
+  identityUrl.searchParams.set("access_token", configuredToken);
+  const identityResponse = await fetch(identityUrl);
+  const identityData = await identityResponse.json();
+  if (identityResponse.ok && !identityData.error && String(identityData.id) === String(pageId)) {
+    return configuredToken;
+  }
+
+  const reason = accountsData.error?.message || identityData.error?.message || "The configured Meta token cannot access this Page";
+  throw new Error("Cannot obtain a Page access token for Page " + pageId + ". " + reason + ". Generate a token with access to Stationery Dot Com 2.0 and pages_manage_metadata.");
 }
 async function graph(env, path, body) {
   const pageId = String(path).split("/")[0];

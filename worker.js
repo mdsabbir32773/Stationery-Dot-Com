@@ -168,15 +168,19 @@ async function setupMetaWebhooks(env) {
   const debugResult = await debugResponse.json();
   const pageId = debugResult.data?.profile_id || (debugResult.data?.type === "PAGE" ? debugResult.data?.user_id : null);
   if (!debugResponse.ok || debugResult.error || !pageId) return json({ step: "page_identity", success: false, error: debugResult.error || { message: "Page ID was not present in the token metadata", token_type: debugResult.data?.type || null, is_valid: debugResult.data?.is_valid ?? null, scopes: debugResult.data?.scopes || [] } }, 502);
-  const pageUrl = "https://graph.facebook.com/" + GRAPH_VERSION + "/" + pageId + "/subscribed_apps?subscribed_fields=feed,messages&access_token=" + encodeURIComponent(env.META_PAGE_ACCESS_TOKEN);
-  const pageResponse = await fetch(pageUrl, { method: "POST" });
-  const pageData = await pageResponse.json();
-  if (!pageResponse.ok || pageData.error) return json({ step: "page_install", success: false, page_id: pageId, app_subscription: appData, error: pageData.error || pageData }, 502);
+  const messageUrl = "https://graph.facebook.com/" + GRAPH_VERSION + "/" + pageId + "/subscribed_apps?subscribed_fields=messages&access_token=" + encodeURIComponent(env.META_PAGE_ACCESS_TOKEN);
+  const messageResponse = await fetch(messageUrl, { method: "POST" });
+  const messageData = await messageResponse.json();
+  if (!messageResponse.ok || messageData.error) return json({ step: "page_messenger_subscription", success: false, page_id: pageId, app_subscription: appData, error: messageData.error || messageData }, 502);
+  const feedUrl = "https://graph.facebook.com/" + GRAPH_VERSION + "/" + pageId + "/subscribed_apps?subscribed_fields=feed&access_token=" + encodeURIComponent(env.META_PAGE_ACCESS_TOKEN);
+  const feedResponse = await fetch(feedUrl, { method: "POST" });
+  const feedData = await feedResponse.json();
+  if (!feedResponse.ok || feedData.error) return json({ step: "page_comment_subscription", success: false, page_id: pageId, app_subscription: appData, messenger_subscription: messageData, error: feedData.error || feedData }, 502);
   await db(env, "sdc_fb_automation_settings?id=eq.true", {
     method: "PATCH", headers: { prefer: "return=minimal" },
     body: JSON.stringify({ page_id: pageId, updated_at: new Date().toISOString() })
   });
-  return json({ success: true, app_subscription: appData, page_installation: pageData, page_id: pageId, fields: ["feed", "messages"] });
+  return json({ success: true, app_subscription: appData, messenger_subscription: messageData, comment_subscription: feedData, page_id: pageId, fields: ["feed", "messages"] });
 }
 export default {
   async scheduled(controller, env) {

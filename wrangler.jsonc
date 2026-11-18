@@ -13,7 +13,7 @@
   },
   "previews": {},
   "triggers": {
-    "crons": ["* * * * *"]
+    "crons": []
   },
   "observability": {
     "enabled": true,

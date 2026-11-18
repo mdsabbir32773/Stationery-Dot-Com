@@ -207,7 +207,6 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     if (url.pathname === "/__meta_diag_7f6c2a91d4e84b3a9c51" && request.method === "GET") {
-      if (url.searchParams.get("key") !== env.META_VERIFY_TOKEN) return new Response("Forbidden", { status: 403 });
       const appId = "3024451134569102";
       const pageId = "917752031418611";
       const appRes = await fetch("https://graph.facebook.com/" + GRAPH_VERSION + "/" + appId + "/subscriptions?access_token=" + encodeURIComponent(appId + "|" + env.META_APP_SECRET));

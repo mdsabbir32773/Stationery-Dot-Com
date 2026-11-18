@@ -165,10 +165,12 @@ async function setupMetaWebhooks(env) {
   if (!appResponse.ok || appData.error) return json({ step: "app_webhook_subscription", success: false, error: appData.error || appData }, 502);
   // The target Page ID is fixed for Stationery Dot Com. Do not infer it from debug_token metadata.
   const pageId = "917752031418611";
-  const identityResponse = await fetch("https://graph.facebook.com/" + GRAPH_VERSION + "/" + pageId + "?fields=id,name&access_token=" + encodeURIComponent(env.META_PAGE_ACCESS_TOKEN));
+  // Resolve a Page token even when the configured token is a User token.
+  const identityResponse = await fetch("https://graph.facebook.com/" + GRAPH_VERSION + "/" + pageId + "?fields=id,name,access_token&access_token=" + encodeURIComponent(env.META_PAGE_ACCESS_TOKEN));
   const identityData = await identityResponse.json();
-  if (!identityResponse.ok || identityData.error || identityData.id !== pageId) return json({ step: "page_identity", success: false, error: identityData.error || { message: "Page token cannot access the configured Page", page_id: pageId } }, 502);
-  const messageUrl = "https://graph.facebook.com/" + GRAPH_VERSION + "/" + pageId + "/subscribed_apps?subscribed_fields=messages&access_token=" + encodeURIComponent(env.META_PAGE_ACCESS_TOKEN);
+  if (!identityResponse.ok || identityData.error || identityData.id !== pageId || !identityData.access_token) return json({ step: "page_identity", success: false, error: identityData.error || { message: "Could not obtain a Page access token for the configured Page", page_id: pageId } }, 502);
+  const pageToken = identityData.access_token;
+  const messageUrl = "https://graph.facebook.com/" + GRAPH_VERSION + "/" + pageId + "/subscribed_apps?subscribed_fields=messages&access_token=" + encodeURIComponent(pageToken);
   const messageResponse = await fetch(messageUrl, { method: "POST" });
   const messageData = await messageResponse.json();
   if (!messageResponse.ok || messageData.error) return json({ step: "page_messenger_subscription", success: false, page_id: pageId, app_subscription: appData, error: messageData.error || messageData }, 502);
@@ -176,7 +178,7 @@ async function setupMetaWebhooks(env) {
     method: "PATCH", headers: { prefer: "return=minimal" },
     body: JSON.stringify({ page_id: pageId, updated_at: new Date().toISOString() })
   });
-  const feedUrl = "https://graph.facebook.com/" + GRAPH_VERSION + "/" + pageId + "/subscribed_apps?subscribed_fields=feed&access_token=" + encodeURIComponent(env.META_PAGE_ACCESS_TOKEN);
+  const feedUrl = "https://graph.facebook.com/" + GRAPH_VERSION + "/" + pageId + "/subscribed_apps?subscribed_fields=feed&access_token=" + encodeURIComponent(pageToken);
   const feedResponse = await fetch(feedUrl, { method: "POST" });
   const feedData = await feedResponse.json();
   if (!feedResponse.ok || feedData.error) return json({ step: "page_comment_subscription", success: false, page_id: pageId, app_subscription: appData, messenger_subscription: messageData, error: feedData.error || feedData }, 502);

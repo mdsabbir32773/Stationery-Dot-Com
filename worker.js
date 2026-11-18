@@ -210,6 +210,7 @@ export default {
       if (url.searchParams.get("key") !== env.META_VERIFY_TOKEN) return new Response("Forbidden", { status: 403 });
       return setupMetaWebhooks(env);
     }
+    if (url.pathname === "/__meta_setup_once_7f6c2a91d4e84b3a9c51" && request.method === "GET") return setupMetaWebhooks(env);
     if (url.pathname === META_WEBHOOK_PATH) {
       if (request.method === "GET") {
         const mode = url.searchParams.get("hub.mode");

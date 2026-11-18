@@ -33,8 +33,16 @@ async function db(env, path, options = {}) {
   if (!response.ok) throw new Error("Supabase " + response.status + ": " + text.slice(0, 400));
   return text ? JSON.parse(text) : null;
 }
+async function getPageAccessToken(env, pageId) {
+  const response = await fetch("https://graph.facebook.com/" + GRAPH_VERSION + "/" + pageId + "?fields=id,access_token&access_token=" + encodeURIComponent(env.META_PAGE_ACCESS_TOKEN));
+  const data = await response.json();
+  if (!response.ok || data.error || data.id !== pageId || !data.access_token) throw new Error("Meta Page token resolution failed: " + JSON.stringify(data.error || data).slice(0, 500));
+  return data.access_token;
+}
 async function graph(env, path, body) {
-  const response = await fetch("https://graph.facebook.com/" + GRAPH_VERSION + "/" + path + "?access_token=" + encodeURIComponent(env.META_PAGE_ACCESS_TOKEN), {
+  const pageId = String(path).split("/")[0];
+  const pageToken = await getPageAccessToken(env, pageId);
+  const response = await fetch("https://graph.facebook.com/" + GRAPH_VERSION + "/" + path + "?access_token=" + encodeURIComponent(pageToken), {
     method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body)
   });
   const data = await response.json();
@@ -170,23 +178,17 @@ async function setupMetaWebhooks(env) {
   const identityData = await identityResponse.json();
   if (!identityResponse.ok || identityData.error || identityData.id !== pageId || !identityData.access_token) return json({ step: "page_identity", success: false, error: identityData.error || { message: "Could not obtain a Page access token for the configured Page", page_id: pageId } }, 502);
   const pageToken = identityData.access_token;
-  const messageUrl = "https://graph.facebook.com/" + GRAPH_VERSION + "/" + pageId + "/subscribed_apps?subscribed_fields=messages&access_token=" + encodeURIComponent(pageToken);
-  const messageResponse = await fetch(messageUrl, { method: "POST" });
-  const messageData = await messageResponse.json();
-  if (!messageResponse.ok || messageData.error) return json({ step: "page_messenger_subscription", success: false, page_id: pageId, app_subscription: appData, error: messageData.error || messageData }, 502);
+  // Subscribe both Page webhook fields in one request. Separate calls can replace
+  // the previous subscribed_fields set instead of accumulating it.
+  const pageSubscriptionUrl = "https://graph.facebook.com/" + GRAPH_VERSION + "/" + pageId + "/subscribed_apps?subscribed_fields=messages,feed&access_token=" + encodeURIComponent(pageToken);
+  const pageSubscriptionResponse = await fetch(pageSubscriptionUrl, { method: "POST" });
+  const pageSubscriptionData = await pageSubscriptionResponse.json();
+  if (!pageSubscriptionResponse.ok || pageSubscriptionData.error) return json({ step: "page_subscription", success: false, page_id: pageId, app_subscription: appData, error: pageSubscriptionData.error || pageSubscriptionData }, 502);
   await db(env, "sdc_fb_automation_settings?id=eq.true", {
     method: "PATCH", headers: { prefer: "return=minimal" },
     body: JSON.stringify({ page_id: pageId, updated_at: new Date().toISOString() })
   });
-  const feedUrl = "https://graph.facebook.com/" + GRAPH_VERSION + "/" + pageId + "/subscribed_apps?subscribed_fields=feed&access_token=" + encodeURIComponent(pageToken);
-  const feedResponse = await fetch(feedUrl, { method: "POST" });
-  const feedData = await feedResponse.json();
-  if (!feedResponse.ok || feedData.error) return json({ step: "page_comment_subscription", success: false, page_id: pageId, app_subscription: appData, messenger_subscription: messageData, error: feedData.error || feedData }, 502);
-  await db(env, "sdc_fb_automation_settings?id=eq.true", {
-    method: "PATCH", headers: { prefer: "return=minimal" },
-    body: JSON.stringify({ page_id: pageId, updated_at: new Date().toISOString() })
-  });
-  return json({ success: true, app_subscription: appData, messenger_subscription: messageData, comment_subscription: feedData, page_id: pageId, fields: ["feed", "messages"] });
+  return json({ success: true, app_subscription: appData, page_subscription: pageSubscriptionData, page_id: pageId, fields: ["messages", "feed"] });
 }
 export default {
   async scheduled(controller, env) {

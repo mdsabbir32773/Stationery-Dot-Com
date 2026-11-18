@@ -163,11 +163,11 @@ async function setupMetaWebhooks(env) {
   });
   const appData = await appResponse.json();
   if (!appResponse.ok || appData.error) return json({ step: "app_webhook_subscription", success: false, error: appData.error || appData }, 502);
-  const debugUrl = "https://graph.facebook.com/" + GRAPH_VERSION + "/debug_token?input_token=" + encodeURIComponent(env.META_PAGE_ACCESS_TOKEN) + "&access_token=" + encodeURIComponent(appToken);
-  const debugResponse = await fetch(debugUrl);
-  const debugResult = await debugResponse.json();
-  const pageId = debugResult.data?.profile_id || (debugResult.data?.type === "PAGE" ? debugResult.data?.user_id : null);
-  if (!debugResponse.ok || debugResult.error || !pageId) return json({ step: "page_identity", success: false, error: debugResult.error || { message: "Page ID was not present in the token metadata", token_type: debugResult.data?.type || null, is_valid: debugResult.data?.is_valid ?? null, scopes: debugResult.data?.scopes || [] } }, 502);
+  // The target Page ID is fixed for Stationery Dot Com. Do not infer it from debug_token metadata.
+  const pageId = "917752031418611";
+  const identityResponse = await fetch("https://graph.facebook.com/" + GRAPH_VERSION + "/" + pageId + "?fields=id,name&access_token=" + encodeURIComponent(env.META_PAGE_ACCESS_TOKEN));
+  const identityData = await identityResponse.json();
+  if (!identityResponse.ok || identityData.error || identityData.id !== pageId) return json({ step: "page_identity", success: false, error: identityData.error || { message: "Page token cannot access the configured Page", page_id: pageId } }, 502);
   const messageUrl = "https://graph.facebook.com/" + GRAPH_VERSION + "/" + pageId + "/subscribed_apps?subscribed_fields=messages&access_token=" + encodeURIComponent(env.META_PAGE_ACCESS_TOKEN);
   const messageResponse = await fetch(messageUrl, { method: "POST" });
   const messageData = await messageResponse.json();

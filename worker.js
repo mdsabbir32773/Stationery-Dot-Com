@@ -212,9 +212,14 @@ async function setupMetaWebhooks(env) {
   if (!appResponse.ok || appData.error) return json({ step: "app_webhook_subscription", success: false, error: appData.error || appData }, 502);
   // The target Page ID is fixed for Stationery Dot Com.
   const pageId = "917752031418611";
-  // Use the same configured Page token that successfully sends Messenger replies.
-  if (!env.META_PAGE_ACCESS_TOKEN) return json({ step: "page_identity", success: false, error: { message: "META_PAGE_ACCESS_TOKEN is not configured" } }, 502);
-  const pageToken = env.META_PAGE_ACCESS_TOKEN;
+  // Resolve the actual Page token. The configured secret may be a User token;
+  // getPageAccessToken exchanges it through /me/accounts when the Page is assigned.
+  let pageToken;
+  try {
+    pageToken = await getPageAccessToken(env, pageId);
+  } catch (error) {
+    return json({ step: "page_identity", success: false, page_id: pageId, error: { message: String(error).slice(0, 700) }, app_subscription: appData }, 502);
+  }
   // Subscribe both Page webhook fields in one request. Separate calls can replace
   // the previous subscribed_fields set instead of accumulating it.
   const pageSubscriptionUrl = "https://graph.facebook.com/" + GRAPH_VERSION + "/" + pageId + "/subscribed_apps?subscribed_fields=messages,feed&access_token=" + encodeURIComponent(pageToken);

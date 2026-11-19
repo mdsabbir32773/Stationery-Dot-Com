@@ -2,6 +2,10 @@ import {useEffect,useState} from 'react';
 import {useParams} from 'react-router-dom';
 import {supabase,taka,ORDER_STATUSES,PAY_STATUSES} from '../../lib/supabase';
 
+const dhakaDateTime = value => value
+  ? new Intl.DateTimeFormat('en-BD', {timeZone:'Asia/Dhaka',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true}).format(new Date(value))
+  : '—';
+
 export default function OrderDetails(){
   const{id}=useParams();const[o,setO]=useState(null);const[urls,setUrls]=useState([]);const[m,setM]=useState('');const[providerId,setProviderId]=useState('');
   const load=async()=>{
@@ -13,7 +17,7 @@ export default function OrderDetails(){
   useEffect(()=>{load();},[id]);if(!o)return 'Loading…';const pay=o.payments?.[0];
   const setStatus=async v=>{if(o.target_link){const{error}=await supabase.rpc('admin_update_smm_order',{p_order_id:id,p_status:v,p_note:''});setM(error?error.message:'SMM order status and wallet refund saved');}else{const{error}=await supabase.from('orders').update({status:v,updated_at:new Date().toISOString()}).eq('id',id);setM(error?error.message:'Order status saved');}load();};
   const setPay=async v=>{const{error}=await supabase.from('payments').update({status:v}).eq('id',pay.id);if(!error&&v==='Paid'&&['Pending','Payment Pending'].includes(o.status))await supabase.from('orders').update({status:'Payment Received',updated_at:new Date().toISOString()}).eq('id',id);setM(error?error.message:'Payment status saved');load();};
-  return <><h1>{o.order_code}</h1><div className="card"><p><b>{o.customer_name}</b><br/>Phone: <a href={`tel:${o.phone}`}>{o.phone}</a> · WhatsApp: {o.whatsapp||'—'} · Email: {o.email||'—'}</p>
+  return <><h1>{o.order_code}</h1><div className="card"><p><b>{o.customer_name}</b><br/>Order placed: <b>{dhakaDateTime(o.created_at)}</b><br/>Phone: <a href={`tel:${o.phone}`}>{o.phone}</a> · WhatsApp: {o.whatsapp||'—'} · Email: {o.email||'—'}</p>
     <p>{o.service_name} — {o.package_name} × {o.quantity} = <b>{taka(o.total)}</b>{Number(o.discount_amount)>0&&<> <span className="muted">(Discount {taka(o.discount_amount)}{o.coupon_code?' · '+o.coupon_code:''})</span></>}</p>
     {o.target_link&&<p>Target link: <a href={o.target_link} target="_blank" rel="noreferrer" style={{textDecoration:'underline',overflowWrap:'anywhere'}}>{o.target_link}</a></p>}
     {o.provider_order_id&&<p>Provider order ID: <b>{o.provider_order_id}</b></p>}<p>Notes: {o.notes||'—'}</p>
@@ -25,6 +29,5 @@ export default function OrderDetails(){
           {!o.target_link&&<><label>Payment status</label><select value={pay?.status} onChange={e=>setPay(e.target.value)}>{PAY_STATUSES.map(s=><option key={s}>{s}</option>)}</select></>}{m&&<p className="ok">{m}</p>}
     </div>
     <p>Files: {urls.length?urls.map((u,i)=><a key={i} href={u.url} target="_blank" rel="noreferrer" style={{marginRight:8,textDecoration:'underline'}}>{u.name}</a>):'none'}</p></div>
-
   </>;
 }

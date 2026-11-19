@@ -22,7 +22,7 @@ begin
   v_def := pg_get_functiondef('public.create_smm_order(jsonb)'::regprocedure);
   v_new := regexp_replace(
     v_def,
-    $re$code\s*:=\s*'STDC-'\s*\|\|\s*to_char\(d,\s*'YYYYMMDD'\)\s*\|\|\s*'-'\s*\|\|\s*lpad\(seq::text,\s*3,\s*'0'\)\s*$re$,
+    $re$code\s*:=\s*'STDC-'\s*\|\|\s*to_char\(d,\s*'YYYYMMDD'\)\s*\|\|\s*'-'\s*\|\|\s*lpad\(seq::text,\s*3,\s*'0'\)$re$,
     $rep$code := 'SD' || to_char(d, 'YYMMDD') || '-' || upper(substr(encode(gen_random_bytes(4), 'hex'), 1, 8))$rep$,
     'i'
   );

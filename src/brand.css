@@ -177,7 +177,7 @@ label,label.fld>span{color:#405449!important}
 
 /* Badges and status text. */
 .badge{color:#334155}
-.b-ok{color:#166534}.b-wait{color:#92400e}.b-bad{color:#991b1b}.b-run{color:#1e40af}
+.b-ok{color:#166534}.b-paid{color:#1d4ed8}.b-wait{color:#92400e}.b-bad{color:#991b1b}.b-run{color:#1e40af}
 .service-status{color:#596178}.service-status.visible{color:#28764e}
 .package-tip{color:#35458f}
 .package-tags span,.package-plan-details span,.package-plan-badge{color:#356b4d}

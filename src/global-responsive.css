@@ -709,3 +709,30 @@ main.wrap > .checkout:not(.premium-checkout) .fld textarea { width:100%; min-wid
   .premium-checkout .checkout-panel,
   .premium-checkout .checkout-summary { padding:14px!important; }
 }
+
+
+/* Final mobile navigation and touch-target refinement. */
+@media (max-width:760px) {
+  body { padding-bottom:calc(82px + env(safe-area-inset-bottom)); }
+  .sdc-mobile-nav {
+    bottom:max(10px,env(safe-area-inset-bottom));
+    min-height:60px;
+    padding:5px;
+  }
+  .sdc-mobile-nav a {
+    min-height:48px;
+    gap:3px;
+    font-size:inherit;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .sdc-mobile-nav a svg { width:19px;height:19px; }
+  .sdc-mobile-nav a span { font-size:10px; }
+  .sdc-mobile-nav a:focus-visible {
+    outline:2px solid #397452;
+    outline-offset:2px;
+  }
+  .admin-mobile-nav a,.admin-mobile-nav button { min-height:46px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .sdc-mobile-nav a { transition:none!important; }
+}

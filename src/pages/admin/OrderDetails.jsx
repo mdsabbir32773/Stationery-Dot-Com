@@ -1,5 +1,5 @@
 import {useEffect,useState} from 'react';
-import {useParams} from 'react-router-dom';
+import {useParams,Link} from 'react-router-dom';
 import {supabase,taka,ORDER_STATUSES,PAY_STATUSES} from '../../lib/supabase';
 
 const dhakaDateTime = value => value
@@ -7,10 +7,10 @@ const dhakaDateTime = value => value
   : '—';
 
 export default function OrderDetails(){
-  const{id}=useParams();const[o,setO]=useState(null);const[urls,setUrls]=useState([]);const[m,setM]=useState('');const[providerId,setProviderId]=useState('');
+  const{id}=useParams();const[o,setO]=useState(null);const[service,setService]=useState(null);const[urls,setUrls]=useState([]);const[m,setM]=useState('');const[providerId,setProviderId]=useState('');
   const load=async()=>{
     const{data}=await supabase.from('orders').select('*,payments(*),order_files(*)').eq('id',id).single();
-    setO(data);setProviderId(data?.provider_order_id||'');
+    setO(data);setProviderId(data?.provider_order_id||'');if(data?.service_name){const{data:sv}=await supabase.from('services').select('id,name,slug,category,is_active,description').eq('name',data.service_name).limit(1).maybeSingle();setService(sv||null);}
     const files=[];for(const f of data?.order_files||[]){const{data:s}=await supabase.storage.from('order-files').createSignedUrl(f.file_path,300);files.push({name:f.file_name,url:s?.signedUrl});}setUrls(files);
     if(data?.payments?.[0]?.payment_proof_path){const{data:s}=await supabase.storage.from('order-files').createSignedUrl(data.payments[0].payment_proof_path,300);setO(current=>current?({...current,payment_proof_url:s?.signedUrl}):current);}
   };
@@ -18,7 +18,7 @@ export default function OrderDetails(){
   const setStatus=async v=>{if(o.target_link){const{error}=await supabase.rpc('admin_update_smm_order',{p_order_id:id,p_status:v,p_note:''});setM(error?error.message:'SMM order status and wallet refund saved');}else{const{error}=await supabase.from('orders').update({status:v,updated_at:new Date().toISOString()}).eq('id',id);setM(error?error.message:'Order status saved');}load();};
   const setPay=async v=>{const{error}=await supabase.from('payments').update({status:v}).eq('id',pay.id);if(!error&&v==='Paid'&&['Pending','Payment Pending'].includes(o.status))await supabase.from('orders').update({status:'Payment Received',updated_at:new Date().toISOString()}).eq('id',id);setM(error?error.message:'Payment status saved');load();};
   return <><h1>{o.order_code}</h1><div className="card"><p><b>{o.customer_name}</b><br/>Order placed: <b>{dhakaDateTime(o.created_at)}</b><br/>Phone: <a href={`tel:${o.phone}`}>{o.phone}</a> · WhatsApp: {o.whatsapp||'—'} · Email: {o.email||'—'}</p>
-    <p>{o.service_name} — {o.package_name} × {o.quantity} = <b>{taka(o.total)}</b>{Number(o.discount_amount)>0&&<> <span className="muted">(Discount {taka(o.discount_amount)}{o.coupon_code?' · '+o.coupon_code:''})</span></>}</p>
+    <p><b>Service:</b> {o.service_name}{service?.slug&&service.is_active?<><br/><Link className="text-link" to={`/services/${service.slug}`} target="_blank" rel="noreferrer">View full service page ↗</Link></>:<><br/><Link className="text-link" to={`/services?q=${encodeURIComponent(o.service_name||'')}`} target="_blank" rel="noreferrer">Search this service ↗</Link></>}<br/><b>Package:</b> {o.package_name} × {o.quantity} = <b>{taka(o.total)}</b>{Number(o.discount_amount)>0&&<> <span className="muted">(Discount {taka(o.discount_amount)}{o.coupon_code?' · '+o.coupon_code:''})</span></>}</p>
     {o.target_link&&<p>Target link: <a href={o.target_link} target="_blank" rel="noreferrer" style={{textDecoration:'underline',overflowWrap:'anywhere'}}>{o.target_link}</a></p>}
     {o.provider_order_id&&<p>Provider order ID: <b>{o.provider_order_id}</b></p>}<p>Notes: {o.notes||'—'}</p>
     {o.target_link?<p>Payment: Charged from customer wallet · {taka(o.total)}</p>:<><p>Payment: {pay?.method} · via {pay?.provider||'manual'}{pay?.provider_ref?` · Ref ${pay.provider_ref}`:''}{pay?.paid_at?` · auto-paid ${new Date(pay.paid_at).toLocaleString()}`:''}{pay?.transaction_id?<> · Txn ID: <b>{pay.transaction_id}</b></>:null} · Amount {taka(pay?.amount)}</p>{o.payment_proof_url&&<p>Payment screenshot: <a href={o.payment_proof_url} target="_blank" rel="noreferrer" style={{textDecoration:'underline'}}>View customer receipt</a></p>}</>}

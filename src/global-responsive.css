@@ -1110,3 +1110,13 @@ main a {
   .admin-main .admin-mobile-menu-toggle span { display:none; }
   .admin-main .admin-mobile-menu-toggle { width:42px; justify-content:center; }
 }
+
+/* Mobile floating actions: keep WhatsApp clear of the fixed bottom nav
+   and the full-width floating cart. */
+@media (max-width:760px) {
+  .wafab {
+    right:max(12px,env(safe-area-inset-right));
+    bottom:calc(148px + env(safe-area-inset-bottom))!important;
+    z-index:1001;
+  }
+}

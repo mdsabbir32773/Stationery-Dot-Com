@@ -1,6 +1,10 @@
 -- Ensure deposit requests create admin alerts and optionally email every new admin notification via Resend.
 -- Store the Resend API key in Supabase Vault as "resend_api_key" to enable email delivery.
 
+-- Link deposit notifications to their originating request.
+alter table public.admin_notifications
+  add column if not exists deposit_request_id uuid references public.deposit_requests(id) on delete set null;
+
 create or replace function public.notify_admin_new_deposit()
 returns trigger
 language plpgsql

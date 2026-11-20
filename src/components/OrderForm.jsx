@@ -106,24 +106,25 @@ export default function OrderForm({service,pkg,settings}){
     if(!Number.isInteger(q)||q<1||q>100000)return setErr('Quantity must be a whole number, 1 or more');
     setBusy(true);
     trackInitiateCheckout({contentIds:[pkg.id],value:total,numItems:q});
-    let proofPath='';
+    let proofPath='';const createdPaths=[];
     try{
       const uploaded=[];
       for(const x of files){
         const path='uploads/'+Date.now()+'-'+Math.random().toString(36).slice(2)+'-'+x.name.replace(/[^\w.\-]/g,'_');
         const{error}=await supabase.storage.from('order-files').upload(path,x,{contentType:ct(x)});
         if(error)throw error;
-        uploaded.push({path,name:x.name});
+        createdPaths.push(path);uploaded.push({path,name:x.name});
       }
       const ext=proof.name.split('.').pop().toLowerCase();
       proofPath='uploads/payproof-'+Date.now()+'-'+Math.random().toString(36).slice(2)+'.'+ext;
       const{error:proofError}=await supabase.storage.from('order-files').upload(proofPath,proof,{contentType:proof.type});
       if(proofError)throw proofError;
+      createdPaths.push(proofPath);
       const{data,error}=await supabase.rpc('create_order',{p:{...f,transaction_id:'PROOF:'+proofPath,payment_proof_path:proofPath,method:selectedMethod.name,quantity:q,package_id:pkg.id,files:uploaded,coupon_code:coupon?.code||''}});
       if(error)throw error;
       nav('/order-success/'+data+'?value='+encodeURIComponent(total)+'&items='+encodeURIComponent(pkg.id));
     }catch(x){
-      if(proofPath)await supabase.storage.from('order-files').remove([proofPath]);
+      if(createdPaths.length)await supabase.storage.from('order-files').remove(createdPaths);
       setErr(x.message||'Something went wrong. Please try again.');
     }
     setBusy(false);

@@ -39,7 +39,7 @@ export default function SEO(){
       let page=pages[route]||(
         route.startsWith('/order-success/')?{title:'Order Confirmation | Stationery Dot Com',description:'Your Stationery Dot Com order confirmation.',noindex:true}:
         route.startsWith('/admin')?{title:'Admin | Stationery Dot Com',description:'Stationery Dot Com administration.',noindex:true}:
-        {title:SITE+' | Online Digital Services in Bangladesh',description:DEFAULT_DESCRIPTION}
+        {title:'Page Not Found | Stationery Dot Com',description:'The page you requested could not be found on Stationery Dot Com.',noindex:true}
       );
       let service=null;
       if(route.startsWith('/services/')){
@@ -52,7 +52,7 @@ export default function SEO(){
             title:`${clean(service.name)} | ${clean(service.category)||'Online Service'} | Stationery Dot Com`,
             description:clean(service.description)||`Order ${clean(service.name)} online from Stationery Dot Com in Bangladesh. View packages, pricing and service details.`
           };
-        }else page={title:'Service Details | Stationery Dot Com',description:'View service details, packages, pricing and ordering information from Stationery Dot Com.'};
+        }else page={title:'Service Not Found | Stationery Dot Com',description:'This service page is unavailable. Browse current services from Stationery Dot Com.',noindex:true};
       }
       const description=clean(page.description).slice(0,165);
       const canonical=new URL(route,window.location.origin).href;
@@ -86,9 +86,9 @@ export default function SEO(){
         }else breadcrumbItems.push({'@type':'ListItem',position:2,name:clean(page.title.split('|')[0]).slice(0,80),item:canonical});
       }
       const graph=[
-        {'@type':'Organization','@id':home+'#organization',name:SITE,url:home,logo:image,sameAs:['https://www.facebook.com/StationeryDotCom2','https://www.tiktok.com/@stationerydotcom','https://www.instagram.com/stationerydotcom']},
-        {'@type':'WebSite','@id':home+'#website',name:SITE,url:home,publisher:{'@id':home+'#organization'},potentialAction:{'@type':'SearchAction',target:new URL('/services?search={search_term_string}',window.location.origin).href,'query-input':'required name=search_term_string'}},
-        {'@type':'WebPage','@id':canonical+'#webpage',url:canonical,name:page.title,description:description,isPartOf:{'@id':home+'#website'}},
+        {'@type':'Organization','@id':home+'#organization',name:SITE,url:home,logo:image,description:DEFAULT_DESCRIPTION,telephone:['+8801827680520','+8801611103453'],address:{'@type':'PostalAddress',streetAddress:'116, 117, G-Nat Tower (2nd Floor), Fakirapool, VIP Road',addressLocality:'Dhaka',postalCode:'1000',addressCountry:'BD'},contactPoint:[{'@type':'ContactPoint',telephone:'+8801827680520',contactType:'customer support',areaServed:'BD',availableLanguage:['English','Bengali']},{'@type':'ContactPoint',telephone:'+8801611103453',contactType:'customer support',areaServed:'BD',availableLanguage:['English','Bengali']}],sameAs:['https://www.facebook.com/StationeryDotCom2','https://www.tiktok.com/@stationerydotcom','https://www.instagram.com/stationerydotcom']},
+        {'@type':'WebSite','@id':home+'#website',name:SITE,url:home,publisher:{'@id':home+'#organization'},potentialAction:{'@type':'SearchAction',target:new URL('/services?q={search_term_string}',window.location.origin).href,'query-input':'required name=search_term_string'}},
+        {'@type':'WebPage','@id':canonical+'#webpage',url:canonical,name:page.title,description:description,inLanguage:'en-BD',isPartOf:{'@id':home+'#website'}},
         {'@type':'BreadcrumbList','itemListElement':breadcrumbItems}
       ];
       if(service)graph.push({'@type':'Service','@id':canonical+'#service',name:clean(service.name),serviceType:clean(service.category),description:description,url:canonical,provider:{'@id':home+'#organization'},areaServed:{'@type':'Country',name:'Bangladesh'}});

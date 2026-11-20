@@ -16,7 +16,7 @@ export function OrderReviewForm({ order, existing, onSubmitted }) {
   const [message, setMessage] = useState('');
   if (existing) return <div className="review-submitted"><Stars value={existing.rating} /><span>{existing.status === 'approved' ? 'Your review is published.' : existing.status === 'rejected' ? 'This review is not published.' : 'Your review is waiting for approval.'}</span></div>;
   async function submit(e) {
-    e.preventDefault(); if (!rating) return setMessage('Choose a star rating first.'); if (!review.trim()) return setMessage('Please write a short review.');
+    e.preventDefault(); if (!rating) return setMessage('Choose a star rating first.');
     setBusy(true); setMessage('');
     const { error } = await supabase.from('service_reviews').insert({ user_id: (await supabase.auth.getUser()).data.user?.id, order_id: order.id, service_id: order.service_id, rating, review: review.trim() });
     setBusy(false);
@@ -25,8 +25,8 @@ export function OrderReviewForm({ order, existing, onSubmitted }) {
   }
   return <form className="order-review-form" onSubmit={submit}>
     <div className="review-form-top"><div><b>How was this service?</b><span>Order {order.order_code}</span></div><Stars value={rating} interactive onChange={setRating} /></div>
-    <label className="sr-only" htmlFor={`review-${order.id}`}>Write a review</label>
-    <textarea id={`review-${order.id}`} rows="3" minLength="1" maxLength="1200" required value={review} onChange={e => setReview(e.target.value)} placeholder="Share a little about your experience…" />
+    <label className="sr-only" htmlFor={`review-${order.id}`}>Write an optional review</label>
+    <textarea id={`review-${order.id}`} rows="3" minLength="1" maxLength="1200" required value={review} onChange={e => setReview(e.target.value)} placeholder="Optional: tell us about your experience…" />
     <div className="review-form-actions"><span>{message}</span><button className="btn sm" disabled={busy || !rating}>{busy ? 'Sending…' : 'Submit review'}</button></div>
   </form>;
 }
@@ -34,7 +34,7 @@ export function OrderReviewForm({ order, existing, onSubmitted }) {
 export function OrderReviews({ orders, reviews, onSubmitted }) {
   const completed = orders.filter(o => o.status === 'Completed' && o.service_id);
   if (!completed.length) return null;
-  return <section className="account-panel account-reviews"><div className="panel-title"><span className="account-icon"><MessageSquareText size={20}/></span><div><h2>Rate and review</h2><p>Share feedback on your completed services.</p></div></div><div className="account-review-list">{completed.map(o => <div className="account-review-row" key={o.id}><div className="account-review-title"><b>{o.service_name}</b><span>{o.order_code}</span></div><OrderReviewForm order={o} existing={reviews[o.id]} onSubmitted={onSubmitted}/></div>)}</div></section>;
+  return <section className="account-panel account-reviews"><div className="panel-title"><span className="account-icon"><MessageSquareText size={20}/></span><div><h2>Rate and review</h2><p>Rate your completed services. Writing a review is optional.</p></div></div><div className="account-review-list">{completed.map(o => <div className="account-review-row" key={o.id}><div className="account-review-title"><b>{o.service_name}</b><span>{o.order_code}</span></div><OrderReviewForm order={o} existing={reviews[o.id]} onSubmitted={onSubmitted}/></div>)}</div></section>;
 }
 
 export function ServiceReviews({ serviceId }) {

@@ -1,4 +1,5 @@
 name: Build check
+# Dependency security updates are applied and committed automatically.
 
 on:
   push:

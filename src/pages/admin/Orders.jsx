@@ -65,7 +65,7 @@ export default function Orders(){
               <td><Link to={`/admin/orders/${x.id}`}><b>{x.order_code}</b></Link></td>
               <td style={{whiteSpace:'nowrap'}}>{dhakaDateTime(x.created_at)}</td>
               <td>{x.customer_name}<br/><span className="muted">{x.phone}</span></td>
-              <td>{x.service_name}</td>
+              <td><div style={{display:'grid',gap:4}}><b>{x.service_name}</b><Link className="text-link" to={`/services?q=${encodeURIComponent(x.service_name||'')}`} target="_blank" rel="noreferrer">View service ↗</Link></div></td>
               <td>{taka(x.total)}</td>
               <td><StatusBadge status={x.status}/></td>
               <td>{x.target_link?<StatusBadge status="Wallet charged"/>:<><StatusBadge status={x.payments?.[0]?.status}/><br/><span className="muted">{x.payments?.[0]?.provider||'manual'}</span></>}</td>

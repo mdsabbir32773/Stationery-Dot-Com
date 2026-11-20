@@ -736,3 +736,122 @@ main.wrap > .checkout:not(.premium-checkout) .fld textarea { width:100%; min-wid
 @media (prefers-reduced-motion:reduce) {
   .sdc-mobile-nav a { transition:none!important; }
 }
+
+
+/* Responsive audit pass — restore the intended customer bottom navigation
+   and keep floating cart actions clear of it on small screens. */
+@media (max-width:760px) {
+  header .nav .sdc-mobile-nav {
+    display:grid!important;
+    position:fixed!important;
+    grid-template-columns:repeat(5,minmax(0,1fr))!important;
+    left:10px!important;
+    right:10px!important;
+    bottom:max(10px,env(safe-area-inset-bottom))!important;
+    width:auto!important;
+    min-height:60px!important;
+    height:60px!important;
+    z-index:1000!important;
+    padding:5px!important;
+    gap:3px!important;
+    border:1px solid #dfe7e1!important;
+    border-radius:18px!important;
+    background:rgba(255,255,255,.97)!important;
+    box-shadow:0 12px 35px rgba(31,55,39,.16)!important;
+    backdrop-filter:blur(16px);
+  }
+  header .nav .sdc-mobile-nav a {
+    display:flex!important;
+    min-width:0!important;
+    min-height:48px!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:3px!important;
+    padding:4px 2px!important;
+    border-radius:12px!important;
+    color:#68746c!important;
+    font-size:18px!important;
+    text-decoration:none!important;
+  }
+  header .nav .sdc-mobile-nav a.active {
+    background:#edf5ef!important;
+    color:#2f6946!important;
+  }
+  header .nav .sdc-mobile-nav a span {
+    display:block!important;
+    font-size:9px!important;
+    font-weight:750!important;
+    line-height:1.1!important;
+    white-space:nowrap!important;
+  }
+  header .nav .sdc-mobile-nav a b {
+    position:absolute!important;
+    top:2px!important;
+    right:16%!important;
+    min-width:14px!important;
+    height:14px!important;
+    padding:0 3px!important;
+    border-radius:999px!important;
+    background:#2f6946!important;
+    color:#fff!important;
+    font-size:8px!important;
+    display:grid!important;
+    place-items:center!important;
+  }
+  .sdc-floating-cart {
+    bottom:calc(82px + env(safe-area-inset-bottom))!important;
+    z-index:999!important;
+  }
+  body {
+    padding-bottom:calc(92px + env(safe-area-inset-bottom))!important;
+  }
+}
+@media (max-width:380px) {
+  header .nav .sdc-mobile-nav { left:7px!important; right:7px!important; }
+  header .nav .sdc-mobile-nav a span { font-size:8px!important; }
+}
+
+/* Keep data tables usable without allowing them to stretch the page itself. */
+.admin-main .scroll,
+.admin-main .table-wrap,
+main .scroll,
+main .table-wrap {
+  max-width:100%;
+  min-width:0;
+  overflow-x:auto;
+  overscroll-behavior-x:contain;
+  -webkit-overflow-scrolling:touch;
+}
+.admin-main .scroll table,
+.admin-main .table-wrap table {
+  width:max-content;
+  min-width:100%;
+  table-layout:auto;
+}
+.admin-main .scroll th,
+.admin-main .scroll td,
+.admin-main .table-wrap th,
+.admin-main .table-wrap td {
+  overflow-wrap:anywhere;
+}
+.admin-main .row,
+.admin-main .admin-review-actions,
+.admin-main .service-row-actions,
+.admin-main .package-option-actions {
+  flex-wrap:wrap;
+}
+.admin-main button,
+.admin-main a,
+main button,
+main a {
+  -webkit-tap-highlight-color:transparent;
+}
+@media (max-width:600px) {
+  .admin-main .scroll { border-radius:12px; }
+  .admin-main .scroll th,
+  .admin-main .scroll td { padding:9px 10px; }
+  .admin-main .row .btn { flex:0 1 auto; }
+  .admin-main .admin-filter { width:100%; max-width:none; }
+  .admin-main .admin-filter input { min-width:0; }
+}

@@ -16,7 +16,7 @@ export default function CustomerDetails(){
    supabase.from('deposit_requests').select('id,method,amount,transaction_id,status,admin_note,created_at,reviewed_at,payment_proof_path').eq('user_id',id).order('created_at',{ascending:false})
   ]);
   const err=p.error||w.error||o.error||tx.error||d.error;if(err){if(live){setError(err.message);setData({});}return;}
-  if(live){setData({profile:p.data,balance:Number(w.data?.balance||0),orders:o.data||[],transactions:tx.data||[],deposits:d.data||[]});const proofUrls={};await Promise.all((d.data||[]).filter(x=>x.payment_proof_path).map(async x=>{const{data:obj}=await supabase.storage.from('order-files').createSignedUrl(x.payment_proof_path,300);if(obj?.signedUrl)proofUrls[x.id]=obj.signedUrl;}));if(live)setProofs(proofUrls);}
+  if(live)setData({profile:p.data,balance:Number(w.data?.balance||0),orders:o.data||[],transactions:tx.data||[],deposits:d.data||[]});
   const signed={};await Promise.all((d.data||[]).filter(x=>x.payment_proof_path).map(async x=>{const{data:s}=await supabase.storage.from('order-files').createSignedUrl(x.payment_proof_path,300);if(s?.signedUrl)signed[x.id]=s.signedUrl;}));if(live)setProofs(signed);
  })();return()=>{live=false};},[id,refresh]);
  const totals=useMemo(()=>{const t=data?.transactions||[];return{deposited:t.filter(x=>x.transaction_type==='deposit').reduce((s,x)=>s+Number(x.amount||0),0),charged:Math.abs(t.filter(x=>x.transaction_type==='order_charge').reduce((s,x)=>s+Number(x.amount||0),0)),refunds:t.filter(x=>x.transaction_type==='refund').reduce((s,x)=>s+Number(x.amount||0),0)};},[data]);

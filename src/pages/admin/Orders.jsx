@@ -12,22 +12,22 @@ export default function Orders(){
   setBusy(true);setError('');
   let query=supabase.from('orders').select('*,payments(status,provider)',{count:'exact'}).order('created_at',{ascending:false}).range(page*PAGE_SIZE,(page+1)*PAGE_SIZE-1);
   if(f)query=query.eq('status',f);if(pf)query=query.eq('payments.status',pf);if(service)query=query.eq('service_name',service);
-  if(from)query=query.gte('created_at',from+'T00:00:00+06:00');if(to)query=query.lt('created_at',to+'T23:59:59.999+06:00');
+  if(from)query=query.gte('created_at',from+'T00:00:00+06:00');if(to)query=query.lt('created_at',to+'T23:59:59.999+06:00');const term=q.trim().replace(/[,%_()]/g,' ').trim();if(term)query=query.or('order_code.ilike.%'+term+'%,customer_name.ilike.%'+term+'%,phone.ilike.%'+term+'%');
   const{data,error:e,count:n}=await query;
   if(e)setError(e.message);else{setRows(data||[]);setCount(n||0);setSelected([]);}
   setBusy(false);
- },[page,f,pf,service,from,to]);
+ },[page,f,pf,service,from,to,q]);
  useEffect(()=>{supabase.from('services').select('name').order('name').then(({data})=>setServices(data||[]));},[]);
  useEffect(()=>{load();},[load]);
- useEffect(()=>{setPage(0);},[f,pf,service,from,to]);
- const visible=useMemo(()=>{const t=q.trim().toLowerCase();return rows.filter(x=>!t||[x.order_code,x.customer_name,x.phone].join(' ').toLowerCase().includes(t));},[rows,q]);
+ useEffect(()=>{setPage(0);},[f,pf,service,from,to,q]);
+ const visible=useMemo(()=>rows,[rows]);
  const toggle=id=>setSelected(v=>v.includes(id)?v.filter(x=>x!==id):[...v,id]);
  const exportCsv=()=>{const header=['Order ID','Date','Customer','Phone','Service','Package','Quantity','Total','Order Status','Payment Status'];const lines=[header,...visible.map(x=>[x.order_code,dhakaDateTime(x.created_at),x.customer_name,x.phone,x.service_name,x.package_name,x.quantity,x.total,x.status,x.payments?.[0]?.status])].map(row=>row.map(csvCell).join(','));const blob=new Blob(['\uFEFF'+lines.join('\r\n')],{type:'text/csv;charset=utf-8;'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='stationery-orders-page-'+(page+1)+'.csv';a.click();URL.revokeObjectURL(url);};
  const applyBulk=async()=>{if(!selected.length||!bulkStatus)return;setBusy(true);const results=await Promise.all(selected.map(id=>{const row=rows.find(x=>x.id===id);return row?.target_link?supabase.rpc('admin_update_smm_order',{p_order_id:id,p_status:bulkStatus,p_note:''}):supabase.rpc('admin_set_order_status',{p_order_id:id,p_status:bulkStatus});}));const failed=results.filter(x=>x.error);setBusy(false);await load();if(failed.length)setError(failed.length+' order(s) could not be updated: '+failed[0].error.message);};
  const totalPages=Math.max(1,Math.ceil(count/PAGE_SIZE));
  return(<><div className="admin-heading"><div><h1>Orders</h1><p className="muted">{count.toLocaleString()} orders · {PAGE_SIZE} per page</p></div><div className="row"><button className="btn alt sm" onClick={exportCsv} disabled={!visible.length}><Download size={15}/>Export CSV</button><button className="btn alt sm" onClick={load} disabled={busy}><RefreshCw size={15}/>Refresh</button></div></div>
  <div className="grid" style={{gridTemplateColumns:'repeat(auto-fit,minmax(165px,1fr))',marginBottom:12}}>
- <input placeholder="Search current page: ID, name, phone" value={q} onChange={e=>setQ(e.target.value)} aria-label="Search orders"/>
+ <input placeholder="Search all orders: ID, name, phone" value={q} onChange={e=>setQ(e.target.value)} aria-label="Search orders"/>
  <select value={f} onChange={e=>setF(e.target.value)} aria-label="Order status"><option value="">All order statuses</option>{ORDER_STATUSES.map(s=><option key={s}>{s}</option>)}</select>
  <select value={pf} onChange={e=>setPf(e.target.value)} aria-label="Payment status"><option value="">All payment statuses</option>{PAY_STATUSES.map(s=><option key={s}>{s}</option>)}</select>
  <select value={service} onChange={e=>setService(e.target.value)} aria-label="Service filter"><option value="">All services</option>{services.map(s=><option key={s.name}>{s.name}</option>)}</select>

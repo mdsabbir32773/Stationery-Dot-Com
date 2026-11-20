@@ -1021,3 +1021,92 @@ main a {
   .admin-main .scroll table { min-width:640px; }
   .btn,.admin-main button { max-width:100%; }
 }
+
+
+/* Third pass: service detail, order forms, customer records and compact devices. */
+.service-detail-head,
+.service-detail-body,
+.service-detail-content,
+.service-detail-content > *,
+.service-detail-actions { min-width:0; }
+.service-detail-head h1,
+.service-detail-body h1,
+.track-intro h1 { overflow-wrap:anywhere; }
+.service-detail-image,
+.service-image-preview { display:block; max-width:100%; height:auto; }
+.track-form { width:100%; max-width:100%; }
+.track-form .fld,
+.track-form input { min-width:0; width:100%; }
+.order-form,
+.quote-form,
+.order-form .two,
+.quote-form .two { min-width:0; }
+.order-form input,
+.order-form select,
+.order-form textarea,
+.quote-form input,
+.quote-form select,
+.quote-form textarea { width:100%; max-width:100%; }
+.account-page,
+.account-page > *,
+.account-panel > *,
+.account-orders > *,
+.account-review-list > * { min-width:0; max-width:100%; }
+.account-nav { display:flex; flex-wrap:wrap; gap:8px; }
+.account-nav a { min-height:40px; display:inline-flex; align-items:center; }
+.account-order a,
+.account-order b,
+.account-order small { overflow-wrap:anywhere; }
+.admin-main .admin-heading + .stats { margin-top:14px; }
+.admin-main .card { overflow-wrap:anywhere; }
+.admin-main .card img { max-width:100%; height:auto; }
+.admin-main .card form { min-width:0; max-width:100%; }
+.admin-main .card form > label { min-width:0; }
+.admin-main .card form input,
+.admin-main .card form select,
+.admin-main .card form textarea { min-width:0; width:100%; }
+.admin-main .card .row > * { min-width:0; }
+.admin-main .card .row > input { flex:1 1 180px; }
+.admin-main .card .row > button { flex:0 1 auto; }
+.admin-main .deposit-proof,
+.admin-main .proof-preview,
+.admin-main .payment-proof { max-width:100%; }
+.admin-main .deposit-proof img,
+.admin-main .proof-preview img,
+.admin-main .payment-proof img { display:block; max-width:100%; height:auto; object-fit:contain; }
+
+@media (max-width:760px) {
+  .service-detail-head { display:flex; flex-direction:column; align-items:stretch; gap:12px; }
+  .service-detail-actions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); width:100%; }
+  .service-detail-actions > * { min-width:0; width:100%; }
+  .service-detail-content { display:grid; grid-template-columns:minmax(0,1fr)!important; gap:14px; }
+  .track-page { padding-top:16px; }
+  .track-form { padding:16px!important; }
+  .account-nav { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .account-nav a { justify-content:center; text-align:center; }
+  .account-order { display:flex; flex-direction:column; align-items:stretch; gap:8px; }
+  .account-order > * { width:100%; }
+  .admin-main .card form[style*="gridTemplateColumns"] { display:grid!important; grid-template-columns:minmax(0,1fr)!important; }
+  .admin-main .card form[style*="gridTemplateColumns"] > button { width:100%; }
+  .admin-main .admin-shortcut p { overflow-wrap:anywhere; }
+  .admin-main .admin-shortcut h3 { font-size:15px; }
+  .admin-main .deposit-actions,
+  .admin-main .review-actions { display:flex; flex-wrap:wrap; gap:8px; }
+  .admin-main .deposit-actions > *,
+  .admin-main .review-actions > * { flex:1 1 120px; }
+}
+@media (max-width:520px) {
+  .service-detail-actions { grid-template-columns:minmax(0,1fr); }
+  .account-nav { grid-template-columns:minmax(0,1fr); }
+  .account-order { padding:13px!important; }
+  .track-intro h1 { font-size:clamp(26px,8vw,34px); }
+  .admin-main .admin-heading .btn { width:100%; justify-content:center; }
+  .admin-main .card { padding:13px!important; }
+  .admin-main .card form .btn { width:100%; justify-content:center; }
+}
+@media (max-width:360px) {
+  body { min-width:320px; }
+  .home-hero h1 { font-size:29px; }
+  .admin-main .admin-mobile-menu-toggle span { display:none; }
+  .admin-main .admin-mobile-menu-toggle { width:42px; justify-content:center; }
+}

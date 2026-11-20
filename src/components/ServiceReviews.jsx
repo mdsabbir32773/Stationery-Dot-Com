@@ -26,7 +26,7 @@ export function OrderReviewForm({ order, existing, onSubmitted }) {
   return <form className="order-review-form" onSubmit={submit}>
     <div className="review-form-top"><div><b>How was this service?</b><span>Order {order.order_code}</span></div><Stars value={rating} interactive onChange={setRating} /></div>
     <label className="sr-only" htmlFor={`review-${order.id}`}>Write an optional review</label>
-    <textarea id={`review-${order.id}`} rows="3" minLength="1" maxLength="1200" required value={review} onChange={e => setReview(e.target.value)} placeholder="Optional: tell us about your experience…" />
+    <textarea id={`review-${order.id}`} rows="3" maxLength="1200" value={review} onChange={e => setReview(e.target.value)} placeholder="Optional: tell us about your experience…" />
     <div className="review-form-actions"><span>{message}</span><button className="btn sm" disabled={busy || !rating}>{busy ? 'Sending…' : 'Submit review'}</button></div>
   </form>;
 }

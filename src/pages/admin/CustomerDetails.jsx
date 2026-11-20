@@ -16,9 +16,11 @@ export default function CustomerDetails(){
    supabase.from('deposit_requests').select('id,method,amount,transaction_id,status,admin_note,created_at,reviewed_at,payment_proof_path').eq('user_id',id).order('created_at',{ascending:false})
   ]);
   const err=p.error||w.error||o.error||tx.error||d.error;if(err){if(live){setError(err.message);setData({});}return;}
-  if(live)setData({profile:p.data,balance:Number(w.data?.balance||0),orders:o.data||[],transactions:tx.data||[],deposits:d.data||[]});
+  if(live){setData({profile:p.data,balance:Number(w.data?.balance||0),orders:o.data||[],transactions:tx.data||[],deposits:d.data||[]});const proofUrls={};await Promise.all((d.data||[]).filter(x=>x.payment_proof_path).map(async x=>{const{data:obj}=await supabase.storage.from('order-files').createSignedUrl(x.payment_proof_path,300);if(obj?.signedUrl)proofUrls[x.id]=obj.signedUrl;}));if(live)setProofs(proofUrls);}
   const signed={};await Promise.all((d.data||[]).filter(x=>x.payment_proof_path).map(async x=>{const{data:s}=await supabase.storage.from('order-files').createSignedUrl(x.payment_proof_path,300);if(s?.signedUrl)signed[x.id]=s.signedUrl;}));if(live)setProofs(signed);
  })();return()=>{live=false};},[id,refresh]);
+ async function reviewDeposit(row,approved){const note=approved?'':(window.prompt('Reason for rejecting this deposit (optional):','')??null);if(note===null)return;setBusy(row.id);setActionMessage('');const{error}=await supabase.rpc('review_smm_deposit',{p_request_id:row.id,p_approved:approved,p_note:note});setBusy('');setActionMessage(error?error.message:'Deposit '+(approved?'approved':'rejected')+' successfully.');if(!error)setRefresh(v=>v+1);}
+ async function reverseDeposit(row){if(!window.confirm('This will deduct ৳'+Number(row.amount).toLocaleString('en-BD')+' from the wallet and mark this deposit Rejected. Continue?'))return;const note=window.prompt('Reason for reversing this approval (optional):','');if(note===null)return;setBusy(row.id);setActionMessage('');const{error}=await supabase.rpc('reverse_smm_deposit',{p_request_id:row.id,p_note:note});setBusy('');setActionMessage(error?error.message:'Approved deposit reversed and rejected.');if(!error)setRefresh(v=>v+1);}
  const totals=useMemo(()=>{const t=data?.transactions||[];return{deposited:t.filter(x=>x.transaction_type==='deposit').reduce((s,x)=>s+Number(x.amount||0),0),charged:Math.abs(t.filter(x=>x.transaction_type==='order_charge').reduce((s,x)=>s+Number(x.amount||0),0)),refunds:t.filter(x=>x.transaction_type==='refund').reduce((s,x)=>s+Number(x.amount||0),0)};},[data]);
  const reload=()=>setRefresh(v=>v+1);
  async function reviewDeposit(row,approved){setBusy(row.id);setMessage('');const{error}=await supabase.rpc('review_smm_deposit',{p_request_id:row.id,p_approved:approved,p_note:''});setBusy('');setMessage(error?error.message:`Deposit ${approved?'approved':'rejected'} successfully.`);if(!error)reload();}
@@ -32,6 +34,7 @@ export default function CustomerDetails(){
   <Link to="/admin/customers" className="text-link" style={{display:'inline-flex',alignItems:'center',gap:6,marginBottom:14}}><ArrowLeft size={16}/> Back to Customers</Link>
   <div className="admin-heading"><div><span className="eyebrow">Customer profile</span><h1>{p.full_name||'Customer'}</h1><p className="muted">{p.email||'No email'} · {p.phone||'No phone'} · Joined {dateTime(p.created_at)}</p></div><button className="btn alt sm" onClick={reload}><RefreshCw size={15}/> Refresh</button></div>
   {message&&<p className="callout warn" role="status">{message}</p>}
+  {actionMessage&&<p className="callout warn" role="status">{actionMessage}</p>}
   <div className="admin-insight-grid" style={{marginBottom:18}}>
    <div className="card"><small><Wallet size={14}/> Available Balance</small><b>{taka(data.balance)}</b></div>
    <div className="card"><small><ArrowDownToLine size={14}/> Total Deposited</small><b>{taka(totals.deposited)}</b></div>
@@ -48,7 +51,7 @@ export default function CustomerDetails(){
   </tbody></table></div></section>
   <section className="card"><h2>Deposit Requests & Approval</h2><div className="scroll"><table><thead><tr><th>Method / Proof</th><th>Amount</th><th>Transaction ID</th><th>Status</th><th>Submitted</th><th>Action</th></tr></thead><tbody>
    {data.deposits.map(x=><tr key={x.id}><td>{x.method}{proofs[x.id]&&<><br/><a href={proofs[x.id]} target="_blank" rel="noreferrer" className="text-link"><ExternalLink size={13}/> View payment proof</a></>}</td><td><b>{taka(x.amount)}</b></td><td>{x.transaction_id||'—'}</td><td>{x.status}{x.admin_note&&<><br/><small>{x.admin_note}</small></>}</td><td>{dateTime(x.created_at)}</td><td>{x.status==='Pending'?<div className="row"><button className="btn sm" disabled={Boolean(busy)||!x.payment_proof_path} onClick={()=>reviewDeposit(x,true)}><Check size={14}/>{busy===x.id?'…':'Approve'}</button><button className="btn sm red" disabled={Boolean(busy)} onClick={()=>reviewDeposit(x,false)}><X size={14}/>Reject</button></div>:x.status==='Approved'?<button className="btn sm red" disabled={Boolean(busy)} onClick={()=>reverseDeposit(x)}><RotateCcw size={14}/>{busy===x.id?'…':'Revoke & Reject'}</button>:<span className="muted">Reviewed</span>}</td></tr>)}
-   {!data.deposits.length&&<tr><td colSpan="6" className="empty">No deposit requests found.</td></tr>}
+   {!data.deposits.length&&<tr><td colSpan="8" className="empty">No deposit requests found.</td></tr>}
   </tbody></table></div><p className="muted">Pending deposit approve/reject এবং approved deposit revoke এখান থেকেই করা যাবে।</p></section>
  </div>;
 }

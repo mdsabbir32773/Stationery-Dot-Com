@@ -1120,3 +1120,12 @@ main a {
     z-index:1001;
   }
 }
+
+/* A filtered sticky header can become the containing block for fixed
+   descendants. Keep the customer bottom navigation viewport-anchored. */
+@media (max-width:760px) {
+  header .nav {
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+  }
+}

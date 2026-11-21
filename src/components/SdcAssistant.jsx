@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { MessageCircle, X, Send, Sparkles, Headphones, ArrowUpRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import '../chatbot.css';
+import SdcChatActions from './SdcChatActions';
 
 const starters = ['Help me place an order', 'Check my order status', 'How do I add wallet funds?'];
 const greeting = { role: 'assistant', text: "Hi there! 👋 I'm SDC Assistant. Tell me what you need help with — services, packages, payments or orders. Ami Bangla, English, Banglish — jevabe bolben, shevabei reply korbo." };
@@ -11,6 +12,7 @@ export default function SdcAssistant() {
   const [messages, setMessages] = useState([greeting]);
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
+  const [action, setAction] = useState('');
   const endRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -50,7 +52,12 @@ export default function SdcAssistant() {
             {m.role === 'assistant' && <div className="sdc-chat-mini-avatar"><Sparkles size={13}/></div>}
             <div className="sdc-chat-bubble">{m.text.split('\n').map((line, n) => <span key={n}>{line}{n < m.text.split('\n').length - 1 && <br/>}</span>)}</div>
           </div>)}
-          {messages.length === 1 && <div className="sdc-chat-starters">{starters.map(s => <button key={s} onClick={() => sendMessage(s)}>{s}<ArrowUpRight size={13}/></button>)}</div>}
+          <div className="sdc-chat-starters">
+            <button onClick={() => setAction('order')}>Place an order here <ArrowUpRight size={13}/></button>
+            <button onClick={() => setAction('deposit')}>Add wallet funds here <ArrowUpRight size={13}/></button>
+            <button onClick={() => sendMessage('Check my order status')}>Check my order status <ArrowUpRight size={13}/></button>
+          </div>
+          {action && <SdcChatActions mode={action} onCancel={() => setAction('')} onComplete={message => { setMessages(prev => [...prev, { role: 'assistant', text: message }]); if (message.startsWith('Your wallet balance is insufficient.')) setAction('deposit'); }} />}
           {busy && <div className="sdc-chat-row is-assistant"><div className="sdc-chat-mini-avatar"><Sparkles size={13}/></div><div className="sdc-chat-bubble sdc-chat-typing"><i/><i/><i/></div></div>}
           <div ref={endRef}/>
         </div>

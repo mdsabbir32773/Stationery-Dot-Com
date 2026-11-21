@@ -7,28 +7,29 @@ function enabled(){
   return typeof window!=='undefined'&&Boolean(PIXEL_ID);
 }
 
+function ensureFbq(){
+  if(window.fbq)return window.fbq;
+  const fbq=function(){
+    if(fbq.callMethod)fbq.callMethod.apply(fbq,arguments);
+    else fbq.queue.push(arguments);
+  };
+  fbq.push=fbq;
+  fbq.loaded=true;
+  fbq.version='2.0';
+  fbq.queue=[];
+  window.fbq=fbq;
+  window._fbq=fbq;
+  return fbq;
+}
+
 export function initMetaPixel(){
   if(!enabled())return Promise.resolve(false);
   if(initialized)return Promise.resolve(true);
   if(initPromise)return initPromise;
 
   initPromise=new Promise(resolve=>{
-    // Use Meta's standard queue so events are retained while fbevents.js loads.
-    if(!window.fbq){
-      const fbq=function(){
-        if(fbq.callMethod){
-          fbq.callMethod.apply(fbq,arguments);
-        }else{
-          fbq.queue.push(arguments);
-        }
-      };
-      fbq.push=fbq;
-      fbq.loaded=true;
-      fbq.version='2.0';
-      fbq.queue=[];
-      window.fbq=fbq;
-      window._fbq=fbq;
-    }
+    // Initialize the standard queue before loading Meta's script.
+    ensureFbq();
 
     window.fbq('init',PIXEL_ID);
 
@@ -56,8 +57,7 @@ export function initMetaPixel(){
 
 export function trackMetaEvent(eventName,params={}){
   if(!enabled()||typeof window==='undefined')return false;
-  window.fbq=window.fbq||function(){(window.fbq.queue=window.fbq.queue||[]).push(arguments)};
-  window.fbq('track',eventName,params);
+  ensureFbq()('track',eventName,params);
   return true;
 }
 

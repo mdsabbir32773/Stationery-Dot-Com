@@ -1,0 +1,23 @@
+
+drop policy if exists "admins read notifications" on public.admin_notifications;
+create policy "admins read notifications" on public.admin_notifications for select to authenticated using (exists(select 1 from public.admin_profiles a where a.id=(select auth.uid())));
+drop policy if exists "admins update notifications" on public.admin_notifications;
+create policy "admins update notifications" on public.admin_notifications for update to authenticated using (exists(select 1 from public.admin_profiles a where a.id=(select auth.uid()))) with check (exists(select 1 from public.admin_profiles a where a.id=(select auth.uid())));
+drop policy if exists "own profile" on public.admin_profiles;
+create policy "own profile" on public.admin_profiles for select to public using (id=(select auth.uid()));
+drop policy if exists "customer reads own profile" on public.customer_profiles;
+create policy "customer reads own profile" on public.customer_profiles for select to authenticated using (id=(select auth.uid()));
+drop policy if exists "deposit request owner or admin read" on public.deposit_requests;
+create policy "deposit request owner or admin read" on public.deposit_requests for select to authenticated using (user_id=(select auth.uid()) or (select public.is_admin()));
+drop policy if exists "customer reads own orders" on public.orders;
+create policy "customer reads own orders" on public.orders for select to authenticated using (customer_id=(select auth.uid()));
+drop policy if exists "customer reads own payments" on public.payments;
+create policy "customer reads own payments" on public.payments for select to authenticated using (exists(select 1 from public.orders o where o.id=payments.order_id and o.customer_id=(select auth.uid())));
+drop policy if exists "customer reads own service reviews" on public.service_reviews;
+create policy "customer reads own service reviews" on public.service_reviews for select to authenticated using (user_id=(select auth.uid()));
+drop policy if exists "customer submits review for completed order" on public.service_reviews;
+create policy "customer submits review for completed order" on public.service_reviews for insert to authenticated with check (user_id=(select auth.uid()) and status='pending'::text and reviewed_at is null and exists(select 1 from public.orders o where o.id=service_reviews.order_id and o.customer_id=(select auth.uid()) and o.service_id=service_reviews.service_id and o.status='Completed'::text));
+drop policy if exists "wallet transactions owner or admin read" on public.wallet_transactions;
+create policy "wallet transactions owner or admin read" on public.wallet_transactions for select to authenticated using (user_id=(select auth.uid()) or (select public.is_admin()));
+drop policy if exists "wallet owner or admin read" on public.wallets;
+create policy "wallet owner or admin read" on public.wallets for select to authenticated using (user_id=(select auth.uid()) or (select public.is_admin()));

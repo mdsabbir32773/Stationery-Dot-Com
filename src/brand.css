@@ -301,3 +301,18 @@ footer .cols li a:hover{opacity:1;transform:translateX(2px)}
 .account-security-form input{width:100%;min-width:0}
 .account-security-form button{justify-self:start;margin-top:6px}
 .wallet-deposit-note{display:block;margin-top:4px;color:#8a5a28;font-size:11px;line-height:1.4}
+
+
+.customer-notifications{margin-top:18px}
+.customer-notifications .panel-title{align-items:center}
+.customer-notification-count{display:inline-grid;place-items:center;min-width:19px;height:19px;padding:0 5px;border-radius:99px;background:#dcece1;color:#285d3c;font-size:10px;vertical-align:middle}
+.customer-notification-list{display:grid;gap:8px}
+.customer-notification{display:flex;align-items:flex-start;gap:11px;padding:12px;border:1px solid var(--line,#e5e7eb);border-radius:12px;background:#fff}
+.customer-notification.unread{background:#f5faf6;border-color:#c8ddcd}
+.customer-notification-icon{display:grid;place-items:center;flex:none;width:30px;height:30px;border-radius:9px;background:#e8f1ea;color:#397452}
+.customer-notification-copy{flex:1;min-width:0}
+.customer-notification-copy b{font-size:13px}
+.customer-notification-copy p{margin:3px 0 5px;font-size:12px;color:#58665d;overflow-wrap:anywhere}
+.customer-notification-copy small{display:flex;align-items:center;gap:4px;color:#87928a;font-size:10px}
+.customer-notification-read{border:0;background:transparent;color:#397452;font-size:11px;font-weight:750;cursor:pointer;white-space:nowrap}
+@media(max-width:520px){.customer-notification{flex-wrap:wrap}.customer-notification-read{margin-left:41px}}

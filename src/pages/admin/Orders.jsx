@@ -10,7 +10,7 @@ export default function Orders(){
  const[rows,setRows]=useState([]),[count,setCount]=useState(0),[page,setPage]=useState(0),[f,setF]=useState(''),[pf,setPf]=useState(''),[q,setQ]=useState(''),[service,setService]=useState(''),[from,setFrom]=useState(''),[to,setTo]=useState(''),[services,setServices]=useState([]),[selected,setSelected]=useState([]),[bulkStatus,setBulkStatus]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState('');
  const load=useCallback(async()=>{
   setBusy(true);setError('');
-  let query=supabase.from('orders').select('*,payments(status,provider)',{count:'exact'}).order('created_at',{ascending:false}).range(page*PAGE_SIZE,(page+1)*PAGE_SIZE-1);
+  let query=supabase.from('orders').select(pf?'*,payments!inner(status,provider)':'*,payments(status,provider)',{count:'exact'}).order('created_at',{ascending:false}).range(page*PAGE_SIZE,(page+1)*PAGE_SIZE-1);
   if(f)query=query.eq('status',f);if(pf)query=query.eq('payments.status',pf);if(service)query=query.eq('service_name',service);
   if(from)query=query.gte('created_at',from+'T00:00:00+06:00');if(to)query=query.lt('created_at',to+'T23:59:59.999+06:00');const term=q.trim().replace(/[,%_()]/g,' ').trim();if(term)query=query.or('order_code.ilike.%'+term+'%,customer_name.ilike.%'+term+'%,phone.ilike.%'+term+'%');
   const{data,error:e,count:n}=await query;
@@ -34,7 +34,7 @@ export default function Orders(){
  <label className="fld"><span>From date</span><input type="date" value={from} onChange={e=>setFrom(e.target.value)}/></label>
  <label className="fld"><span>To date</span><input type="date" value={to} onChange={e=>setTo(e.target.value)}/></label>
  </div>
- <div className="row" style={{margin:'10px 0',flexWrap:'wrap'}}><label style={{display:'flex',alignItems:'center',gap:8}}><input type="checkbox" checked={visible.length>0&&visible.every(x=>selected.includes(x.id))} onChange={e=>setSelected(e.target.checked?visible.map(x=>x.id):[])}/>Select visible ({selected.length})</label><select value={bulkStatus} onChange={e=>setBulkStatus(e.target.value)}><option value="">Bulk status…</option>{ORDER_STATUSES.map(s=><option key={s}>{s}</option>)}</select><button className="btn sm" disabled={!selected.length||!bulkStatus||busy} onClick={applyBulk}>Apply to selected</button></div>
+ <div className="row" style={{margin:'10px 0',flexWrap:'wrap'}}><label style={{display:'flex',alignItems:'center',gap:8}}><input type="checkbox" checked={visible.length>0&&visible.every(x=>selected.includes(x.id))} onChange={e=>setSelected(e.target.checked?visible.map(x=>x.id):[])}/>Select visible ({selected.length})</label><select value={bulkStatus} onChange={e=>setBulkStatus(e.target.value)}><option value="">Bulk status…</option>{(rows.some(x=>selected.includes(x.id)&&x.target_link)?ORDER_STATUSES.filter(s=>['Payment Received','Processing','Completed','Cancelled','Refunded'].includes(s)):ORDER_STATUSES).map(s=><option key={s}>{s}</option>)}</select><button className="btn sm" disabled={!selected.length||!bulkStatus||busy} onClick={applyBulk}>Apply to selected</button></div>
  {error&&<p className="err" role="alert">{error}</p>}
  {busy&&<p className="muted">Loading / updating…</p>}
  <div className="scroll"><table><thead><tr><th></th><th>Order</th><th>Order Date &amp; Time</th><th>Customer</th><th>Service</th><th>Total</th><th>Status</th><th>Payment</th></tr></thead><tbody>

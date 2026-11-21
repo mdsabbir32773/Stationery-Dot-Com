@@ -294,3 +294,10 @@ footer .cols li a:hover{opacity:1;transform:translateX(2px)}
 .account-order-details a:not(.btn){font-size:12px;overflow-wrap:anywhere;color:#397452}
 .account-order-details .account-order-detail-wide{grid-column:1/-1}
 @media(max-width:520px){.account-order-details{grid-template-columns:1fr}.account-order-details .account-order-detail-wide{grid-column:auto}}
+
+
+.account-security-form{display:grid;gap:8px}
+.account-security-form label{font-size:12px;font-weight:750;color:#526057;margin-top:4px}
+.account-security-form input{width:100%;min-width:0}
+.account-security-form button{justify-self:start;margin-top:6px}
+.wallet-deposit-note{display:block;margin-top:4px;color:#8a5a28;font-size:11px;line-height:1.4}

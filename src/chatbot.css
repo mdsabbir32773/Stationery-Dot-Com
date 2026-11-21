@@ -18,3 +18,31 @@
 .sdc-chat-compose{display:flex;align-items:center;gap:9px;padding:12px 13px;border-top:1px solid #eceef3;background:#fff}.sdc-chat-compose input{flex:1;min-width:0;height:42px;padding:0 13px;border:1px solid #e7e9ef;border-radius:12px;outline:none;background:#f8f9fb;color:#202938;font:inherit;font-size:13px}.sdc-chat-compose input:focus{border-color:#f08b5b;box-shadow:0 0 0 3px #f08b5b20}.sdc-chat-compose button{width:42px;height:42px;display:grid;place-items:center;border:0;border-radius:12px;background:#ed6426;color:#fff;cursor:pointer}.sdc-chat-compose button:disabled{opacity:.45;cursor:not-allowed}
 .sdc-chat-foot{display:flex;justify-content:center;align-items:center;gap:5px;padding:0 0 9px;background:#fff;color:#9299a8;font-size:10px}
 @media(max-width:600px){.sdc-chat-root{right:14px;bottom:82px}.sdc-chat-launcher{height:54px;padding:0 17px}.sdc-chat-panel{position:fixed;right:10px;bottom:146px;width:calc(100vw - 20px);height:min(590px,calc(100dvh - 165px));min-height:390px;border-radius:20px}.sdc-chat-body{padding:14px 11px}.sdc-chat-bubble{font-size:12.5px}}
+
+.sdc-action-card{margin:12px 0 16px 31px;padding:13px;border:1px solid #f0d4c4;border-radius:15px;background:#fff;box-shadow:0 5px 18px #18243b0b;color:#30394a;font-size:12px}
+.sdc-action-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;font-size:13px}
+.sdc-action-top button{width:25px;height:25px;border:0;border-radius:50%;background:#f3f4f6;color:#475569;font-size:19px;line-height:1;cursor:pointer}
+.sdc-action-form{display:flex;flex-direction:column;gap:10px}
+.sdc-action-form>label{display:flex;flex-direction:column;gap:5px;color:#414b5c;font-weight:650}
+.sdc-action-form input:not([type=file]):not([type=checkbox]),.sdc-action-form select,.sdc-action-form textarea{width:100%;min-width:0;box-sizing:border-box;border:1px solid #e2e6ed;border-radius:9px;padding:9px 10px;background:#fbfcfe;color:#1f2937;font:inherit;font-weight:400;outline:none}
+.sdc-action-form input:focus,.sdc-action-form select:focus,.sdc-action-form textarea:focus{border-color:#ee8b5b;box-shadow:0 0 0 2px #ee8b5b20}
+.sdc-action-form input[type=file]{font-size:11px;max-width:100%;font-weight:400}
+.sdc-action-form p{margin:0;line-height:1.55;color:#667085}
+.sdc-action-form .pay{padding:10px;border:1px solid #edf0f4;border-radius:11px;background:#fbfcff;font-size:11px}
+.sdc-action-form .pay .amt{font-size:19px}
+.sdc-action-form .pay .qrbox img{width:min(100%,220px);height:auto}
+.sdc-action-form .pay .qrdoc .btn{font-size:11px}
+.sdc-action-form .pay ol{padding-left:18px}
+.sdc-action-form .pay .kv{gap:8px}
+.sdc-action-note{display:flex;align-items:flex-start;gap:7px;padding:9px;border-radius:9px;background:#f6f8fb;color:#596579;font-size:11px;line-height:1.5}
+.sdc-action-total{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px;border-radius:9px;background:#fff4ed;color:#9a431d}
+.sdc-action-total span{font-size:11px}.sdc-action-total b{font-size:15px;white-space:nowrap}
+.sdc-action-check{display:flex!important;flex-direction:row!important;align-items:flex-start;gap:8px;font-weight:500!important;line-height:1.45}
+.sdc-action-check input{margin-top:2px}
+.sdc-action-primary{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:11px 12px;border:0;border-radius:10px;background:#ed6426;color:#fff;font:700 12px inherit;cursor:pointer;text-decoration:none}
+.sdc-action-primary:disabled{opacity:.5;cursor:not-allowed}
+.sdc-action-secondary{padding:8px 12px;border:1px solid #e2e6ed;border-radius:9px;background:#fff;color:#475569;font-weight:650;cursor:pointer}
+.sdc-action-error{padding:9px;border:1px solid #f5c8c8;border-radius:9px;background:#fff6f6;color:#a62b2b;font-size:11px;line-height:1.5}
+.sdc-action-error a,.sdc-action-error button{color:#a62b2b;text-decoration:underline;background:none;border:0;padding:0;font:inherit;cursor:pointer}
+.sdc-action-success{display:flex;align-items:center;gap:7px;margin-bottom:8px;color:#15804b}
+.sdc-spin{animation:sdcSpin 1s linear infinite}@keyframes sdcSpin{to{transform:rotate(360deg)}}

@@ -65,6 +65,8 @@ export default function SEO(){
       setMeta('meta[name="robots"]',{name:'robots',content:page.noindex?'noindex,nofollow':'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1'});
       setMeta('meta[name="author"]',{name:'author',content:SITE});
       setMeta('meta[property="og:type"]',{property:'og:type',content:'website'});
+      setMeta('meta[property="og:locale"]',{property:'og:locale',content:'en_BD'});
+      setMeta('meta[property="og:image:alt"]',{property:'og:image:alt',content:service?`${clean(service.name)} — Stationery Dot Com`:'Stationery Dot Com logo'});
       setMeta('meta[property="og:site_name"]',{property:'og:site_name',content:SITE});
       setMeta('meta[property="og:title"]',{property:'og:title',content:page.title});
       setMeta('meta[property="og:description"]',{property:'og:description',content:description});

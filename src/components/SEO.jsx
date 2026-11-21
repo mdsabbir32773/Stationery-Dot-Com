@@ -19,16 +19,16 @@ function setLink(rel,href){
 }
 
 export default function SEO(){
-  const {pathname}=useLocation();
+  const {pathname,search}=useLocation();
   useEffect(()=>{
     let cancelled=false;
     const run=async()=>{
       const route=pathname.replace(/\/+$/,'')||'/';
       const pages={
         '/':{title:'Stationery Dot Com | Online Digital Services in Bangladesh',description:'Order online document and government services, Meta ads, social media growth, SMM services, digital subscriptions and creative design from Stationery Dot Com.'},
-        '/services':{title:'Online Services in Bangladesh | Stationery Dot Com',description:'Explore document and government services, Meta and social media marketing, SMM panel, digital subscriptions, graphic design, web design and video services.'},
+        '/about':{title:'About Stationery Dot Com | Online Services in Bangladesh',description:'Learn about Stationery Dot Com, our online service catalogue and how to contact our team.'},\n        '/refund-policy':{title:'Refund & Cancellation Policy | Stationery Dot Com',description:'Understand how Stationery Dot Com reviews order cancellation and refund requests.'},\n        '/delivery-policy':{title:'Service Delivery Policy | Stationery Dot Com',description:'Learn how Stationery Dot Com reviews orders and handles online service delivery.'},\n        '/services':{title:'Online Services in Bangladesh | Stationery Dot Com',description:'Explore document and government services, Meta and social media marketing, SMM panel, digital subscriptions, graphic design, web design and video services.'},
         '/smm':{title:'SMM Panel Bangladesh | Social Media Growth Services',description:'Order Facebook, Instagram and other social media growth services from Stationery Dot Com.'},
-        '/track-order':{title:'Track Order Online | Stationery Dot Com',description:'Track your Stationery Dot Com order using your Order ID and see the latest order status.'},
+        '/track-order':{title:'Track Order Online | Stationery Dot Com',description:'Track your Stationery Dot Com order using your Order ID and see the latest order status.'},\n        '/invoice':{title:'Invoice | Stationery Dot Com',description:'View your Stationery Dot Com order invoice.',noindex:true},
         '/contact':{title:'Contact Stationery Dot Com | Online Support',description:'Contact Stationery Dot Com for online service support, order help and service enquiries.'},
         '/privacy-policy':{title:'Privacy Policy | Stationery Dot Com',description:'Read the Stationery Dot Com privacy policy and learn how customer information is handled.'},
         '/terms-of-service':{title:'Terms of Service | Stationery Dot Com',description:'Read the Stationery Dot Com terms of service for online orders and digital services.'},
@@ -37,7 +37,7 @@ export default function SEO(){
         '/order':{title:'Place an Order | Stationery Dot Com',description:'Complete your Stationery Dot Com service order online.',noindex:true}
       };
       let page=pages[route]||(
-        route.startsWith('/order-success/')?{title:'Order Confirmation | Stationery Dot Com',description:'Your Stationery Dot Com order confirmation.',noindex:true}:
+        route.startsWith('/invoice/')?{title:'Invoice | Stationery Dot Com',description:'View your Stationery Dot Com order invoice.',noindex:true}:\n        route.startsWith('/order-success/')?{title:'Order Confirmation | Stationery Dot Com',description:'Your Stationery Dot Com order confirmation.',noindex:true}:
         route.startsWith('/admin')?{title:'Admin | Stationery Dot Com',description:'Stationery Dot Com administration.',noindex:true}:
         {title:'Page Not Found | Stationery Dot Com',description:'The page you requested could not be found on Stationery Dot Com.',noindex:true}
       );
@@ -54,7 +54,7 @@ export default function SEO(){
           };
         }else page={title:'Service Not Found | Stationery Dot Com',description:'This service page is unavailable. Browse current services from Stationery Dot Com.',noindex:true};
       }
-      const description=clean(page.description).slice(0,165);
+      if(route==='/track-order'&&new URLSearchParams(search).has('token'))page={...page,noindex:true};\n      const description=clean(page.description).slice(0,165);
       const canonical=new URL(route,window.location.origin).href;
       const image=new URL(service?.image_url||'/stationery-dot-com-logo.webp',window.location.origin).href;
       document.documentElement.lang='en';

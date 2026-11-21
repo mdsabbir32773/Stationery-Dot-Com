@@ -20,7 +20,14 @@ export default function SdcAssistant() {
 
   async function sendMessage(value = input) {
     const text = value.trim();
-    if (!text || busy) return;
+    if (!text || busy || action) return;
+    const wantsDeposit = /\\b(add (?:money|funds)|deposit|top.?up (?:my )?wallet|wallet balance)\\b|ওয়ালেট.*(জমা|অ্যাড)|ডিপোজিট|ব্যালেন্স.*(যোগ|জমা)/i.test(text);
+    const wantsOrder = /\\b(place|make|submit|create) (?:an? )?order\\b|\\b(order korte|order dibo|buy|purchase)\\b|অর্ডার (করতে|দিতে|দিবো|করব)/i.test(text);
+    if (wantsDeposit || wantsOrder) {
+      setMessages(prev => [...prev, { role: 'user', text }]);
+      setAction(wantsDeposit ? 'deposit' : 'order');
+      return;
+    }
     const prior = messages.filter(m => m.role !== 'assistant' || m !== greeting).slice(-8)
       .map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', text: m.text }));
     setMessages(prev => [...prev, { role: 'user', text }]);
@@ -60,10 +67,10 @@ export default function SdcAssistant() {
           {busy && <div className="sdc-chat-row is-assistant"><div className="sdc-chat-mini-avatar"><Sparkles size={13}/></div><div className="sdc-chat-bubble sdc-chat-typing"><i/><i/><i/></div></div>}
           <div ref={endRef}/>
         </div>
-        <form className="sdc-chat-compose" onSubmit={e => { e.preventDefault(); sendMessage(); }}>
+        {!action && <form className="sdc-chat-compose" onSubmit={e => { e.preventDefault(); sendMessage(); }}>
           <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)} placeholder="Type your message..." maxLength={1800} disabled={busy} aria-label="Message"/>
           <button type="submit" disabled={!input.trim() || busy} aria-label="Send message"><Send size={18}/></button>
-        </form>
+        </form>}
         <div className="sdc-chat-foot"><Headphones size={12}/> AI support by Stationery Dot Com</div>
       </section>}
       <button className={'sdc-chat-launcher ' + (open ? 'is-open' : '')} onClick={() => setOpen(v => !v)} aria-label={open ? 'Close SDC Assistant' : 'Chat with SDC Assistant'}>

@@ -55,7 +55,7 @@
 .sdc-convo-msg.user{align-self:flex-end;background:#ed6426;color:#fff}
 .sdc-convo-msg.bot{align-self:flex-start}
 .sdc-convo-control{display:flex;flex-direction:column;gap:7px;margin:8px 0;color:#414b5c;font-size:12px;font-weight:650}
-.sdc-convo-control select,.sdc-convo-reply input{width:100%;min-width:0;box-sizing:border-box;padding:10px;border:1px solid #e2e6ed;border-radius:10px;background:#fbfcfe;color:#1f2937;font:inherit;font-size:12px}
+.sdc-convo-control select,.sdc-convo-control input:not([type=file]),.sdc-convo-reply input{width:100%;min-width:0;box-sizing:border-box;padding:10px;border:1px solid #e2e6ed;border-radius:10px;background:#fbfcfe;color:#1f2937;font:inherit;font-size:12px}
 .sdc-convo-control input[type=file]{font-size:11px;font-weight:400;max-width:100%}
 .sdc-convo-reply{display:flex;flex-wrap:wrap;gap:7px;margin:9px 0}
 .sdc-convo-reply input{flex:1}

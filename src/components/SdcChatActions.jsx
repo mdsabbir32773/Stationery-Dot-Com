@@ -64,7 +64,7 @@ export default function SdcChatActions({mode,onCancel,onComplete}){
     </>:<>
       <label>Choose package<select required value={packageId} onChange={e=>setPackageId(e.target.value)}><option value="">Select a package…</option>{servicePackages.map(p=><option key={p.id} value={p.id}>{p.name}{p.access_type?' · '+p.access_type:''}{p.duration_months===0?' · Lifetime':p.duration_months?' · '+p.duration_months+' months':''} — {Number(p.price)>0?taka(p.price):'Price on request'}</option>)}</select></label>
       {pack&&Number(pack.price)>0&&<div className="sdc-action-total"><span>Package total</span><b>{taka(total)}</b></div>}
-      {pack&&Number(pack.price)<=0&&<div className="sdc-action-note">This package requires a custom price quote, so it cannot be paid and submitted from chat yet. Please contact our team.</div>}
+      {pack&&Number(pack.price)<=0&&<div className="sdc-action-note">This package needs a custom quote. You can submit a quote request here; our team will confirm the final price before payment.</div>}
       {service.requires_file&&<label>Required documents (up to 5 files, max 10MB each)<input type="file" multiple accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx" required onChange={chooseDocs}/></label>}
       {docs.length>0&&<small>{docs.length} supporting file(s) selected.</small>}
     </>}

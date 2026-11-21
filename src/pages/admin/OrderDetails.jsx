@@ -7,14 +7,15 @@ const dhakaDateTime = value => value
   : '—';
 
 export default function OrderDetails(){
-  const{id}=useParams();const[o,setO]=useState(null);const[service,setService]=useState(null);const[urls,setUrls]=useState([]);const[m,setM]=useState('');const[providerId,setProviderId]=useState('');const[adminNotes,setAdminNotes]=useState([]);const[note,setNote]=useState('');
+  const{id}=useParams();const[o,setO]=useState(null);const[loadError,setLoadError]=useState('');const[service,setService]=useState(null);const[urls,setUrls]=useState([]);const[m,setM]=useState('');const[providerId,setProviderId]=useState('');const[adminNotes,setAdminNotes]=useState([]);const[note,setNote]=useState('');
   const load=async()=>{
-    const{data}=await supabase.from('orders').select('*,payments(*),order_files(*)').eq('id',id).single();
+    const{data,error}=await supabase.from('orders').select('*,payments(*),order_files(*)').eq('id',id).single();
+    if(error){setLoadError(error.message);setO(null);return;}setLoadError('');
     setO(data);setProviderId(data?.provider_order_id||'');const{data:notes}=await supabase.from('admin_order_notes').select('id,note,created_at').eq('order_id',id).order('created_at',{ascending:false});setAdminNotes(notes||[]);if(data?.service_name){const{data:sv}=await supabase.from('services').select('id,name,slug,category,is_active,description').eq('name',data.service_name).limit(1).maybeSingle();setService(sv||null);}
     const files=[];for(const f of data?.order_files||[]){const{data:s}=await supabase.storage.from('order-files').createSignedUrl(f.file_path,300);files.push({name:f.file_name,url:s?.signedUrl});}setUrls(files);
     if(data?.payments?.[0]?.payment_proof_path){const{data:s}=await supabase.storage.from('order-files').createSignedUrl(data.payments[0].payment_proof_path,300);setO(current=>current?({...current,payment_proof_url:s?.signedUrl}):current);}
   };
-  useEffect(()=>{load();},[id]);if(!o)return 'Loading…';const pay=o.payments?.[0];
+  useEffect(()=>{load();},[id]);if(loadError)return <><Link to="/admin/orders">← Orders</Link><p className="err" role="alert">Could not load this order: {loadError}</p></>;if(!o)return 'Loading…';const pay=o.payments?.[0];
   const setStatus=async v=>{if(o.target_link){const{error}=await supabase.rpc('admin_update_smm_order',{p_order_id:id,p_status:v,p_note:''});setM(error?error.message:'SMM order status and wallet refund saved');}else{const{error}=await supabase.rpc('admin_set_order_status',{p_order_id:id,p_status:v});setM(error?error.message:'Order status saved');}load();};
   const setPay=async v=>{const{error}=await supabase.rpc('admin_set_order_payment',{p_order_id:id,p_status:v});setM(error?error.message:'Payment and order status saved.');if(!error)load();};const saveNote=async e=>{e.preventDefault();const clean=note.trim();if(!clean)return;const{data:{user}}=await supabase.auth.getUser();const{error}=await supabase.from('admin_order_notes').insert({order_id:id,admin_id:user?.id||null,note:clean});setM(error?error.message:'Internal note added.');if(!error){setNote('');load();}};
   return <><h1>{o.order_code}</h1><div className="card"><p><b>{o.customer_name}</b><br/>Order placed: <b>{dhakaDateTime(o.created_at)}</b><br/>Phone: <a href={`tel:${o.phone}`}>{o.phone}</a> · WhatsApp: {o.whatsapp||'—'} · Email: {o.email||'—'}</p>

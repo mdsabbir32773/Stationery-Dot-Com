@@ -3,4 +3,4 @@ export const CAT={'Document & Government Services':{I:FileText,bg:'#edf3ff',fg:'
 export const catStyle=c=>CAT[c]||{I:Sparkles,bg:'#e2e8f0',fg:'#334155',tag:'Service'};
 // 16:9 cover. Uses the service image when set (object-fit: cover, never stretched); otherwise a category-coloured fallback.
 export default function ServiceCover({s,large}){const c=catStyle(s.category);const I=c.I;
-return(<div className={'cover'+(large?' large':'')} style={{background:c.bg}}>{s.image_url?<img src={s.image_url} alt={s.name} loading="lazy"/>:<div className="fb" style={{color:c.fg}}><span className="fbi"><I size={large?44:34}/></span><span className="fbt">{s.name}</span></div>}<span className="tag" style={{color:c.fg}}>{c.tag}</span></div>);}
+return(<div className={'cover'+(large?' large':'')} style={{background:c.bg}}>{s.image_url?<img src={s.image_url} alt={s.name} width="640" height="360" loading={large?"eager":"lazy"} fetchPriority={large?"high":"auto"} decoding="async"/>:<div className="fb" style={{color:c.fg}}><span className="fbi"><I size={large?44:34}/></span><span className="fbt">{s.name}</span></div>}<span className="tag" style={{color:c.fg}}>{c.tag}</span></div>);}

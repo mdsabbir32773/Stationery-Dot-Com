@@ -4,7 +4,6 @@ import { supabase } from '../lib/supabase';
 import '../chatbot.css';
 import SdcChatActions from './SdcChatActions';
 
-const starters = ['Help me place an order', 'Check my order status', 'How do I add wallet funds?'];
 const greeting = { role: 'assistant', text: "Hi there! 👋 I'm SDC Assistant. Tell me what you need help with — services, packages, payments or orders. Ami Bangla, English, Banglish — jevabe bolben, shevabei reply korbo." };
 
 export default function SdcAssistant() {

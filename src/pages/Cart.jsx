@@ -6,13 +6,7 @@ import PaymentQR from '../components/PaymentQR';
 import {subscriptionDurationLabel} from '../lib/subscription';
 import useTitle from '../lib/useTitle';import {trackInitiateCheckout} from '../lib/metaPixel';
 
-const KEY='stationery_cart_v1';
-const read=()=>{try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch{return[]}};
-const save=x=>{localStorage.setItem(KEY,JSON.stringify(x));window.dispatchEvent(new Event('stationery-cart-change'));};
-export function getCart(){return read();}
-export function addToCart(item){const c=read();const i=c.findIndex(x=>x.id===item.id);if(i>=0)c[i]={...c[i],quantity:Math.min(100000,(c[i].quantity||1)+1)};else c.push({...item,quantity:1});save(c);}
-export function removeFromCart(id){save(read().filter(x=>x.id!==id));}
-export function cartCount(){return read().reduce((n,x)=>n+(Number(x.quantity)||1),0);}
+import {readCart as read,saveCart as save} from '../lib/cartState';
 
 const Fld=({l,children})=><label className="fld"><span>{l}</span>{children}</label>;
 const OK=['image/jpeg','image/png','image/webp','application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document'];

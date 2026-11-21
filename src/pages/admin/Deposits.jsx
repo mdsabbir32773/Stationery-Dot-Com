@@ -7,7 +7,7 @@ export default function Deposits(){
   const[list,setList]=useState(null),[profiles,setProfiles]=useState({}),[proofs,setProofs]=useState({}),[message,setMessage]=useState(''),[busy,setBusy]=useState('');
   const load=useCallback(async()=>{
     const{data,error}=await supabase.from('deposit_requests').select('*').order('created_at',{ascending:false});
-    if(error){setMessage('Wallet migration is not installed yet. Run supabase/smm-panel.sql.');setList([]);return;}
+    if(error){setMessage('Could not load deposit requests: '+error.message);setList([]);return;}
     const rows=data||[];setList(rows);const ids=[...new Set(rows.map(d=>d.user_id))];
     if(ids.length){const{data:p}=await supabase.from('customer_profiles').select('id,full_name,email').in('id',ids);setProfiles(Object.fromEntries((p||[]).map(x=>[x.id,x])));}
     const next={};await Promise.all(rows.filter(d=>d.payment_proof_path).map(async d=>{const{data:s}=await supabase.storage.from('order-files').createSignedUrl(d.payment_proof_path,300);if(s?.signedUrl)next[d.id]=s.signedUrl;}));setProofs(next);

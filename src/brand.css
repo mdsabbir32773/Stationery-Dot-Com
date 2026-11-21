@@ -316,3 +316,30 @@ footer .cols li a:hover{opacity:1;transform:translateX(2px)}
 .customer-notification-copy small{display:flex;align-items:center;gap:4px;color:#87928a;font-size:10px}
 .customer-notification-read{border:0;background:transparent;color:#397452;font-size:11px;font-weight:750;cursor:pointer;white-space:nowrap}
 @media(max-width:520px){.customer-notification{flex-wrap:wrap}.customer-notification-read{margin-left:41px}}
+
+
+/* Account order cards: keep details in the full card width, never beside the header. */
+.account-order-list{width:100%;min-width:0;display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+.account-order-rich{display:grid!important;grid-template-columns:minmax(0,1fr);align-items:stretch!important;justify-content:stretch!important;gap:0!important;width:100%;min-width:0;overflow:hidden}
+.account-order-rich>.account-order-head,
+.account-order-rich>.account-mini-timeline,
+.account-order-rich>.account-order-link,
+.account-order-rich>.account-order-details{grid-column:1/-1;width:100%;min-width:0;max-width:100%}
+.account-order-rich>.account-order-head{align-items:flex-start;flex-wrap:wrap}
+.account-order-head>div{min-width:0;max-width:100%}
+.account-order-head>div:first-child{flex:1 1 220px}
+.account-order-head>div:first-child b{overflow-wrap:anywhere;word-break:normal}
+.account-order-rich .order-right{flex:0 1 auto;justify-items:start}
+.account-order-details{width:100%;min-width:0;grid-template-columns:repeat(2,minmax(0,1fr))}
+.account-order-details>*{min-width:0;max-width:100%}
+.account-order-details a:not(.btn){overflow-wrap:anywhere;word-break:break-word}
+.account-order-details .row{display:flex;flex-wrap:wrap;width:100%;min-width:0}
+.account-order-details .row .btn{flex:0 1 auto;white-space:normal;overflow-wrap:anywhere}
+@media(max-width:520px){
+  .account-order-rich{padding:13px!important}
+  .account-order-rich>.account-order-head{display:flex;flex-direction:column;gap:8px}
+  .account-order-rich .order-right{display:flex;align-items:center;justify-content:space-between;width:100%}
+  .account-mini-timeline{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .account-order-details{grid-template-columns:minmax(0,1fr)}
+  .account-order-details .account-order-detail-wide{grid-column:auto}
+}

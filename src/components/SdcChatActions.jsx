@@ -30,7 +30,7 @@ export default function SdcChatActions({mode,onCancel,onComplete}){
  function bot(text){setMessages(v=>[...v,{role:'assistant',text}]);}
  function user(text){setMessages(v=>[...v,{role:'user',text}]);}
  function go(next,prompt){setStep(next);setError('');if(prompt)bot(prompt);}
- function chooseService(id){const s=services.find(x=>x.id===id);if(!s)return;setServiceId(id);setPackageId('');user(s.name);go('package',prompts.package);}
+ function chooseService(id){const s=services.find(x=>x.id===id);if(!s)return;setServiceId(id);setPackageId('');user(s.name);const smm=Boolean(s.smm_platform||s.category==='SMM Panel Services');if(smm){if(!session){go('target','This SMM service requires sign-in. Please sign in first, then restart the order.');return;}go('target',prompts.target);}else go('package',prompts.package);}
  function choosePackage(id){const p=servicePackages.find(x=>x.id===id);if(!p)return;setPackageId(id);user(p.name+' — '+(Number(p.price)>0?taka(p.price):'Price on request'));if(isSmm){go('target',prompts.target);}else go('name',prompts.name);}
  function currentPrompt(){return prompts[step]||'';}
  function submitText(e){e.preventDefault();const v=reply.trim();if(!v)return;setReply('');user(v);

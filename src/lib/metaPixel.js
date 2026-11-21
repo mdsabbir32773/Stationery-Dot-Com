@@ -107,3 +107,13 @@ export function trackPurchase({orderId,contentIds=[],value,numItems}={}){
 export function isMetaPixelConfigured(){
   return Boolean(PIXEL_ID);
 }
+
+// A successful manual-payment order is a lead until an administrator verifies payment.
+export function trackLead({contentIds=[],contentName,value}={}){
+  const amount=Number(value);
+  return trackMetaEvent('Lead',{
+    content_ids:contentIds.map(String),
+    content_name:contentName,
+    ...(Number.isFinite(amount)&&amount>=0?{value:amount,currency:'BDT'}:{}),
+  });
+}

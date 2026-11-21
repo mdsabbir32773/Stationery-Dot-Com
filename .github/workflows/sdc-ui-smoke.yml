@@ -1,0 +1,34 @@
+name: SDC UI smoke test
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'supabase/functions/sdc-assistant/**'
+      - 'scripts/sdc-ui-smoke.mjs'
+      - '.github/workflows/sdc-ui-smoke.yml'
+      - 'package.json'
+      - 'package-lock.json'
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Install temporary browser test runner
+        run: npm install --no-save --package-lock=false playwright
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Test live SDC chat workflows
+        run: node scripts/sdc-ui-smoke.mjs

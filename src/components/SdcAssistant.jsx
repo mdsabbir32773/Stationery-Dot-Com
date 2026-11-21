@@ -21,8 +21,9 @@ export default function SdcAssistant() {
   async function sendMessage(value = input) {
     const text = value.trim();
     if (!text || busy || action) return;
-    const wantsDeposit = /\b(add (?:money|funds)|deposit|top.?up (?:my )?wallet|wallet balance)\b|ওয়ালেট.*(জমা|অ্যাড)|ডিপোজিট|ব্যালেন্স.*(যোগ|জমা)/i.test(text);
-    const wantsOrder = /\b(place|make|submit|create) (?:an? )?order\b|\b(order korte|order dibo|buy|purchase)\b|অর্ডার (করতে|দিতে|দিবো|করব)/i.test(text);
+    const statusIntent = /\b(order|deposit|request|wallet)\b.{0,20}\b(status|track|tracking|update)\b|স্ট্যাটাস|ট্র্যাক|অবস্থা/i.test(text);
+    const wantsDeposit = !statusIntent && /\b(add (?:money|funds)|deposit|top.?up (?:my )?wallet|wallet balance)\b|wallet e taka add|funds add|deposit korte|ওয়ালেট.*(জমা|অ্যাড)|ডিপোজিট|ব্যালেন্স.*(যোগ|জমা)/i.test(text);
+    const wantsOrder = !statusIntent && (/\b(place|make|submit|create) (?:an? )?order\b|\b(order korte|order dibo|buy|purchase)\b|অর্ডার (করতে|দিতে|দিবো|করব)/i.test(text));
     if (wantsDeposit || wantsOrder) {
       setMessages(prev => [...prev, { role: 'user', text }]);
       setAction(wantsDeposit ? 'deposit' : 'order');

@@ -22,7 +22,7 @@ function QuoteForm({service,pkg}){
       if(error)throw error;
       const msg='Hello, I have submitted a price-on-request order. Order ID: '+data+'. Service: '+service.name+' — '+pkg.name+'. Please confirm the requirements and final price.';
       window.open(waLink(msg),'_blank','noopener,noreferrer');
-      nav('/order-success/'+data+'?quote=1');
+      nav('/order-success/'+data+'?quote=1',{state:{phone:f.phone}});
     }catch(x){setErr(x.message||'Something went wrong. Please try again.');setBusy(false);}
   }
   return <form className="checkout" onSubmit={submit} noValidate>

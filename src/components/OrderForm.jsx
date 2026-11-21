@@ -127,7 +127,7 @@ export default function OrderForm({service,pkg,settings}){
       createdPaths.push(proofPath);
       const{data,error}=await supabase.rpc('create_order',{p:{...f,transaction_id:'PROOF:'+proofPath,payment_proof_path:proofPath,method:selectedMethod.name,quantity:q,package_id:pkg.id,files:uploaded,coupon_code:coupon?.code||''}});
       if(error)throw error;
-      nav('/order-success/'+data+'?value='+encodeURIComponent(total)+'&items='+encodeURIComponent(pkg.id));
+      nav('/order-success/'+data+'?value='+encodeURIComponent(total)+'&items='+encodeURIComponent(pkg.id),{state:{phone:f.phone}});
     }catch(x){
       if(createdPaths.length)await supabase.storage.from('order-files').remove(createdPaths);
       setErr(x.message||'Something went wrong. Please try again.');

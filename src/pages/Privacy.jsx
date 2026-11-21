@@ -1,6 +1,6 @@
 import useTitle from '../lib/useTitle';
 
-const updated = 'October 5, 2026';
+const updated = 'November 21, 2026';
 
 export default function Privacy() {
   useTitle('Privacy Policy', 'How Stationery Dot Com handles account, order, contact, payment reference, and uploaded-file information.');
@@ -17,8 +17,10 @@ export default function Privacy() {
     <p>For mobile wallet or bank payments, you may upload a receipt screenshot so the store can review the payment manually. Receipt images are stored privately and are available to authorized store administrators for payment verification. Do not enter or share your mobile-wallet PIN, password, or one-time code on this website.</p>
     <h2>Files and order access</h2>
     <p>Files you attach to an order are stored for the order process and can be accessed by the store administrator for that purpose. Do not upload information that is unrelated to your request. Contact us if you want to ask about correcting or removing information associated with your account or order.</p>
+    <h2>Advertising measurement</h2>
+    <p>The website uses Meta Pixel to measure page views, service interest, add-to-cart actions, checkout starts, order enquiries, and completed wallet-funded purchases. These events may include service or package identifiers, order value in BDT, and browser/device or cookie information made available by your browser. The website does not intentionally send your name, phone number, email address, uploaded files, or payment receipt images to Meta through these events. Meta may use information it receives under its own privacy terms to provide measurement and advertising services. You can manage cookies and advertising preferences through your browser and Meta account settings.</p>
     <h2>Service providers and retention</h2>
-    <p>The website uses Supabase for account, database, and file-storage features, Cloudflare to host and deliver the website, and Google when you choose Google sign-in. Information is kept for as long as it is needed to manage your account, orders, support, and business records; some records may need to remain for operational or legal reasons.</p>
+    <p>The website uses Supabase for account, database, and file-storage features, Cloudflare to host and deliver the website, Google when you choose Google sign-in, and Meta Pixel for advertising measurement. Information is kept for as long as it is needed to manage your account, orders, support, and business records; some records may need to remain for operational or legal reasons.</p>
     <h2>Your choices and contact</h2>
     <p>You can choose not to create an account and may place an order as a guest. For questions about this notice or a request concerning your information, contact <a href="mailto:metaadsstationery@gmail.com">metaadsstationery@gmail.com</a> or call <a href="tel:+8801827680520">01827-680520</a>.</p>
   </main>;

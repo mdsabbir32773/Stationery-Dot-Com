@@ -17,8 +17,7 @@ export default function About() {
     <p>Browse the current catalogue, review the package and its requirements, then submit an order or request a quotation. Where payment is required, use the instructions shown at checkout. Payments and submitted order details are reviewed before an order is confirmed or work begins.</p>
     <h2>Independent service provider</h2>
     <p>Stationery Dot Com is an independent service provider. Document-support services do not make us a government office or government authority. Brand names and platforms mentioned on this website belong to their respective owners; their mention does not by itself imply sponsorship, endorsement or affiliation.</p>
-    <h2>Contact and business address</h2>
+    <h2>Contact our online team</h2>
     <p>For service questions or order support, contact us at <a href="tel:+8801827680520">01827-680520</a> or <a href="tel:+8801611103453">01611-103453</a>, or email <a href="mailto:metaadsstationery@gmail.com">metaadsstationery@gmail.com</a>.</p>
-    <p>Business address: 116, 117, G-Nat Tower (2nd Floor), Fakirapool, VIP Road, Dhaka-1000, Bangladesh. Our services are handled online; please contact us before making any in-person visit.</p>
   </main>;
 }

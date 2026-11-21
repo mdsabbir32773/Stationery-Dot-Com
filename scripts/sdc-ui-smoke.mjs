@@ -28,7 +28,8 @@ try {
   await orderAction.click();
 
   // Verify the secure order form opens; never submit an order in this test.
-  await chat.getByText('Choose service', { exact: false }).waitFor({ state: 'visible', timeout: 10000 });
+  await chat.getByText('Choose a service', { exact: false }).waitFor({ state: 'visible', timeout: 10000 });
+  await chat.locator('.sdc-convo-card select').waitFor({ state: 'visible', timeout: 10000 });
 
   const close = chat.locator('.sdc-action-top button');
   await close.click();
@@ -44,7 +45,7 @@ try {
     throw new Error('Browser console/page errors:\n' + errors.slice(0, 8).join('\n'));
   }
 
-  console.log('PASS: homepage, chat launcher, order form opening, and guest deposit sign-in gate.');
+  console.log('PASS: homepage, chat launcher, guided conversational order intake, and guest deposit sign-in gate.');
 } finally {
   await browser.close();
 }

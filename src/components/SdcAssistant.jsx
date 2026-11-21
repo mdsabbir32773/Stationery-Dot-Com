@@ -21,8 +21,8 @@ export default function SdcAssistant() {
   async function sendMessage(value = input) {
     const text = value.trim();
     if (!text || busy || action) return;
-    const wantsDeposit = /\\b(add (?:money|funds)|deposit|top.?up (?:my )?wallet|wallet balance)\\b|ওয়ালেট.*(জমা|অ্যাড)|ডিপোজিট|ব্যালেন্স.*(যোগ|জমা)/i.test(text);
-    const wantsOrder = /\\b(place|make|submit|create) (?:an? )?order\\b|\\b(order korte|order dibo|buy|purchase)\\b|অর্ডার (করতে|দিতে|দিবো|করব)/i.test(text);
+    const wantsDeposit = /\b(add (?:money|funds)|deposit|top.?up (?:my )?wallet|wallet balance)\b|ওয়ালেট.*(জমা|অ্যাড)|ডিপোজিট|ব্যালেন্স.*(যোগ|জমা)/i.test(text);
+    const wantsOrder = /\b(place|make|submit|create) (?:an? )?order\b|\b(order korte|order dibo|buy|purchase)\b|অর্ডার (করতে|দিতে|দিবো|করব)/i.test(text);
     if (wantsDeposit || wantsOrder) {
       setMessages(prev => [...prev, { role: 'user', text }]);
       setAction(wantsDeposit ? 'deposit' : 'order');
@@ -58,11 +58,11 @@ export default function SdcAssistant() {
             {m.role === 'assistant' && <div className="sdc-chat-mini-avatar"><Sparkles size={13}/></div>}
             <div className="sdc-chat-bubble">{m.text.split('\n').map((line, n) => <span key={n}>{line}{n < m.text.split('\n').length - 1 && <br/>}</span>)}</div>
           </div>)}
-          <div className="sdc-chat-starters">
+          {!action && <div className="sdc-chat-starters">
             <button onClick={() => setAction('order')}>Place an order here <ArrowUpRight size={13}/></button>
             <button onClick={() => setAction('deposit')}>Add wallet funds here <ArrowUpRight size={13}/></button>
             <button onClick={() => sendMessage('Check my order status')}>Check my order status <ArrowUpRight size={13}/></button>
-          </div>
+          </div>}
           {action && <SdcChatActions mode={action} onCancel={() => setAction('')} onComplete={message => { setMessages(prev => [...prev, { role: 'assistant', text: message }]); if (message.startsWith('Your wallet balance is insufficient.')) setAction('deposit'); }} />}
           {busy && <div className="sdc-chat-row is-assistant"><div className="sdc-chat-mini-avatar"><Sparkles size={13}/></div><div className="sdc-chat-bubble sdc-chat-typing"><i/><i/><i/></div></div>}
           <div ref={endRef}/>

@@ -117,3 +117,10 @@ In `/admin/content`, the admin can edit the home page section by section and hid
 Customers see an image QR as a picture, and a PDF QR as a "View Payment QR" button that opens your original PDF unchanged.
 
 
+
+### Growth, SEO and Meta Pixel
+- The site includes route-specific page titles, descriptions, canonical URLs, Open Graph/Twitter metadata, Organization/Service structured data, robots.txt and a sitemap containing the current active service pages.
+- After deploying, submit https://stationerydotcom.stdc.workers.dev/sitemap.xml in Google Search Console. Regenerate the sitemap when new service slugs are published.
+- Meta Pixel is configured in src/lib/metaPixel.js (default Pixel ID is already set; VITE_META_PIXEL_ID can override it at build time). Events include PageView, ViewContent, AddToCart, InitiateCheckout and Lead. A manual-payment order is tracked as a Lead until an admin verifies payment; wallet-funded SMM purchases are tracked as Purchase.
+- Cloudflare Pages response headers are defined in public/_headers. Hashed /assets/* files receive long-lived immutable caching.
+- For stronger account security, enable Supabase Auth leaked-password protection in the project’s Authentication password-security settings.

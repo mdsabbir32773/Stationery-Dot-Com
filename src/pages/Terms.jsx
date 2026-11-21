@@ -19,6 +19,8 @@ export default function Terms() {
     <p>Use the order tracking page or contact the store for status questions. If you need to change or cancel a request, contact us as soon as possible. Whether a change, cancellation, or refund can be made depends on the order status and work already started; contact the store to discuss your specific order.</p>
     <h2>Accounts and website use</h2>
     <p>Keep your sign-in details private and use only accounts you are authorized to access. We may restrict access where needed to protect customers, orders, or the website.</p>
+    <h2>Delivery and refunds</h2>
+    <p>For details about order fulfilment, processing and delivery, read our <a href="/delivery-policy">Service Delivery Policy</a>. For cancellations and refund requests, read our <a href="/refund-policy">Refund &amp; Cancellation Policy</a>.</p>
     <h2>Contact</h2>
     <p>For order or terms questions, email <a href="mailto:metaadsstationery@gmail.com">metaadsstationery@gmail.com</a> or call <a href="tel:+8801827680520">01827-680520</a> / <a href="tel:+8801611103453">01611-103453</a>.</p>
   </main>;

@@ -31,6 +31,7 @@ export default function OrderForm({service,pkg,settings}){
   const subtotal=Number(pkg.price||0)*q;
   const discount=Math.min(subtotal,Number(coupon?.discount||0));
   const total=Math.max(0,subtotal-discount);
+  useEffect(()=>{trackInitiateCheckout({contentIds:[pkg.id],value:Number(pkg.price||0),numItems:1});},[pkg.id]);
 
   useEffect(()=>{
     let alive=true;
@@ -110,7 +111,6 @@ export default function OrderForm({service,pkg,settings}){
     }
     if(!Number.isInteger(q)||q<1||q>100000)return setErr('Quantity must be a whole number, 1 or more');
     setBusy(true);
-    trackInitiateCheckout({contentIds:[pkg.id],value:total,numItems:q});
     let proofPath='';const createdPaths=[];
     try{
       const uploaded=[];

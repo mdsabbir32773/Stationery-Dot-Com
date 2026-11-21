@@ -33,12 +33,17 @@ export default function OrderForm({service,pkg,settings}){
   const total=Math.max(0,subtotal-discount);
 
   useEffect(()=>{
-    supabase.auth.getSession().then(({data})=>{
+    let alive=true;
+    (async()=>{
+      const{data}=await supabase.auth.getSession();
       const u=data.session?.user;
-      if(!u)return;
+      if(!u||!alive)return;
       setCustomer(u);
-      setF(v=>({...v,customer_name:v.customer_name||u.user_metadata?.full_name||u.user_metadata?.name||'',email:v.email||u.email||''}));
-    }).catch(()=>{});
+      const{data:profile}=await supabase.from('customer_profiles').select('full_name,phone').eq('id',u.id).maybeSingle();
+      if(!alive)return;
+      setF(v=>({...v,customer_name:v.customer_name||profile?.full_name||u.user_metadata?.full_name||u.user_metadata?.name||'',phone:v.phone||profile?.phone||u.user_metadata?.phone||'',email:v.email||u.email||''}));
+    })().catch(()=>{});
+    return()=>{alive=false;};
   },[]);
 
   function setQ(n){

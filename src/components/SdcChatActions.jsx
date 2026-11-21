@@ -1,14 +1,13 @@
 import {useEffect,useMemo,useState} from 'react';
 import {Link} from 'react-router-dom';
-import {ArrowLeft,ArrowRight,CheckCircle2,Loader2,Upload,WalletCards} from 'lucide-react';
-import {supabase,getSettings,taka} from '../lib/supabase';
+import {ArrowRight,CheckCircle2,Loader2,WalletCards} from 'lucide-react';
+import {supabase,taka} from '../lib/supabase';
 import PaymentQR from './PaymentQR';
 
 const PHONE=/^(880|0)?1[0-9]{9}$/;
 const proofTypes=['image/jpeg','image/png','image/webp'];
 const docTypes=['image/jpeg','image/png','image/webp','application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
 const extOf=f=>f.name.split('.').pop().toLowerCase();
-const safeName=s=>s.replace(/[^\w.\-]/g,'_');
 
 export default function SdcChatActions({mode,onCancel,onComplete}){
  const[services,setServices]=useState([]),[packages,setPackages]=useState([]),[settings,setSettings]=useState({});

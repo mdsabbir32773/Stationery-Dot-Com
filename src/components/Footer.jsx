@@ -90,10 +90,13 @@ export default function Footer() {
         <div>
           <h4>Help</h4>
           <ul>
-            <li><Link to="/about">About us</Link></li>\n            <li><Link to="/services">All services</Link></li>
+            <li><Link to="/about">About us</Link></li>
+            <li><Link to="/services">All services</Link></li>
             <li><Link to="/track-order">Track order</Link></li>
             <li><Link to="/contact">Contact</Link></li>
-            <li><Link to="/delivery-policy">Delivery Policy</Link></li>\n            <li><Link to="/refund-policy">Refund & Cancellation</Link></li>\n            <li><Link to="/privacy-policy">Privacy Policy</Link></li>
+            <li><Link to="/delivery-policy">Delivery Policy</Link></li>
+            <li><Link to="/refund-policy">Refund & Cancellation</Link></li>
+            <li><Link to="/privacy-policy">Privacy Policy</Link></li>
             <li><Link to="/terms-of-service">Terms of Service</Link></li>
           </ul>
         </div>

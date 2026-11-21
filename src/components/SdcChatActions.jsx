@@ -39,7 +39,7 @@ export default function SdcChatActions({mode,onCancel,onComplete}){
  setBusy(true);let path='';try{path=await uploadFile(proof,'payproof-');const{data,error:e2}=await supabase.rpc('request_smm_deposit_with_proof',{p_method:'Bangla QR',p_amount:a,p_proof_path:path});if(e2)throw e2;setResult('Deposit request submitted. Request ID: '+data);onComplete?.('Your deposit request has been submitted. Request ID: '+data+'. Wallet balance will update after admin verification.');}
  catch(e2){if(path)await supabase.storage.from('order-files').remove([path]);setError(e2.message||'Could not submit the deposit request.');}finally{setBusy(false);}}
  if(loading)return <div className="sdc-action-card"><Loader2 className="sdc-spin" size={18}/> Loading secure options…</div>;
- if(result)return <div className="sdc-action-card"><div className="sdc-action-success"><CheckCircle2 size={20}/><b>Submitted</b></div><p>{result}</p><button type="button" className="sdc-action-secondary" onClick={onCancel}>Close</button></div>;
+ if(result)return <div className="sdc-action-card"><div className="sdc-action-success"><CheckCircle2 size={20}/><b>Submitted</b></div><p>{result}</p>{successLink&&<Link className="sdc-action-primary" to={'/invoice/'+encodeURIComponent(successLink.code)} state={{phone:successLink.phone}}>View invoice <ArrowRight size={15}/></Link>}<button type="button" className="sdc-action-secondary" onClick={onCancel}>Close</button></div>;
  const qrMethod={name:'Bangla QR',number:'Scan the QR to pay',qr:settings.payment_qr_url};
  return <section className="sdc-action-card">
   <div className="sdc-action-top"><b>{mode==='deposit'?'Add wallet funds': 'Place an order'}</b><button type="button" onClick={onCancel} aria-label="Close">×</button></div>

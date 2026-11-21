@@ -10,7 +10,7 @@ begin
   v_def := pg_get_functiondef('public.create_order(jsonb)'::regprocedure);
   v_new := regexp_replace(
     v_def,
-    $re$code\s*:=\s*'STDC-'\s*\|\|\s*to_char\(d,\s*'YYYYMMDD'\)\s*\|\|\s*'-'\s*\|\|\s*upper\(encode\(gen_random_bytes\(12\),\s*'hex'\)\)$re$,
+    $re$code\s*:=\s*'STDC-'\s*\|\|\s*to_char\(d,\s*'YYYYMMDD'\)\s*\|\|\s*'-'\s*\|\|\s*upper\(encode\(extensions\.gen_random_bytes\(12\),\s*'hex'\)\)$re$,
     $rep$code := 'SD' || to_char(d, 'YYMMDD') || '-' || upper(substr(encode(extensions.gen_random_bytes(4), 'hex'), 1, 8))$rep$,
     'i'
   );

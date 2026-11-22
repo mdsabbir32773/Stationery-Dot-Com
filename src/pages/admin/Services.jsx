@@ -2,7 +2,7 @@ import {useEffect,useState} from 'react';
 import {Search,Plus,Eye,EyeOff} from 'lucide-react';
 import {supabase} from '../../lib/supabase';
 
-const blank={category:'',name:'',slug:'',description:'',requires_file:false,is_popular:false,is_active:true,sort_order:0};
+const blank={category:'',name:'',slug:'',description:'',delivery_estimate:'',pricing_details:'',requires_file:false,is_popular:false,is_active:true,sort_order:0};
 const slugify=value=>value.toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 
 export default function Services(){
@@ -119,6 +119,8 @@ export default function Services(){
         <label>Category<input value={form.category} onChange={event=>update('category',event.target.value)} list="service-categories" placeholder="e.g. Design" required/><datalist id="service-categories">{categories.map(category=><option key={category} value={category}/>)}</datalist></label>
         <label>Service name<input value={form.name} onChange={event=>update('name',event.target.value)} placeholder="e.g. Custom invitation design" required/></label>
         <label className="form-wide">Description<textarea rows={3} value={form.description||''} onChange={event=>update('description',event.target.value)} placeholder="Briefly describe what customers receive."/></label>
+        <label>Estimated delivery time<input value={form.delivery_estimate||''} onChange={event=>update('delivery_estimate',event.target.value)} placeholder="e.g. 2–3 working days"/><small>Only publish a realistic estimate. Leave blank if it varies.</small></label>
+        <label className="form-wide">Pricing details<textarea rows={2} value={form.pricing_details||''} onChange={event=>update('pricing_details',event.target.value)} placeholder="Explain what the listed price includes and disclose any government or third-party fees."/></label>
         <label>Display order<input type="number" value={form.sort_order??0} onChange={event=>update('sort_order',Number(event.target.value))}/></label>
         <label>Cover image (optional)<input type="file" accept="image/jpeg,image/png,image/webp" onChange={uploadImage}/></label>
         {form.image_url&&<img src={form.image_url} alt="Service cover preview" className="service-image-preview form-wide"/>}

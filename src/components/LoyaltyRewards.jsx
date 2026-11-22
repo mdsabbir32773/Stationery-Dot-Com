@@ -23,7 +23,7 @@ export default function LoyaltyRewards({session}){
   }
   useEffect(()=>{if(session?.user?.id)load();},[session?.user?.id]);
   useEffect(()=>{
-    const code=new URLSearchParams(window.location.search).get('ref');
+    const code=new URLSearchParams(window.location.search).get('ref')||localStorage.getItem('sdc_pending_referral');
     if(code && session?.user?.id){setReferralInput(code.toUpperCase());}
   },[session?.user?.id]);
 
@@ -38,7 +38,8 @@ export default function LoyaltyRewards({session}){
     try{await navigator.clipboard.writeText(inviteUrl);setCopied(true);setTimeout(()=>setCopied(false),1800);}
     catch{setError('Could not copy automatically. Please copy the invite link manually.');}
   }
-  async function copyCode(){try{await navigator.clipboard.writeText(summary.referral_code);setCopied(true);}catch{setError('Could not copy code.');}}\n  async function shareInvite(){
+  async function copyCode(){try{await navigator.clipboard.writeText(summary.referral_code);setCopied(true);}catch{setError('Could not copy code.');}}
+  async function shareInvite(){
     if(navigator.share){try{await navigator.share({title:'Join Stationery Dot Com',text:'Sign up using my invite link and earn rewards on your first completed order.',url:inviteUrl});}catch{}}
     else copyInvite();
   }

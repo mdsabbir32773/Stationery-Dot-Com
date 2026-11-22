@@ -107,3 +107,16 @@ footer{background:#29372e;color:#cbd5cc}footer h4{font-weight:700}footer .wrap{m
 .loyalty-history-row strong{font-size:13px;white-space:nowrap}
 .loyalty-history-row .positive{color:#25804c}.loyalty-history-row .negative{color:#b34b43}
 @media(max-width:560px){.loyalty-stats{grid-template-columns:1fr 1fr}.loyalty-stats>div:first-child{grid-column:1/-1}.loyalty-stats strong{font-size:18px}.loyalty-code-row{flex-wrap:wrap}.loyalty-code-row input{width:100%;flex-basis:100%}.loyalty-code-row .btn{min-height:38px}}
+
+
+/* Trust, pricing and delivery disclosures */
+.service-transparency{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:18px 0 22px}
+.transparency-item,.checkout-transparency{border:1px solid var(--line,#e5e9e5);background:var(--surface-soft,#f8faf8);border-radius:12px;padding:14px}
+.transparency-item b,.checkout-transparency b{display:block;font-size:13px;color:var(--text,#26352b)}
+.transparency-item p,.checkout-transparency p{margin:6px 0 0;font-size:13px;line-height:1.6;color:var(--text-muted,#59665c);white-space:pre-wrap}
+.transparency-item small{display:block;margin-top:5px;font-size:11px;color:var(--text-muted,#758078)}
+.checkout-transparency{margin:0 0 14px;padding:12px 14px}
+.checkout-transparency p+p{margin-top:7px}
+.verified-review{display:inline-flex;align-items:center;gap:5px;border:1px solid #cfe7d5;background:#f0faf2;color:#28643c;border-radius:999px;padding:4px 8px;font-size:10px;font-weight:700;white-space:nowrap}
+.verified-review span{font-size:12px}
+@media(max-width:560px){.service-transparency{grid-template-columns:1fr}.verified-review{font-size:9px;padding:3px 6px}}

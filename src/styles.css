@@ -171,3 +171,14 @@ footer{background:#29372e;color:#cbd5cc}footer h4{font-weight:700}footer .wrap{m
 .support-admin-ticket textarea{resize:vertical}
 .support-admin-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:12px 0}
 @media(max-width:560px){.support-ticket-head,.support-admin-ticket header{flex-direction:column}.support-form-foot{align-items:flex-start;flex-direction:column}.support-form-foot .btn{width:100%}}
+
+
+/* Loyalty point redemption at checkout */
+.loyalty-redeem-box{margin:14px 0;padding:13px;border:1px solid #b8dec4;border-radius:12px;background:#f1faf3}
+.loyalty-redeem-box>div b{display:block;font-size:13px;color:#245b37}
+.loyalty-redeem-box>div small{display:block;margin-top:3px;font-size:11px;color:#54705d}
+.loyalty-redeem-box label{font-size:12px;margin:10px 0 5px}
+.loyalty-redeem-box input{min-height:40px;font-size:14px}
+.loyalty-redeem-box p{margin:7px 0 0;color:#28643c;font-size:11px;line-height:1.5}
+.loyalty-redeem-box>small{display:block;margin-top:6px;color:var(--mut);font-size:10px}
+.loyalty-discount dd{color:#247044;font-weight:700}

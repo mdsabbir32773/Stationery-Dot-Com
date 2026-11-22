@@ -147,7 +147,11 @@ export default function OrderForm({service,pkg,settings}){
         <div><span className="summary-kicker">YOUR ORDER</span><h3>Order summary</h3></div>
         <span className="summary-secure"><Lock size={13}/> Secure</span>
       </div>
-      <div className="summary-product">
+      {(service.delivery_estimate||service.pricing_details)&&<div className="checkout-transparency">
+{service.delivery_estimate&&<p><b>Estimated delivery:</b> {service.delivery_estimate}</p>}
+{service.pricing_details&&<p><b>Pricing details:</b> {service.pricing_details}</p>}
+</div>}
+<div className="summary-product">
         <div className="summary-product-icon">{service.name?.slice(0,1)}</div>
         <div>
           <b>{service.name}</b><span>{pkg.name}</span>

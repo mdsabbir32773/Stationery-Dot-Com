@@ -1,6 +1,6 @@
 import {useEffect,useState} from 'react';
 import {Gift,Copy,Users,Star,Share2} from 'lucide-react';
-import {supabase,taka} from '../lib/supabase';
+import {supabase} from '../lib/supabase';
 
 export default function LoyaltyRewards({session}){
   const [summary,setSummary]=useState(null);
@@ -32,7 +32,7 @@ export default function LoyaltyRewards({session}){
     const {data,error}=await supabase.rpc('apply_referral_code',{p_code:referralInput.trim()});
     setBusy(false);
     if(error){setError(error.message);return;}
-    setMessage(data||'Referral code applied.');setReferralInput('');
+    setMessage(data||'Referral code applied.');setReferralInput('');localStorage.removeItem('sdc_pending_referral');const url=new URL(window.location.href);url.searchParams.delete('ref');window.history.replaceState({},'',url);
   }
   async function copyInvite(){
     try{await navigator.clipboard.writeText(inviteUrl);setCopied(true);setTimeout(()=>setCopied(false),1800);}

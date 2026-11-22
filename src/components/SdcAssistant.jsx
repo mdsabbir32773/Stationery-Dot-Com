@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { MessageCircle, X, Send, Sparkles, Headphones, ArrowUpRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import '../chatbot.css';
@@ -63,6 +64,9 @@ export default function SdcAssistant() {
             <button onClick={() => setAction('order')}>Place an order here <ArrowUpRight size={13}/></button>
             <button onClick={() => setAction('deposit')}>Add wallet funds here <ArrowUpRight size={13}/></button>
             <button onClick={() => sendMessage('Check my order status')}>Check my order status <ArrowUpRight size={13}/></button>
+            <Link className="sdc-chat-starter-link" to="/services" onClick={() => setOpen(false)}>Browse all services <ArrowUpRight size={13}/></Link>
+            <Link className="sdc-chat-starter-link" to="/account" onClick={() => setOpen(false)}>My account & wallet <ArrowUpRight size={13}/></Link>
+            <a className="sdc-chat-starter-link" href="https://wa.me/8801827680520" target="_blank" rel="noopener noreferrer">Talk to a person on WhatsApp <ArrowUpRight size={13}/></a>
           </div>}
           {action && <SdcChatActions mode={action} onCancel={() => setAction('')} onComplete={message => { setMessages(prev => [...prev, { role: 'assistant', text: message }]); if (message.startsWith('Your wallet balance is insufficient.')) setAction('deposit'); }} />}
           {busy && <div className="sdc-chat-row is-assistant"><div className="sdc-chat-mini-avatar"><Sparkles size={13}/></div><div className="sdc-chat-bubble sdc-chat-typing"><i/><i/><i/></div></div>}

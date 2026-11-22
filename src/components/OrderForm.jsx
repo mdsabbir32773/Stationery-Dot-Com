@@ -25,12 +25,20 @@ export default function OrderForm({service,pkg,settings}){
   const[step,setStep]=useState(1);
   const[paid,setPaid]=useState(false);
   const[customer,setCustomer]=useState(null);
+  const[loyaltySummary,setLoyaltySummary]=useState(null);
+  const[redeemPoints,setRedeemPoints]=useState(0);
   const set=k=>e=>setF(v=>({...v,[k]:e.target.value}));
   const selectedMethod=methods.find(x=>x.name===f.method)||methods[0]||{name:'Contact us for payment details',number:''};
   const q=Math.max(1,Math.min(100000,Number(f.quantity)||1));
   const subtotal=Number(pkg.price||0)*q;
   const discount=Math.min(subtotal,Number(coupon?.discount||0));
-  const total=Math.max(0,subtotal-discount);
+  const availablePoints=Math.max(0,Number(loyaltySummary?.points_balance||0));
+  const loyaltyEligible=Boolean(customer)&&!service.smm_platform&&service.category!=='SMM Panel Services';
+  const maxRedeemPoints=loyaltyEligible?Math.min(availablePoints,Math.floor(Math.max(0,subtotal-discount-1)*10/100)*100):0;
+  const loyaltyPointsUsed=Math.min(redeemPoints,maxRedeemPoints);
+  const loyaltyDiscount=loyaltyPointsUsed/10;
+  const total=Math.max(0,subtotal-discount-loyaltyDiscount);
+  useEffect(()=>{if(redeemPoints>maxRedeemPoints)setRedeemPoints(maxRedeemPoints);},[redeemPoints,maxRedeemPoints]);
   useEffect(()=>{trackInitiateCheckout({contentIds:[pkg.id],value:Number(pkg.price||0),numItems:1});},[pkg.id]);
 
   useEffect(()=>{
@@ -43,12 +51,13 @@ export default function OrderForm({service,pkg,settings}){
       const{data:profile}=await supabase.from('customer_profiles').select('full_name,phone').eq('id',u.id).maybeSingle();
       if(!alive)return;
       setF(v=>({...v,customer_name:v.customer_name||profile?.full_name||u.user_metadata?.full_name||u.user_metadata?.name||'',phone:v.phone||profile?.phone||u.user_metadata?.phone||'',email:v.email||u.email||''}));
+      const{data:loyaltyRows}=await supabase.rpc('get_my_loyalty_summary');if(alive)setLoyaltySummary(loyaltyRows?.[0]||null);
     })().catch(()=>{});
     return()=>{alive=false;};
   },[]);
 
   function setQ(n){
-    setCoupon(null);
+    setCoupon(null);setRedeemPoints(0);
     setF(v=>({...v,quantity:Math.min(100000,Math.max(1,Number(n)||1))}));
   }
 
@@ -125,7 +134,7 @@ export default function OrderForm({service,pkg,settings}){
       const{error:proofError}=await supabase.storage.from('order-files').upload(proofPath,proof,{contentType:proof.type});
       if(proofError)throw proofError;
       createdPaths.push(proofPath);
-      const{data,error}=await supabase.rpc('create_order',{p:{...f,transaction_id:'PROOF:'+proofPath,payment_proof_path:proofPath,method:selectedMethod.name,quantity:q,package_id:pkg.id,files:uploaded,coupon_code:coupon?.code||''}});
+      const{data,error}=await supabase.rpc('create_order',{p:{...f,transaction_id:'PROOF:'+proofPath,payment_proof_path:proofPath,method:selectedMethod.name,quantity:q,package_id:pkg.id,files:uploaded,coupon_code:coupon?.code||'',loyalty_points:loyaltyPointsUsed}});
       if(error)throw error;
       nav('/order-success/'+data+'?value='+encodeURIComponent(total)+'&items='+encodeURIComponent(pkg.id),{state:{phone:f.phone}});
     }catch(x){
@@ -171,10 +180,18 @@ export default function OrderForm({service,pkg,settings}){
           </dd>
         </div>
         <div className="ln"><dt>Subtotal</dt><dd style={{margin:0}}>{taka(subtotal)}</dd></div>
-        {discount>0&&<div className="ln coupon-discount"><dt>Discount</dt><dd style={{margin:0}}>−{taka(discount)}</dd></div>}
+        {discount>0&&<div className="ln coupon-discount"><dt>Coupon discount</dt><dd style={{margin:0}}>−{taka(discount)}</dd></div>}
+        {loyaltyDiscount>0&&<div className="ln loyalty-discount"><dt>Loyalty discount ({loyaltyPointsUsed} pts)</dt><dd style={{margin:0}}>−{taka(loyaltyDiscount)}</dd></div>}
         <div className="ln tot"><dt>Total</dt><dd style={{margin:0}}>{taka(total)}</dd></div>
       </dl>
       <CouponBox subtotal={subtotal} serviceId={service.id} packageId={pkg.id} phone={f.phone} onApplied={setCoupon}/>
+      {loyaltyEligible&&availablePoints>=100&&<div className="loyalty-redeem-box">
+        <div><b>Use your Loyalty Points</b><small>Available: {availablePoints.toLocaleString('en-BD')} points · 100 points = ৳10</small></div>
+        <label htmlFor="redeem-loyalty-points">Points to redeem</label>
+        <input id="redeem-loyalty-points" type="number" min="0" max={maxRedeemPoints} step="100" value={loyaltyPointsUsed} onChange={e=>{const n=Math.max(0,Math.floor((Number(e.target.value)||0)/100)*100);setRedeemPoints(Math.min(n,maxRedeemPoints));}}/>
+        {loyaltyPointsUsed>0&&<p>You save {taka(loyaltyDiscount)}. Points are reserved for this order and returned if it is cancelled or refunded.</p>}
+        {maxRedeemPoints===0&&<small>Keep at least ৳1 payable after discounts.</small>}
+      </div>}
       <div className="summary-trust"><span>✓ Secure payment review</span><span>✓ Private file handling</span></div>
     </aside>
   );

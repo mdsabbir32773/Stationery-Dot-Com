@@ -17,6 +17,8 @@ const groups=[
   ['How do I pay for an order?','Follow the payment method and instructions displayed during checkout. If a payment QR is shown, complete the payment using your payment app and upload the requested proof before submitting.'],
   ['Does uploading a payment screenshot mean my payment is approved?','No. A screenshot is a payment proof for review. The payment remains pending until Stationery Dot Com verifies it. Do not submit another payment just because verification is still pending.'],
   ['How do wallet deposits work?','Sign in, open My Account and use the wallet deposit option. Submit the requested details and proof, then wait for the deposit review. Your balance changes only after approval.'],
+  ['How do I redeem loyalty points?','At checkout while signed in, enter the number of points you want to use. Every 100 points gives ৳10 off. The checkout shows the discount and final amount before you submit.'],
+  ['What happens to redeemed points if an order is cancelled or refunded?','Redeemed points are reserved for the order. If the order is cancelled or refunded, the points are automatically returned to your loyalty balance.'],
   ['What if my payment or deposit is rejected?','Check the note or status shown in your account. If you are unsure what to correct, contact support and include your Order ID or deposit reference.']
  ]},
  {title:'Documents, account & support',icon:ShieldCheck,items:[

@@ -24,6 +24,8 @@ const groups=[
   ['What file types can I upload at checkout?','The current checkout accepts JPG, PNG, WEBP, PDF, DOC and DOCX files. Individual file-size and quantity limits are shown when you upload.'],
   ['Do I need an account?','An account is optional for placing an order. Creating one helps keep your profile, signed-in orders, wallet activity and notifications together.'],
   ['How do I contact a real person?','Use the WhatsApp support link on the website or the Talk to a person option in SDC Assistant. Include your Order ID when asking about an existing order.'],
+  ['How do I submit a support ticket?','Sign in and open My Account. Use the Help & Support section to submit a request. You can optionally link it to one of your orders.'],
+  ['How do I see the support team’s reply?','Open My Account and return to Help & Support. Your ticket status and the team’s replies appear there.'],
   ['Can the chatbot approve payments or change my order status?','No. SDC Assistant can guide you and check available order information. Payment approvals and order-status changes are handled through the verified store workflow.']
  ]}
 ];

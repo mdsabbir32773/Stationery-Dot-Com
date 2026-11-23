@@ -42,14 +42,19 @@ try {
   // Fill demo-only details, confirm the review, and stop at payment without uploading or submitting.
   await orderReply.fill('Smoke Test Customer');
   await orderReply.press('Enter');
+  await chat.getByText(/আপনার Bangladesh mobile number-টা বলুন/i).last().waitFor({ state: 'visible', timeout: 10000 });
   await orderReply.fill('01700000000');
   await orderReply.press('Enter');
+  await chat.getByText(/WhatsApp number কি mobile-এর থেকে আলাদা/i).last().waitFor({ state: 'visible', timeout: 10000 });
   await orderReply.fill('same');
   await orderReply.press('Enter');
+  await chat.getByText(/Order-এর জন্য email দেবেন/i).last().waitFor({ state: 'visible', timeout: 10000 });
   await orderReply.fill('skip');
   await orderReply.press('Enter');
+  await chat.getByText(/Team-এর জন্য extra instruction আছে/i).last().waitFor({ state: 'visible', timeout: 10000 });
   await orderReply.fill('skip');
   await orderReply.press('Enter');
+  await chat.getByText(/Order-টা একবার পড়ে শোনাই/i).last().waitFor({ state: 'visible', timeout: 10000 });
   await orderReply.fill('confirm');
   await orderReply.press('Enter');
 

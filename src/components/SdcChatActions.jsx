@@ -120,7 +120,7 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
   else if(step==='name'){if(v.length<2||v.length>120){setError('Please enter your full name (2–120 characters).');return;}setName(v);go('phone',prompts.phone);}
   else if(step==='phone'){if(!PHONE.test(v.replace(/\D/g,''))){setError('Please enter a valid Bangladeshi mobile number.');return;}setPhone(v);go('whatsapp',prompts.whatsapp);}
   else if(step==='whatsapp'){setWhatsapp(/^(same|same as (mobile|phone)|একই)$/i.test(v)?phone:v);go('email',prompts.email);}
-  else if(step==='email'){if(v&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)){setError('Please enter a valid email address or skip.');return;}setEmail(/^(skip|no|none|না)$/i.test(v)?'':v);go('notes',prompts.notes);}
+  else if(step==='email'){const skipped=/^(skip|no|none|না)$/i.test(v);if(v&&!skipped&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)){setError('Please enter a valid email address or skip.');return;}setEmail(skipped?'':v);go('notes',prompts.notes);}
   else if(step==='notes'){setNotes(/^(skip|no|none|না)$/i.test(v)?'':v);if(service?.requires_file)go('docs',prompts.docs);else go('review',prompts.review);}
   else if(step==='docs'){if(!docs.length){setError(language==='bn'?'আগে supporting file upload করুন।':'Please upload the required supporting file first.');return;}go('review',prompts.review);}
   else if(step==='review'){

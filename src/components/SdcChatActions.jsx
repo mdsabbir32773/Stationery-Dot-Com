@@ -1,4 +1,4 @@
-import {useEffect,useMemo,useState} from 'react';
+import {useEffect,useMemo,useRef,useState} from 'react';
 import {Link} from 'react-router-dom';
 import {ArrowRight,CheckCircle2,Loader2,WalletCards,Sparkles} from 'lucide-react';
 import {supabase,taka} from '../lib/supabase';
@@ -8,42 +8,101 @@ const PHONE=/^(880|0)?1[0-9]{9}$/;
 const proofTypes=['image/jpeg','image/png','image/webp'];
 const docTypes=['image/jpeg','image/png','image/webp','application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
 const extOf=f=>f.name.split('.').pop().toLowerCase();
+const STOPWORDS=new Set(['i','me','my','we','want','need','looking','for','to','a','an','the','some','please','order','buy','purchase','get','give','show','find','related','recommend','recommendation','package','packages','service','services','price','cost','of','and','with','have','you','can','could','do','on','from','amar','amr','ami','amake','ekta','ta','lagbe','chai','dorkar','nibo','kinbo','den','dao','daw','koro','korbo','korte','dibo','jonno','কি','কী','আমার','আমি','আমাকে','একটা','লাগবে','চাই','দরকার','নেব','কিনব','দেন','দাও','করতে','অর্ডার','প্যাকেজ','সার্ভিস','দাম','কত','আছে','দেখান','দেখাও']);
+function normalized(value){return String(value||'').toLowerCase().normalize('NFKC').replace(/[^a-z0-9\u0980-\u09ff]+/g,' ').trim();}
+function tokens(value){return normalized(value).split(/\s+/).filter(word=>word.length>1&&!STOPWORDS.has(word));}
+function catalogScore(query,label){const q=normalized(query),c=normalized(label);if(!q||!c)return 0;if(q===c)return 100;const qt=tokens(query),ct=tokens(label);if(!qt.length||!ct.length)return 0;const overlap=ct.filter(word=>qt.includes(word)).length;if(!overlap)return 0;return Math.round((overlap/ct.length*.72+overlap/qt.length*.28)*100);}
+function rankCatalog(query,items,labelOf){return items.map(item=>({item,score:catalogScore(query,labelOf(item))})).filter(row=>row.score>=42).sort((a,b)=>b.score-a.score);}
+function asksForSuggestions(text){return /\b(related|recommend|suggest|options?|list|show me|what do you have|which packages?)\b|ki ki ache|aro package|related package|option gula|প্যাকেজ.*(দেখা|আছে|কোন)|কোন কোন|কি কি আছে|আরো.*প্যাকেজ/i.test(text);}
 
-export default function SdcChatActions({mode,onCancel,onComplete}){
+
+export default function SdcChatActions({mode,initialMessage='',onCancel,onComplete}){
+ const initialProcessed=useRef(false);
+ const hasBangla=/[\u0980-\u09ff]/.test(initialMessage);
+ const isBanglish=/\b(amar|amr|ami|lagbe|chai|dorkar|nibo|kinbo|koro|korbo|daw|den|dibo)\b/i.test(initialMessage);
+ const language=hasBangla?'bn':isBanglish?'bnlish':'en';
  const[services,setServices]=useState([]),[packages,setPackages]=useState([]),[settings,setSettings]=useState({});
  const[session,setSession]=useState(null),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[error,setError]=useState(''),[result,setResult]=useState(''),[successLink,setSuccessLink]=useState(null);
  const[step,setStep]=useState(mode==='deposit'?'amount':'service'),[messages,setMessages]=useState([]),[reply,setReply]=useState('');
- const[serviceId,setServiceId]=useState(''),[packageId,setPackageId]=useState(''),[serviceSearch,setServiceSearch]=useState(''),[packageSearch,setPackageSearch]=useState(''),[name,setName]=useState(''),[phone,setPhone]=useState(''),[whatsapp,setWhatsapp]=useState(''),[email,setEmail]=useState(''),[target,setTarget]=useState(''),[quantity,setQuantity]=useState(''),[notes,setNotes]=useState('');
+ const[serviceId,setServiceId]=useState(''),[packageId,setPackageId]=useState(''),[name,setName]=useState(''),[phone,setPhone]=useState(''),[whatsapp,setWhatsapp]=useState(''),[email,setEmail]=useState(''),[target,setTarget]=useState(''),[quantity,setQuantity]=useState(''),[notes,setNotes]=useState('');
  const[proof,setProof]=useState(null),[docs,setDocs]=useState([]),[paid,setPaid]=useState(false),[amount,setAmount]=useState(''),[balance,setBalance]=useState(null);
  const service=services.find(x=>x.id===serviceId);
  const servicePackages=useMemo(()=>packages.filter(x=>x.service_id===serviceId),[packages,serviceId]);
- const filteredServices=useMemo(()=>{const q=serviceSearch.trim().toLowerCase();return services.filter(x=>!q||`${x.name||''} ${x.category||''}`.toLowerCase().includes(q));},[services,serviceSearch]);
- const filteredPackages=useMemo(()=>{const q=packageSearch.trim().toLowerCase();return servicePackages.filter(x=>!q||`${x.name||''} ${x.access_type||''} ${x.duration_months||''} ${x.price||''}`.toLowerCase().includes(q));},[servicePackages,packageSearch]);
  const pack=servicePackages.find(x=>x.id===packageId);
  const isSmm=Boolean(service?.smm_platform||service?.category==='SMM Panel Services');
  const total=pack?Number(pack.price||0):0;
  const smmTotal=service?Math.round((Number(service.smm_price_per_1000||0)*Number(quantity||0)/1000)*100)/100:0;
  const qrMethod={name:'Bangla QR',number:'Scan the QR to pay',qr:settings.payment_qr_url};
- const prompts={service:'Which service would you like to order? Choose from the live service list below.',package:'Which package do you need?',target:'Please send the target profile, post or channel URL.',quantity:'How many do you need? Enter the quantity.',name:'Please tell me your full name.',phone:'What is your Bangladeshi mobile number?',whatsapp:'WhatsApp number? You can skip this if it is the same as your mobile.',email:'Email address? This is optional; you can skip it.',notes:'Any extra instructions for the team? Optional—skip if none.',docs:'This service needs supporting documents. Upload the files below, then continue.',review:'Please review all details below. I will show the payment QR only after you confirm.',amount:'How much would you like to add to your wallet? Minimum ৳50.',proof:'Now upload a clear screenshot of your successful payment. JPG, PNG or WEBP; max 5MB.',paid:'Please confirm that you have completed the payment. The request will remain pending until our team verifies it.'};
- useEffect(()=>{setMessages([{role:'assistant',text:mode==='deposit'?'Sure. I’ll help you submit a wallet deposit request here.': 'Sure. I’ll collect your order details here, one step at a time. You will see the payment QR only after you review and confirm everything.'}]);},[mode]);
+ const promptSets={
+  en:{service:'What service do you need? Tell me its name or what you need it for.',package:'I found these packages for this service. Tell me a package name, or say “related” and I’ll find matching ones.',target:'What profile, post or channel should the service apply to? Please send its link.',quantity:'How many would you like?',name:'What name should I put on the order?',phone:'What is your Bangladeshi mobile number?',whatsapp:'Is your WhatsApp number different from your mobile? If not, say “same”.',email:'What email should we use for this order? This is optional; say “skip” to leave it blank.',notes:'Any instructions for the team? If not, say “skip”.',docs:'This service needs a supporting file. Upload it here and I’ll continue.',review:'Let me read your order back. Please check the details and confirm or ask me to change something.',amount:'How much would you like to add to your wallet? The minimum is ৳50.',proof:'Please upload a clear screenshot of your successful payment (JPG, PNG or WEBP, up to 5 MB).',paid:'Please confirm you completed the payment. Our team will review the screenshot before approving it.'},
+  bnlish:{service:'Kon service lagbe? Naam ba ki kajer jonno lagbe nijer moto kore bolun.',package:'Ei service-er package-gulor naam ar price dilam. Package-er naam bolun, ba “related” bolle mil ache emon package dekhabo.',target:'Kon profile, post ba channel-er jonno? Link-ta din.',quantity:'Koyta lagbe bolun.',name:'Order-ta kon naam-e korbo?',phone:'Apnar Bangladesh mobile number-ta bolun.',whatsapp:'WhatsApp number ki mobile-er theke alada? Same hole “same” bolun.',email:'Order-er jonno email deben? Eta optional—na dile “skip” bolun.',notes:'Team-er jonno extra instruction ache? Na thakle “skip” bolun.',docs:'Ei service-er jonno supporting file dorkar. Ekhane upload korun.',review:'Order-ta ekbar pore shonai—details thik ache? Thik hole confirm bolun, change chaile bolun.',amount:'Wallet-e koto taka add korte chan? Minimum ৳50.',proof:'Payment successful hole screenshot upload korun (JPG/PNG/WEBP, max 5 MB).',paid:'Payment complete korechen confirm korun. Team screenshot check kore approve korbe.'},
+  bn:{service:'কোন সার্ভিসটা লাগবে? নাম বা কী কাজে লাগবে নিজের মতো করে বলুন।',package:'এই সার্ভিসের package-এর নাম আর দাম দিলাম। package-এর নাম বলুন, বা “related” বললে কাছাকাছি package খুঁজে দেখাব।',target:'কোন profile, post বা channel-এর জন্য? Link-টা দিন।',quantity:'কতটা লাগবে বলুন।',name:'Order-টা কোন নামে করব?',phone:'আপনার Bangladesh mobile number-টা বলুন।',whatsapp:'WhatsApp number কি mobile-এর থেকে আলাদা? একই হলে “same” বলুন।',email:'Order-এর জন্য email দেবেন? না দিলে “skip” বলুন—এটা optional।',notes:'Team-এর জন্য extra instruction আছে? না থাকলে “skip” বলুন।',docs:'এই service-এর জন্য supporting file দরকার। এখানে upload করুন।',review:'Order-টা একবার পড়ে শোনাই—details ঠিক আছে? ঠিক হলে confirm বলুন, change চাইলে বলুন।',amount:'Wallet-এ কত টাকা add করতে চান? Minimum ৳50.',proof:'Payment successful হলে screenshot upload করুন (JPG/PNG/WEBP, max 5 MB).',paid:'Payment complete করেছেন confirm করুন। Team screenshot দেখে approve করবে.'}
+ };
+ const prompts=promptSets[language];
+ const packageCatalog=(svc,list=packages.filter(p=>p.service_id===svc?.id))=>{
+  if(!list.length)return language==='bn'?'এই service-এ এখন active package নেই। অন্য service-এর নাম বলুন।':'There are no active packages for this service right now. Tell me another service name.';
+  const rows=list.slice(0,10).map(p=>'• '+p.name+(p.access_type?' · '+p.access_type:'')+(p.duration_months===0?' · Lifetime':p.duration_months?' · '+p.duration_months+' months':'')+' — '+(Number(p.price)>0?taka(p.price):'Price on request')).join('\\n');
+  const more=list.length>10?'\\n…and '+(list.length-10)+' more.':'';
+  return (language==='bn'?'এই service-এর available package:\\n':'Available packages for '+(svc?.name||'this service')+':\\n')+rows+more;
+ };
+ const serviceCatalog=()=>services.slice(0,12).map(x=>x.name).join(', ')+(services.length>12?'…':'');
+
+ useEffect(()=>{initialProcessed.current=false;setMessages([{role:'assistant',text:mode==='deposit'?(language==='bn'?'Wallet deposit-টা এখানেই একে একে করব।':'I’ll help with the wallet deposit right here, one step at a time.'):initialMessage?'':(language==='bn'?'বেশ, কী service লাগবে বলুন—নাম বা কী দরকার লিখলেই মিলিয়ে দেখছি।':'Sure—tell me what service you need, and I’ll find the matching package.') }]);},[mode,initialMessage,language]);
  useEffect(()=>{(async()=>{try{const [{data:sv,error:se},{data:pk,error:pe},{data:{session:ss}},{data:st}]=await Promise.all([supabase.from('services').select('*').eq('is_active',true).order('sort_order'),supabase.from('packages').select('*').eq('is_active',true).order('sort_order'),supabase.auth.getSession(),supabase.from('site_settings').select('key,value')]);if(se)throw se;if(pe)throw pe;setServices(sv||[]);setPackages(pk||[]);setSession(ss);setSettings(Object.fromEntries((st||[]).map(x=>[x.key,x.value])));if(ss?.user){const{data:p}=await supabase.from('customer_profiles').select('full_name,phone').eq('id',ss.user.id).maybeSingle();setName(p?.full_name||ss.user.user_metadata?.full_name||'');setPhone(p?.phone||ss.user.user_metadata?.phone||'');setEmail(ss.user.email||'');}}catch(e){setError(e.message||'Could not load secure order options.');}finally{setLoading(false)}})();},[]);
  useEffect(()=>{if(isSmm&&session)supabase.rpc('get_smm_wallet').then(({data,error:e})=>{if(!e)setBalance(Number(data||0));});},[isSmm,session?.user?.id]);
  useEffect(()=>{if(!loading&&mode==='order'&&step==='service'&&services.length===0)setError('No active services are available right now.');},[loading,mode,step,services.length]);
  function bot(text){setMessages(v=>[...v,{role:'assistant',text}]);}
  function user(text){setMessages(v=>[...v,{role:'user',text}]);}
  function go(next,prompt){setStep(next);setError('');if(prompt)bot(prompt);}
- function chooseService(id){const s=services.find(x=>x.id===id);if(!s)return;setServiceId(id);setPackageId('');setPackageSearch('');user(s.name);const smm=Boolean(s.smm_platform||s.category==='SMM Panel Services');if(smm){if(!session){go('signin','This SMM service requires a signed-in account. Please sign in to continue.');return;}go('target',prompts.target);}else go('package',prompts.package);}
- function choosePackage(id){const p=servicePackages.find(x=>x.id===id);if(!p)return;setPackageId(id);user(p.name+' — '+(Number(p.price)>0?taka(p.price):'Price on request'));if(isSmm){go('target',prompts.target);}else go('name',prompts.name);}
+ function chooseService(id,matchedPackageId=''){
+  const s=services.find(x=>x.id===id);if(!s)return;
+  setServiceId(id);setPackageId('');
+  const smm=Boolean(s.smm_platform||s.category==='SMM Panel Services');
+  if(smm){if(!session){go('signin',language==='bn'?'এই service order করতে account-এ sign in করতে হবে।':'Please sign in to order this service.');return;}go('target',prompts.target);return;}
+  const matched=matchedPackageId?packages.find(x=>x.id===matchedPackageId):null;
+  if(matched){setPackageId(matched.id);go('name',(language==='bn'?'ঠিক আছে—':'Got it—')+s.name+', '+matched.name+' ('+(Number(matched.price)>0?taka(matched.price):'Price on request')+'). '+(language==='bn'?'এখন order-এর নামটা বলুন।':'What name should I put on the order?'));return;}
+  go('package',prompts.package+'\n\n'+packageCatalog(s,packages.filter(x=>x.service_id===id)));
+ }
+ function choosePackage(id){const p=servicePackages.find(x=>x.id===id);if(!p)return;setPackageId(id);if(isSmm){go('target',prompts.target);}else go('name',(language==='bn'?'বুঝেছি—':'Got it—')+p.name+' ('+(Number(p.price)>0?taka(p.price):'Price on request')+'). '+(language==='bn'?'Order-টা কোন নামে করব?':'What name should I put on the order?'));}
  function currentPrompt(){return prompts[step]||'';}
+ function handleServiceQuery(query){
+  const serviceMatches=rankCatalog(query,services,x=>(x.name||'')+' '+(x.category||''));
+  const packageMatches=rankCatalog(query,packages,x=>(x.name||'')+' '+(x.access_type||'')+' '+(x.duration_months||'')+' '+(services.find(y=>y.id===x.service_id)?.name||''));
+  const best=serviceMatches[0],next=serviceMatches[1];
+  if(best&&best.score>=74&&(!next||best.score-next.score>=10)){
+   const svc=best.item;
+   const within=rankCatalog(query,packages.filter(x=>x.service_id===svc.id),x=>(x.name||'')+' '+(x.access_type||'')+' '+(x.duration_months||'')+' '+(x.price||''));
+   const match=within[0]&&within[0].score>=76&&(!within[1]||within[0].score-within[1].score>=10)?within[0].item:null;
+   chooseService(svc.id,match?.id||'');return;
+  }
+  const pb=packageMatches[0],pn=packageMatches[1];
+  if(pb&&pb.score>=82&&(!pn||pb.score-pn.score>=12)){const svc=services.find(x=>x.id===pb.item.service_id);if(svc){chooseService(svc.id,pb.item.id);return;}}
+  if(asksForSuggestions(query)){bot((language==='bn'?'অবশ্যই। Available service-গুলো হলো:\\n• ':'Here are the available services:\\n• ')+services.slice(0,12).map(x=>x.name).join('\\n• ')+'\\n'+(language==='bn'?'যেটা দরকার, নামটা বলুন।':'Tell me the one you need.'));return;}
+  const close=serviceMatches.filter(x=>x.score>=50).slice(0,5).map(x=>x.item.name);
+  if(close.length){bot((language==='bn'?'এই service-গুলোর সাথে মিল পেয়েছি: ':'I found a few related services: ')+close.join(', ')+(language==='bn'?'। কোনটার কথা বলছেন, নামটা একটু পরিষ্কার করে বলবেন?':'. Which one did you mean?'));return;}
+  bot((language==='bn'?'নামটা ঠিক মেলাতে পারিনি। service বা কাজের নাম আরেকটু বলবেন? Available: ':'I could not match that yet. Tell me the service name or what you need it for. Available: ')+serviceCatalog());
+ }
+ function handlePackageQuery(query){
+  const matches=rankCatalog(query,servicePackages,x=>(x.name||'')+' '+(x.access_type||'')+' '+(x.duration_months||'')+' '+(x.price||''));
+  if(asksForSuggestions(query)){const related=matches.filter(x=>x.score>=50).map(x=>x.item);bot(packageCatalog(service,related.length?related:servicePackages));return;}
+  const best=matches[0],next=matches[1];
+  if(best&&best.score>=76&&(!next||best.score-next.score>=10)){choosePackage(best.item.id);return;}
+  const close=matches.filter(x=>x.score>=48).slice(0,6).map(x=>'• '+x.item.name+' — '+(Number(x.item.price)>0?taka(x.item.price):'Price on request'));
+  if(close.length)bot((language==='bn'?'এই package-গুলো আপনার কথার সাথে মিলে:\\n':'These packages seem related:\\n')+close.join('\\n')+'\\n'+(language==='bn'?'যেটা চান, নামটা বলুন।':'Tell me which package name you want.'));
+  else bot((language==='bn'?'এই নামে package পেলাম না। ':'I could not find that package name. ')+packageCatalog(service));
+ }
+ useEffect(()=>{if(loading||mode!=='order'||!initialMessage||initialProcessed.current||!services.length)return;initialProcessed.current=true;handleServiceQuery(initialMessage);},[loading,mode,initialMessage,services,packages]);
  function submitText(e){e.preventDefault();const v=reply.trim();if(!v)return;setReply('');user(v);
-  if(step==='amount'){const n=Number(v);if(!Number.isFinite(n)||n<50||n>1000000){setError('Deposit amount must be between ৳50 and ৳1,000,000.');return;}setAmount(String(n));go('review','Please review your wallet deposit details. The QR will appear only after you confirm.');}
+  if(step==='service'){handleServiceQuery(v);}
+  else if(step==='package'){handlePackageQuery(v);}
+  else if(step==='amount'){const n=Number(v);if(!Number.isFinite(n)||n<50||n>1000000){setError('Deposit amount must be between ৳50 and ৳1,000,000.');return;}setAmount(String(n));go('review',language==='bn'?'Wallet deposit-এর details দেখে নিন। ঠিক থাকলে confirm বলুন।':'Review your wallet deposit details and confirm when ready.');}
   else if(step==='target'){if(!/^https?:\/\//i.test(v)){setError('Please enter a complete URL beginning with https://');return;}setTarget(v);go('quantity',prompts.quantity);}
   else if(step==='quantity'){const q=Number(v);if(!Number.isInteger(q)||q<Number(service.smm_min_quantity)||q>Number(service.smm_max_quantity)){setError('Quantity must be between '+service.smm_min_quantity+' and '+service.smm_max_quantity+'.');return;}setQuantity(String(q));go('name',prompts.name);}
   else if(step==='name'){if(v.length<2||v.length>120){setError('Please enter your full name (2–120 characters).');return;}setName(v);go('phone',prompts.phone);}
   else if(step==='phone'){if(!PHONE.test(v.replace(/\D/g,''))){setError('Please enter a valid Bangladeshi mobile number.');return;}setPhone(v);go('whatsapp',prompts.whatsapp);}
-  else if(step==='whatsapp'){setWhatsapp(v);go('email',prompts.email);}
-  else if(step==='email'){if(v&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)){setError('Please enter a valid email address or skip.');return;}setEmail(v);go('notes',prompts.notes);}
-  else if(step==='notes'){setNotes(v);if(service?.requires_file)go('docs',prompts.docs);else go('review',prompts.review);}
+  else if(step==='whatsapp'){setWhatsapp(/^(same|same as (mobile|phone)|একই)$/i.test(v)?phone:v);go('email',prompts.email);}
+  else if(step==='email'){if(v&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)){setError('Please enter a valid email address or skip.');return;}setEmail(/^(skip|no|none|না)$/i.test(v)?'':v);go('notes',prompts.notes);}
+  else if(step==='notes'){setNotes(/^(skip|no|none|না)$/i.test(v)?'':v);if(service?.requires_file)go('docs',prompts.docs);else go('review',prompts.review);}
  }
  function skip(){user('Skip');if(step==='whatsapp')go('email',prompts.email);else if(step==='email')go('notes',prompts.notes);else if(step==='notes'){if(service?.requires_file)go('docs',prompts.docs);else go('review',prompts.review);}else if(step==='amount')setError('Please enter a deposit amount to continue.');}
  function chooseDocs(e){const fs=[...(e.target.files||[])];if(fs.length>5){setError('Maximum 5 supporting files.');return;}for(const f of fs){if(!docTypes.includes(f.type)||f.size>10*1024*1024){setError('Supporting files: JPG, PNG, WEBP, PDF or DOC/DOCX; max 10MB each.');return;}}setError('');setDocs(fs);}
@@ -62,9 +121,9 @@ export default function SdcChatActions({mode,onCancel,onComplete}){
   <div className="sdc-convo-thread" aria-live="polite">{messages.map((m,i)=><div key={i} className={'sdc-chat-row '+(m.role==='user'?'is-user':'is-assistant')}>{m.role==='assistant'&&<div className="sdc-chat-mini-avatar"><Sparkles size={13}/></div>}<div className="sdc-chat-bubble">{m.text}</div></div>)}</div>
   {error&&<div className="sdc-action-error" role="alert">{error}</div>}
   {step==='signin'&&<div className="sdc-convo-control"><Link className="sdc-action-primary" to="/account">Sign in / Create account <ArrowRight size={15}/></Link></div>}
-  {step==='service'&&<div className="sdc-convo-control"><input type="search" value={serviceSearch} onChange={e=>setServiceSearch(e.target.value)} placeholder="Search services…" aria-label="Search services"/><div className="sdc-convo-options" role="group" aria-label="Available services">{filteredServices.map(s=><button type="button" className="sdc-convo-option" key={s.id} onClick={()=>chooseService(s.id)}>{s.name}<ArrowRight size={14}/></button>)}</div>{filteredServices.length===0&&<small>No matching services found. Try another name.</small>}</div>}
-  {step==='package'&&<div className="sdc-convo-control"><input type="search" value={packageSearch} onChange={e=>setPackageSearch(e.target.value)} placeholder="Search packages…" aria-label="Search packages"/><div className="sdc-convo-options" role="group" aria-label="Available packages">{filteredPackages.map(p=><button type="button" className="sdc-convo-option" key={p.id} onClick={()=>choosePackage(p.id)}><span>{p.name}{p.access_type?' · '+p.access_type:''}{p.duration_months===0?' · Lifetime':p.duration_months?' · '+p.duration_months+' months':''}<small>{Number(p.price)>0?taka(p.price):'Price on request'}</small></span><ArrowRight size={14}/></button>)}</div>{filteredPackages.length===0&&<small>No matching packages found.</small>}</div>}
-  {['amount','target','quantity','name','phone','whatsapp','email','notes'].includes(step)&&<form className="sdc-convo-reply" onSubmit={submitText}><input autoFocus value={reply} onChange={e=>setReply(e.target.value)} placeholder={step==='phone'?'01XXXXXXXXX':step==='amount'?'Enter amount in BDT':step==='target'?'https://…':'Type your answer…'} aria-label="Your answer"/><button disabled={!reply.trim()}>Send</button>{['whatsapp','email','notes'].includes(step)&&<button type="button" className="sdc-convo-skip" onClick={skip}>Skip</button>}</form>}
+
+
+  {['service','package','amount','target','quantity','name','phone','whatsapp','email','notes'].includes(step)&&<form className="sdc-convo-reply" onSubmit={submitText}><input autoFocus value={reply} onChange={e=>setReply(e.target.value)} placeholder={step==='service'?(language==='bn'?'Service-er naam ba ki lagbe likhun…':'Tell me what service you need…'):step==='package'?(language==='bn'?'Package-er naam bolun, related chaile likhun…':'Tell me a package name or ask for related ones…'):step==='phone'?'01XXXXXXXXX':step==='amount'?'Enter amount in BDT':step==='target'?'https://…':language==='bn'?'এখানে লিখুন…':'Type your answer…'} aria-label="Your message"/><button disabled={!reply.trim()}>Send</button>{['whatsapp','email','notes'].includes(step)&&<button type="button" className="sdc-convo-skip" onClick={skip}>Skip</button>}</form>}
   {step==='docs'&&<div className="sdc-convo-control"><label>Upload supporting files<input type="file" multiple accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx" onChange={chooseDocs}/></label>{docs.length>0&&<small>{docs.map(f=>f.name).join(', ')}</small>}<button className="sdc-action-primary" disabled={!docs.length} onClick={()=>go('review',prompts.review)}>Continue <ArrowRight size={15}/></button></div>}
   {step==='review'&&<div className="sdc-convo-review">{mode==='deposit'?<><b>Deposit amount: {taka(amount)}</b><p>Account: signed-in customer</p></>:<><b>{service?.name}</b><p>Package: {pack?.name}</p>{isSmm&&<p>Target: {target}<br/>Quantity: {Number(quantity).toLocaleString()}<br/>Estimated total: {taka(smmTotal)}<br/>Wallet balance: {balance===null?'Loading…':taka(balance)}</p>}{!isSmm&&<p>Total: {Number(pack?.price)>0?taka(total):'Price on request'}</p>}<p>Name: {name}<br/>Mobile: {phone}{whatsapp&&<><br/>WhatsApp: {whatsapp}</>}{email&&<><br/>Email: {email}</>}{notes&&<><br/>Note: {notes}</>}</p>{docs.length>0&&<p>Files: {docs.map(f=>f.name).join(', ')}</p>}</>}<button className="sdc-action-primary" disabled={busy||(isSmm&&balance!==null&&smmTotal>balance)} onClick={confirmDetails}>{busy?<Loader2 className="sdc-spin" size={16}/>:mode==='deposit'?'Confirm details & show payment QR':isSmm?'Confirm & place SMM order':Number(pack?.price)>0?'Confirm details & show payment QR':'Confirm & submit quote request'} <ArrowRight size={15}/></button><button className="sdc-action-secondary" onClick={()=>{setError('');go(mode==='deposit'?'amount':'service',mode==='deposit'?prompts.amount:prompts.service);}}>Change details</button></div>}
   {step==='payment'&&<div className="sdc-convo-payment"><PaymentQR settings={settings} total={mode==='deposit'?Number(amount):total} method={qrMethod}/><label className="sdc-convo-control">Payment screenshot (JPG / PNG / WEBP, max 5MB)<input type="file" accept="image/jpeg,image/png,image/webp" onChange={chooseProof}/></label>{proof&&<small>{proof.name}</small>}<button className="sdc-action-primary" disabled={!proof} onClick={()=>go('paid',prompts.paid)}>Continue <ArrowRight size={15}/></button></div>}

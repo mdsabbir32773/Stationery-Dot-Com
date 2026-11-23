@@ -42,19 +42,19 @@ try {
   // Fill demo-only details, confirm the review, and stop at payment without uploading or submitting.
   await orderReply.fill('Smoke Test Customer');
   await orderReply.press('Enter');
-  await chat.getByText(/আপনার Bangladesh mobile number-টা বলুন/i).last().waitFor({ state: 'visible', timeout: 10000 });
+  await chat.getByText(/আপনার বাংলাদেশি মোবাইল নম্বরটি দিন/i).last().waitFor({ state: 'visible', timeout: 10000 });
   await orderReply.fill('01700000000');
   await orderReply.press('Enter');
-  await chat.getByText(/WhatsApp number কি mobile-এর থেকে আলাদা/i).last().waitFor({ state: 'visible', timeout: 10000 });
+  await chat.getByText(/WhatsApp নম্বরটি কি মোবাইল নম্বরের থেকে আলাদা/i).last().waitFor({ state: 'visible', timeout: 10000 });
   await orderReply.fill('same');
   await orderReply.press('Enter');
-  await chat.getByText(/Order-এর জন্য email দেবেন/i).last().waitFor({ state: 'visible', timeout: 10000 });
+  await chat.getByText(/অর্ডারের জন্য কোন ইমেইল ব্যবহার করব/i).last().waitFor({ state: 'visible', timeout: 10000 });
   await orderReply.fill('skip');
   await orderReply.press('Enter');
   await chat.getByText(/টিমকে জানানোর মতো কোনো নির্দেশনা আছে/i).last().waitFor({ state: 'visible', timeout: 10000 });
   await orderReply.fill('skip');
   await orderReply.press('Enter');
-  await chat.getByText(/Order-টা একবার পড়ে শোনাই/i).last().waitFor({ state: 'visible', timeout: 10000 });
+  await chat.getByText(/অর্ডারের তথ্যগুলো আবার দেখুন/i).last().waitFor({ state: 'visible', timeout: 10000 });
   await orderReply.fill('confirm');
   await orderReply.press('Enter');
 

@@ -136,3 +136,6 @@
 .smm-modal .coupon-success{color:#166534}
 .smm-modal .coupon-error{color:#b91c1c}
 @media(max-width:620px){.welcome5-smm-inner{align-items:flex-start;flex-wrap:wrap;gap:10px}.welcome5-smm-tag{order:0}.welcome5-smm-inner>div{order:1;flex-basis:100%}.welcome5-smm-code{order:2;margin-left:auto}.welcome5-smm-banner{padding:15px}}
+
+
+.smm-seo-intro{padding:30px 20px;background:#f7f9fc}.smm-seo-intro-inner{max-width:1120px;margin:0 auto}.smm-seo-intro h2{margin:8px 0 12px;font-size:clamp(22px,3vw,30px)}.smm-seo-intro p{max-width:900px;line-height:1.8;color:#536174;margin:8px 0}

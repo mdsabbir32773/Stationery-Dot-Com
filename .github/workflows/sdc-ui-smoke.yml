@@ -29,6 +29,6 @@ jobs:
       - name: Install temporary browser test runner
         run: npm install --no-save --package-lock=false playwright
       - name: Install Chromium
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium --only-shell
       - name: Test live SDC chat workflows
         run: node scripts/sdc-ui-smoke.mjs

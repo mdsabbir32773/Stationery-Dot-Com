@@ -33,6 +33,41 @@ async function db(env, path, options = {}) {
   if (!response.ok) throw new Error("Supabase " + response.status + ": " + text.slice(0, 400));
   return text ? JSON.parse(text) : null;
 }
+function xmlEscape(value) {
+  return String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
+}
+async function dynamicSitemap(env) {
+  const now = new Date().toISOString();
+  const [services, posts] = await Promise.all([
+    db(env, "services?select=slug&is_active=eq.true&order=slug.asc"),
+    db(env, "blog_posts?select=slug,published_at&status=eq.published&published_at=not.is.null&published_at=lte." + encodeURIComponent(now) + "&order=published_at.desc")
+  ]);
+  const origin = "https://stationerydotcom.me";
+  const urls = new Map();
+  const add = (path, lastmod = null) => {
+    const loc = origin + path;
+    urls.set(loc, lastmod ? String(lastmod).slice(0, 10) : null);
+  };
+  ["/", "/about", "/services", "/smm", "/contact", "/help", "/blog", "/refund-policy", "/delivery-policy", "/privacy-policy", "/terms-of-service"].forEach(path => add(path));
+  for (const service of services || []) {
+    if (service?.slug && /^[a-z0-9-]+$/.test(service.slug)) add("/services/" + service.slug);
+  }
+  for (const post of posts || []) {
+    if (post?.slug && /^[a-z0-9-]+$/.test(post.slug)) add("/blog/" + post.slug, post.published_at);
+  }
+  const entries = Array.from(urls, ([loc, lastmod]) =>
+    "<url><loc>" + xmlEscape(loc) + "</loc>" + (lastmod ? "<lastmod>" + xmlEscape(lastmod) + "</lastmod>" : "") + "</url>"
+  ).join("");
+  const xml = '<?xml version="1.0" encoding="UTF-8"?>' +
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + entries + "</urlset>";
+  return new Response(xml, {
+    status: 200,
+    headers: {
+      "content-type": "application/xml; charset=utf-8",
+      "cache-control": "public, max-age=1800, s-maxage=1800"
+    }
+  });
+}
 async function getPageAccessToken(env, pageId) {
   const configuredToken = env.META_PAGE_ACCESS_TOKEN;
   if (!configuredToken) throw new Error("META_PAGE_ACCESS_TOKEN is not configured");
@@ -279,6 +314,14 @@ export default {
     if (url.hostname === "stationerydotcom.stdc.workers.dev" && url.pathname !== META_WEBHOOK_PATH && url.pathname !== "/_internal/meta-webhook-setup") {
       url.hostname = "stationerydotcom.me";
       return Response.redirect(url.toString(), 308);
+    }
+    if (url.pathname === "/sitemap.xml" && request.method === "GET") {
+      try {
+        return await dynamicSitemap(env);
+      } catch (error) {
+        console.error("Dynamic sitemap generation failed:", String(error));
+        return env.ASSETS.fetch(request);
+      }
     }
     if (url.pathname === "/_internal/meta-webhook-setup" && request.method === "GET") {
       if (url.searchParams.get("key") !== env.META_VERIFY_TOKEN) return new Response("Forbidden", { status: 403 });

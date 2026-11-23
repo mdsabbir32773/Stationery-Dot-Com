@@ -1,6 +1,6 @@
 import { chromium } from 'playwright';
 
-const baseURL = process.env.SDC_BASE_URL || 'https://stationerydotcom.stdc.workers.dev';
+const baseURL = process.env.SDC_BASE_URL || 'https://stationerydotcom.me';
 const browser = await chromium.launch({ headless: true });
 const errors = [];
 
@@ -23,29 +23,35 @@ try {
   const chat = page.locator('[aria-label="SDC Assistant chat"]');
   await chat.waitFor({ state: 'visible', timeout: 10000 });
 
-  const orderAction = chat.getByRole('button', { name: /Place an order here/i });
-  await orderAction.waitFor({ state: 'visible', timeout: 10000 });
-  await orderAction.click();
+  // The order flow starts when the visitor types a natural request; do not submit an order.
+  const compose = chat.locator('.sdc-chat-compose input');
+  await compose.fill('Order krbo ekta');
+  await compose.press('Enter');
 
-  // Verify the secure order form opens; never submit an order in this test.
-  await chat.getByText('Choose a service', { exact: false }).waitFor({ state: 'visible', timeout: 10000 });
-  await chat.locator('.sdc-convo-card select').waitFor({ state: 'visible', timeout: 10000 });
+  const orderFlow = chat.locator('.sdc-convo-card');
+  await orderFlow.waitFor({ state: 'visible', timeout: 15000 });
+  const orderReply = orderFlow.locator('input[aria-label="Your message"]');
+  await orderReply.waitFor({ state: 'visible', timeout: 10000 });
+  await orderReply.fill('Canva 1year');
+  await orderReply.press('Enter');
+  await chat.getByText(/Canva Pro/i).waitFor({ state: 'visible', timeout: 10000 });
+  await chat.getByText(/order-এর নামটা বলুন/i).waitFor({ state: 'visible', timeout: 10000 });
 
-  const close = chat.locator('.sdc-action-top button');
-  await close.click();
-
-  const depositAction = chat.getByRole('button', { name: /Add wallet funds here/i });
-  await depositAction.waitFor({ state: 'visible', timeout: 10000 });
-  await depositAction.click();
-
-  // Guest deposit flow must direct the customer to sign in; no deposit is submitted.
-  await chat.getByText(/sign in/i).first().waitFor({ state: 'visible', timeout: 10000 });
+  // Reload to leave the unfinished order and check that guest wallet requests still require sign-in.
+  await page.reload({ waitUntil: 'domcontentloaded', timeout: 30000 });
+  await page.getByRole('button', { name: 'Chat with SDC Assistant' }).click();
+  const depositChat = page.locator('[aria-label="SDC Assistant chat"]');
+  await depositChat.waitFor({ state: 'visible', timeout: 10000 });
+  const depositCompose = depositChat.locator('.sdc-chat-compose input');
+  await depositCompose.fill('wallet deposit');
+  await depositCompose.press('Enter');
+  await depositChat.getByRole('link', { name: /sign in/i }).waitFor({ state: 'visible', timeout: 15000 });
 
   if (errors.length) {
     throw new Error('Browser console/page errors:\n' + errors.slice(0, 8).join('\n'));
   }
 
-  console.log('PASS: homepage, chat launcher, guided conversational order intake, and guest deposit sign-in gate.');
+  console.log('PASS: custom domain, chat launcher, typed order/package matching, and guest deposit sign-in gate.');
 } finally {
   await browser.close();
 }

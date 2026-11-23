@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabase';
 import '../chatbot.css';
 import SdcChatActions from './SdcChatActions';
 
-const greeting = { role: 'assistant', text: "Hi there! 👋 I'm SDC Assistant. Tell me what you need help with — services, packages, payments or orders. Ami Bangla, English, Banglish — jevabe bolben, shevabei reply korbo." };
+const greeting = { role: 'assistant', text: "হ্যালো! 😊 আমি SDC Assistant। কেমন আছেন? Stationery Dot Com নিয়ে কোনো প্রশ্ন থাকলে বা কোনো কাজে সাহায্য লাগলে বলুন—আমি মন দিয়ে শুনছি। বাংলা, English বা Banglish—যেভাবে স্বাচ্ছন্দ্য বোধ করেন, সেভাবেই কথা বলুন।" };
 
 export default function SdcAssistant() {
   const [open, setOpen] = useState(false);
@@ -23,8 +23,9 @@ export default function SdcAssistant() {
     const text = value.trim();
     if (!text || busy || action) return;
     const statusIntent = /\b(order|deposit|request|wallet)\b.{0,20}\b(status|track|tracking|update)\b|স্ট্যাটাস|ট্র্যাক|অবস্থা/i.test(text);
-    const wantsDeposit = !statusIntent && /\b(add (?:money|funds)|deposit|top.?up (?:my )?wallet|wallet balance)\b|wallet e taka add|funds add|deposit korte|ওয়ালেট.*(জমা|অ্যাড)|ডিপোজিট|ব্যালেন্স.*(যোগ|জমা)/i.test(text);
-    const wantsOrder = !statusIntent && (/\b(place|make|submit|create) (?:an? )?order\b|\b(order korte|order dibo|buy|purchase)\b|অর্ডার (করতে|দিতে|দিবো|করব)/i.test(text));
+    const asksForInformation = /\b(how|what|which|where|when|why|process|procedure|requirements?|details?|information|explain|price|cost|charge|fee)\b|কীভাবে|কিভাবে|কি লাগে|কী লাগে|প্রক্রিয়া|নিয়ম|তথ্য|দাম|কত টাকা|চার্জ|ফি|জানতে চাই/i.test(text);
+    const wantsDeposit = !statusIntent && !asksForInformation && /\b(add (?:money|funds)|deposit|top.?up (?:my )?wallet|wallet balance)\b|wallet e taka add|funds add|deposit korte|ওয়ালেট.*(জমা|অ্যাড)|ডিপোজিট|ব্যালেন্স.*(যোগ|জমা)/i.test(text);
+    const wantsOrder = !statusIntent && !asksForInformation && (/\b(place|make|submit|create) (?:an? )?order\b|\b(order korte|order dibo|order korte chai|buy|purchase)\b|অর্ডার (করতে|দিতে|দিবো|করব)/i.test(text));
     if (wantsDeposit || wantsOrder) {
       setMessages(prev => [...prev, { role: 'user', text }]);
       setAction(wantsDeposit ? 'deposit' : 'order');

@@ -14,7 +14,7 @@ export default function Orders(){
   if(f)query=query.eq('status',f);if(pf)query=query.eq('payments.status',pf);if(service)query=query.eq('service_name',service);
   if(from)query=query.gte('created_at',from+'T00:00:00+06:00');if(to)query=query.lt('created_at',to+'T23:59:59.999+06:00');const term=q.trim().replace(/[,%_()]/g,' ').trim();if(term)query=query.or('order_code.ilike.%'+term+'%,customer_name.ilike.%'+term+'%,phone.ilike.%'+term+'%');
   const{data,error:e,count:n}=await query;
-  if(e)setError(e.message);else{setRows(data||[]);setCount(n||0);setSelected([]);}
+  if(e)setError(e.message);else{const ids=(data||[]).map(x=>x.id);const{data:financials,error:fe}=ids.length?await supabase.from('admin_order_financials').select('order_id,cost_amount').in('order_id',ids):{data:[],error:null};if(fe)setError(fe.message);const costMap=Object.fromEntries((financials||[]).map(x=>[x.order_id,Number(x.cost_amount)]));setRows((data||[]).map(x=>({...x,cost_amount:costMap[x.id]??null})));setCount(n||0);setSelected([]);}
   setBusy(false);
  },[page,f,pf,service,from,to,q]);
  useEffect(()=>{supabase.from('services').select('name').order('name').then(({data})=>setServices(data||[]));},[]);

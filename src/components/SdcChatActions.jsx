@@ -72,14 +72,17 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
   const packageMatches=rankCatalog(query,packages,x=>{const d=x.duration_months===0?'lifetime':x.duration_months%12===0?(x.duration_months/12)+' year':x.duration_months+' months';return (x.name||'')+' '+(x.access_type||'')+' '+d+' '+x.duration_months+' '+(services.find(y=>y.id===x.service_id)?.name||'');});
   const best=serviceMatches[0],next=serviceMatches[1];
   const exactNamed=services.filter(s=>normalized(query).includes(normalized(s.name))).sort((a,b)=>normalized(b.name).length-normalized(a.name).length)[0];
-  if(exactNamed||(best&&best.score>=74&&(!next||best.score-next.score>=10))){
-   const svc=exactNamed||best.item;
+  const queryWords=tokens(query);
+  const keywordMatches=services.filter(s=>tokens(s.name).some(word=>word.length>=4&&queryWords.includes(word)&&services.filter(other=>tokens(other.name).includes(word)).length===1));
+  const keywordNamed=keywordMatches.length===1?keywordMatches[0]:null;
+  if(exactNamed||keywordNamed||(best&&best.score>=55&&(!next||best.score-next.score>=10))){
+   const svc=exactNamed||keywordNamed||best.item;
    const years=query.match(/\b(\d+)\s*(?:years?|yrs?)\b/i);
    const months=query.match(/\b(\d+)\s*(?:months?|mos?)\b/i);
    const wantsLifetime=/\b(lifetime|forever)\b|আজীবন/i.test(query);
    const requestedMonths=years?Number(years[1])*12:months?Number(months[1]):null;
    const durationMatches=packages.filter(x=>x.service_id===svc.id&&(wantsLifetime?x.duration_months===0:requestedMonths!==null?Number(x.duration_months)===requestedMonths:false));
-   if(exactNamed&&durationMatches.length===1){chooseService(svc.id,durationMatches[0].id);return;}
+   if((exactNamed||keywordNamed)&&durationMatches.length===1){chooseService(svc.id,durationMatches[0].id);return;}
    const within=rankCatalog(query,durationMatches.length?durationMatches:packages.filter(x=>x.service_id===svc.id),x=>{const duration=x.duration_months===0?'lifetime':x.duration_months%12===0?(x.duration_months/12)+' year':x.duration_months+' months';return (x.name||'')+' '+(x.access_type||'')+' '+duration+' '+(x.duration_months||'')+' '+(x.price||'')+' '+svc.name;});
    const match=within[0]&&within[0].score>=54&&(!within[1]||within[0].score-within[1].score>=8)?within[0].item:null;
    chooseService(svc.id,match?.id||'');return;
@@ -92,8 +95,15 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
   bot((language==='bn'?'নামটা ঠিক মেলাতে পারিনি। service বা কাজের নাম আরেকটু বলবেন? Available: ':'I could not match that yet. Tell me the service name or what you need it for. Available: ')+serviceCatalog());
  }
  function handlePackageQuery(query){
-  const matches=rankCatalog(query,servicePackages,x=>(x.name||'')+' '+(x.access_type||'')+' '+(x.duration_months||'')+' '+(x.price||''));
-  if(asksForSuggestions(query)){const related=matches.filter(x=>x.score>=50).map(x=>x.item);bot(packageCatalog(service,related.length?related:servicePackages));return;}
+  const years=query.match(/\b(\d+)\s*(?:years?|yrs?)\b/i);
+  const months=query.match(/\b(\d+)\s*(?:months?|mos?)\b/i);
+  const wantsLifetime=/\b(lifetime|forever)\b|আজীবন/i.test(query);
+  const requestedMonths=years?Number(years[1])*12:months?Number(months[1]):null;
+  const durationMatches=servicePackages.filter(x=>wantsLifetime?x.duration_months===0:requestedMonths!==null?Number(x.duration_months)===requestedMonths:false);
+  if(durationMatches.length===1){choosePackage(durationMatches[0].id);return;}
+  const candidates=durationMatches.length?durationMatches:servicePackages;
+  const matches=rankCatalog(query,candidates,x=>(x.name||'')+' '+(x.access_type||'')+' '+(x.duration_months||'')+' '+(x.price||''));
+  if(asksForSuggestions(query)){const related=matches.filter(x=>x.score>=50).map(x=>x.item);bot(packageCatalog(service,related.length?related:candidates));return;}
   const best=matches[0],next=matches[1];
   if(best&&best.score>=76&&(!next||best.score-next.score>=10)){choosePackage(best.item.id);return;}
   const close=matches.filter(x=>x.score>=48).slice(0,6).map(x=>'• '+x.item.name+' — '+(Number(x.item.price)>0?taka(x.item.price):'Price on request'));

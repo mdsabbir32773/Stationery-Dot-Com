@@ -34,6 +34,8 @@ export default function SEO(){
         '/track-order':{title:'Track Order Online | Stationery Dot Com',description:'Track your Stationery Dot Com order using your Order ID and see the latest order status.'},
         '/invoice':{title:'Invoice | Stationery Dot Com',description:'View your Stationery Dot Com order invoice.',noindex:true},
         '/contact':{title:'Contact Stationery Dot Com | Online Support',description:'Contact Stationery Dot Com for online service support, order help and service enquiries.'},
+        '/help':{title:'Help Center | Stationery Dot Com',description:'Find answers about ordering, payments, wallet deposits, delivery, documents and customer support at Stationery Dot Com.'},
+        '/blog':{title:'Digital Services, SMM & Online Service Guides | Stationery Dot Com Blog',description:'Practical Bangladesh-focused guides about digital subscriptions, Facebook marketing, SMM, online services, documents and creative work.'},
         '/privacy-policy':{title:'Privacy Policy | Stationery Dot Com',description:'Read the Stationery Dot Com privacy policy and learn how customer information is handled.'},
         '/terms-of-service':{title:'Terms of Service | Stationery Dot Com',description:'Read the Stationery Dot Com terms of service for online orders and digital services.'},
         '/account':{title:'My Account | Stationery Dot Com',description:'Manage your Stationery Dot Com profile, orders and reviews.'},
@@ -47,6 +49,14 @@ export default function SEO(){
         {title:'Page Not Found | Stationery Dot Com',description:'The page you requested could not be found on Stationery Dot Com.',noindex:true}
       );
       let service=null;
+      let blogPost=null;
+      if(route.startsWith('/blog/')){
+        const slug=decodeURIComponent(route.slice('/blog/'.length));
+        const {data}=await supabase.from('blog_posts').select('id,title,slug,excerpt,category,cover_image_url,author,published_at,reading_minutes').eq('slug',slug).eq('status','published').not('published_at','is',null).lte('published_at',new Date().toISOString()).maybeSingle();
+        if(cancelled)return;
+        blogPost=data||null;
+        page=blogPost?{title:`${clean(blogPost.title)} | Stationery Dot Com Blog`,description:clean(blogPost.excerpt)||`Read ${clean(blogPost.title)} on the Stationery Dot Com blog.`,image:blogPost.cover_image_url}:{title:'Article Not Found | Stationery Dot Com Blog',description:'This article is unavailable.',noindex:true};
+      }
       if(route.startsWith('/services/')){
         const slug=decodeURIComponent(route.slice('/services/'.length));
         const {data}=await supabase.from('services').select('id,name,slug,category,description,image_url,is_active').eq('slug',slug).eq('is_active',true).maybeSingle();
@@ -62,7 +72,7 @@ export default function SEO(){
       if(route==='/track-order'&&new URLSearchParams(search).has('token'))page={...page,noindex:true};
       const description=clean(page.description).slice(0,165);
       const canonical=new URL(route,window.location.origin).href;
-      const image=new URL(service?.image_url||'/stationery-dot-com-logo.webp',window.location.origin).href;
+      const image=new URL(blogPost?.cover_image_url||service?.image_url||'/stationery-dot-com-logo.webp',window.location.origin).href;
       document.documentElement.lang='en';
       document.title=page.title;
       setLink('canonical',canonical);
@@ -100,6 +110,7 @@ export default function SEO(){
         {'@type':'BreadcrumbList','itemListElement':breadcrumbItems}
       ];
       if(service)graph.push({'@type':'Service','@id':canonical+'#service',name:clean(service.name),serviceType:clean(service.category),description:description,url:canonical,provider:{'@id':home+'#organization'},areaServed:{'@type':'Country',name:'Bangladesh'}});
+      if(blogPost)graph.push({'@type':'BlogPosting','@id':canonical+'#article',headline:clean(blogPost.title),description:description,datePublished:blogPost.published_at,image:image,author:{'@type':'Organization','name':clean(blogPost.author)||SITE},publisher:{'@id':home+'#organization'},mainEntityOfPage:{'@id':canonical+'#webpage'},articleSection:clean(blogPost.category)});
       ld.textContent=JSON.stringify({'@context':'https://schema.org','@graph':graph});
     };
     run();

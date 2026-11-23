@@ -4,7 +4,7 @@ import {supabase,taka} from '../lib/supabase';
 
 export default function CouponBox({subtotal,serviceId,packageId,phone,onApplied}){
   const[code,setCode]=useState('');const[state,setState]=useState(null);const[busy,setBusy]=useState(false);
-  useEffect(()=>{setState(null);onApplied?.(null)},[phone,onApplied]);
+  useEffect(()=>{setState(null);onApplied?.(null)},[phone,subtotal,serviceId,packageId,onApplied]);
   async function apply(){
     const value=code.trim().toUpperCase();if(!value)return setState({ok:false,message:'Enter a coupon code.'});
     if(!/^(880|0)?1\d{9}$/.test(phone.replace(/\D/g,'')))return setState({ok:false,message:'Enter your valid mobile number before applying this coupon.'});

@@ -25,8 +25,8 @@ export default function SdcAssistant() {
     const statusIntent = /\b(order|deposit|request|wallet)\b.{0,20}\b(status|track|tracking|update)\b|স্ট্যাটাস|ট্র্যাক|অবস্থা/i.test(text);
     const asksForInformation = /\b(how|what|which|where|when|why|process|procedure|requirements?|details?|information|explain|price|cost|charge|fee)\b|কীভাবে|কিভাবে|কি লাগে|কী লাগে|প্রক্রিয়া|নিয়ম|তথ্য|দাম|কত টাকা|চার্জ|ফি|জানতে চাই/i.test(text);
     const wantsDeposit = !statusIntent && !asksForInformation && /\b(add (?:money|funds)|deposit|top.?up (?:my )?wallet|wallet balance)\b|wallet e taka add|funds add|deposit korte|ওয়ালেট.*(জমা|অ্যাড)|ডিপোজিট|ব্যালেন্স.*(যোগ|জমা)/i.test(text);
-    const orderRequest = /\b(place|make|submit|create) (?:an? )?order\b|\b(order korte|order dibo|order korte chai|buy|purchase|looking for|i need|need)\b|\b(i want(?: to)? (?:order|buy|get|[a-z0-9 ]{1,45})|i would like to (?:order|buy|get)|can i get)\b|amar.{0,60}(lagbe|chai|dorkar|nibo|kinbo)|\b(ami.{0,60})?(lagbe|chai|dorkar|kinbo|nibo|order dite chai)\b|অর্ডার (করতে|দিতে|দিবো|করব)|আমার.{0,60}(লাগবে|চাই|দরকার|নেব|কিনব)|লাগবে|দরকার|কিনব|নেব|চাই/i.test(text);
-    const explicitOrderRequest = /\b(place|make|submit|create) (?:an? )?order\b|\b(order korte|order dibo|order korte chai|buy|purchase|i want to (?:order|buy|get)|i would like to (?:order|buy|get)|can i get)\b|অর্ডার (করতে|দিতে|দিবো|করব)/i.test(text);
+    const orderRequest = /\b(place|make|submit|create) (?:an? )?order\b|\b(order korte|order korbo|order dibo|order korte chai|buy|purchase|looking for|i need|need)\b|\b(i want(?: to)? (?:order|buy|get|[a-z0-9 ]{1,45})|i would like to (?:order|buy|get)|can i get)\b|amar.{0,60}(lagbe|chai|dorkar|nibo|kinbo)|\b(ami.{0,60})?(lagbe|chai|dorkar|kinbo|nibo|order dite chai)\b|অর্ডার (করতে|করবো|করব|দিতে|দিবো)|আমার.{0,60}(লাগবে|চাই|দরকার|নেব|কিনব)|লাগবে|দরকার|কিনব|নেব|চাই/i.test(text);
+    const explicitOrderRequest = /\b(place|make|submit|create) (?:an? )?order\b|\b(order korte|order korbo|order dibo|order korte chai|buy|purchase|i want to (?:order|buy|get)|i would like to (?:order|buy|get)|can i get)\b|অর্ডার (করতে|করবো|করব|দিতে|দিবো)/i.test(text);
     const wantsOrder = !statusIntent && orderRequest && (!asksForInformation || explicitOrderRequest);
     if (wantsDeposit || wantsOrder) {
       setMessages(prev => [...prev, { role: 'user', text }]);
@@ -63,7 +63,7 @@ export default function SdcAssistant() {
           <div className="sdc-chat-day">TODAY</div>
           {messages.map((m, i) => <div className={'sdc-chat-row ' + (m.role === 'user' ? 'is-user' : 'is-assistant')} key={i}>
             {m.role === 'assistant' && <div className="sdc-chat-mini-avatar"><Sparkles size={13}/></div>}
-            <div className="sdc-chat-bubble">{m.text.split('\n').map((line, n) => <span key={n}>{line}{n < m.text.split('\n').length - 1 && <br/>}</span>)}</div>
+            <div className="sdc-chat-bubble">{m.text.split('\n').map((line, n) => <span key={n}>{line.split(/(\*\*[^*]+\*\*)/g).map((part, j) => part.startsWith('**') && part.endsWith('**') ? <strong key={j}>{part.slice(2, -2)}</strong> : part)}{n < m.text.split('\n').length - 1 && <br/>}</span>)}</div>
           </div>)}
 
           {action && <SdcChatActions mode={action} initialMessage={actionMessage} onCancel={() => setAction('')} onComplete={message => { setMessages(prev => [...prev, { role: 'assistant', text: message }]); if (message.startsWith('Your wallet balance is insufficient.')) setAction('deposit'); else setAction(''); }} />}

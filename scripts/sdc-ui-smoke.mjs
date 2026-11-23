@@ -34,7 +34,7 @@ try {
   await orderReply.waitFor({ state: 'visible', timeout: 10000 });
   await orderReply.fill('GEMINI ORDER KORBO');
   await orderReply.press('Enter');
-  await chat.getByText(/Gemini AI \/ Google AI/i).waitFor({ state: 'visible', timeout: 10000 });
+  await chat.getByText(/Gemini AI \/ Google AI/i).last().waitFor({ state: 'visible', timeout: 10000 });
   await orderReply.fill('12 months');
   await orderReply.press('Enter');
   await chat.getByText(/Order-টা কোন নামে করব/i).waitFor({ state: 'visible', timeout: 10000 });

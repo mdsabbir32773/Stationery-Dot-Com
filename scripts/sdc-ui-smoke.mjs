@@ -25,7 +25,7 @@ try {
 
   // The order flow starts when the visitor types a natural request; do not submit an order.
   const compose = chat.locator('.sdc-chat-compose input');
-  await compose.fill('Order krbo ekta');
+  await compose.fill('ORDER KORTE CHAI');
   await compose.press('Enter');
 
   const orderFlow = chat.locator('.sdc-convo-card');

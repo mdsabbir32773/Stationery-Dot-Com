@@ -70,3 +70,21 @@
 
 .sdc-chat-starter-link{display:flex;align-items:center;gap:8px;padding:8px 11px;border:1px solid #e3e7ee;border-radius:999px;background:#fff;color:#344054;font-size:11px;font-weight:650;text-decoration:none;transition:border-color .15s,background .15s}
 .sdc-chat-starter-link:hover{border-color:#efb18f;background:#fff8f4;color:#b84b1b}
+
+/* Keep order and wallet requests visually inside the same assistant conversation. */
+.sdc-convo-card{margin:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;color:inherit;font-size:inherit}
+.sdc-convo-thread{display:flex;flex-direction:column;gap:0;margin:0 0 8px;max-height:none;overflow:visible}
+.sdc-convo-msg{max-width:84%;padding:11px 13px;border-radius:15px 15px 15px 5px;background:#fff;border:1px solid #eceef3;color:#343c4d;font-size:13px;line-height:1.55;overflow-wrap:anywhere;box-shadow:0 2px 6px #18243b08}
+.sdc-convo-msg.user{align-self:flex-end;border:0;border-radius:15px 15px 5px 15px;background:#ed6426;color:#fff}
+.sdc-convo-control{margin:4px 0 12px 32px;font-weight:500}
+.sdc-convo-control>input:not([type=file]){background:#fff}
+.sdc-convo-options{display:flex;flex-direction:column;gap:6px;max-height:180px;overflow:auto}
+.sdc-convo-option{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:9px 11px;border:1px solid #f0cdbb;border-radius:12px;background:#fff;color:#344054;text-align:left;font:inherit;font-size:12px;cursor:pointer}
+.sdc-convo-option:hover,.sdc-convo-option:focus-visible{border-color:#ed8b5b;background:#fff8f4;outline:none}
+.sdc-convo-option span{display:flex;flex-direction:column;gap:3px}
+.sdc-convo-option small{margin:0;color:#7b8493}
+.sdc-convo-review{margin:8px 0 12px 32px}
+.sdc-convo-reply{margin:8px 0 12px 32px}
+.sdc-convo-payment{margin:8px 0 12px 32px}
+.sdc-convo-foot{margin-left:32px}
+@media(max-width:600px){.sdc-convo-control,.sdc-convo-review,.sdc-convo-reply,.sdc-convo-payment,.sdc-convo-foot{margin-left:32px}.sdc-convo-options{max-height:150px}.sdc-convo-msg{font-size:12.5px}}

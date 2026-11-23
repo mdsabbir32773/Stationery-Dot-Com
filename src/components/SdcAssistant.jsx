@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { MessageCircle, X, Send, Sparkles, Headphones, ArrowUpRight } from 'lucide-react';
+import { MessageCircle, X, Send, Sparkles, Headphones } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import '../chatbot.css';
 import SdcChatActions from './SdcChatActions';
 
-const greeting = { role: 'assistant', text: "হ্যালো! 😊 আমি SDC Assistant। কেমন আছেন? Stationery Dot Com নিয়ে কোনো প্রশ্ন থাকলে বা কোনো কাজে সাহায্য লাগলে বলুন—আমি মন দিয়ে শুনছি। বাংলা, English বা Banglish—যেভাবে স্বাচ্ছন্দ্য বোধ করেন, সেভাবেই কথা বলুন।" };
+const greeting = { role: 'assistant', text: "হ্যালো! 😊 কী খুঁজছেন বা কী অর্ডার করতে চান, নিজের মতো করে বলুন। সার্ভিস বা প্যাকেজের নাম বললে আমি মিলিয়ে available package আর দাম জানাব, তারপর একে একে order confirm করব। বাংলা, English বা Banglish—যেভাবে স্বাচ্ছন্দ্য বোধ করেন, সেভাবেই লিখুন।" };
 
 export default function SdcAssistant() {
   const [open, setOpen] = useState(false);
@@ -13,6 +12,7 @@ export default function SdcAssistant() {
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
   const [action, setAction] = useState('');
+  const [actionMessage, setActionMessage] = useState('');
   const endRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -29,6 +29,7 @@ export default function SdcAssistant() {
     if (wantsDeposit || wantsOrder) {
       setMessages(prev => [...prev, { role: 'user', text }]);
       setInput('');
+      setActionMessage(text);
       setAction(wantsDeposit ? 'deposit' : 'order');
       return;
     }
@@ -62,15 +63,8 @@ export default function SdcAssistant() {
             {m.role === 'assistant' && <div className="sdc-chat-mini-avatar"><Sparkles size={13}/></div>}
             <div className="sdc-chat-bubble">{m.text.split('\n').map((line, n) => <span key={n}>{line}{n < m.text.split('\n').length - 1 && <br/>}</span>)}</div>
           </div>)}
-          {!action && <div className="sdc-chat-starters">
-            <button onClick={() => setAction('order')}>Place an order here <ArrowUpRight size={13}/></button>
-            <button onClick={() => setAction('deposit')}>Add wallet funds here <ArrowUpRight size={13}/></button>
-            <button onClick={() => sendMessage('Check my order status')}>Check my order status <ArrowUpRight size={13}/></button>
-            <Link className="sdc-chat-starter-link" to="/services" onClick={() => setOpen(false)}>Browse all services <ArrowUpRight size={13}/></Link>
-            <Link className="sdc-chat-starter-link" to="/account" onClick={() => setOpen(false)}>My account & wallet <ArrowUpRight size={13}/></Link>
-            <a className="sdc-chat-starter-link" href="https://wa.me/8801827680520" target="_blank" rel="noopener noreferrer">Talk to a person on WhatsApp <ArrowUpRight size={13}/></a>
-          </div>}
-          {action && <SdcChatActions mode={action} onCancel={() => setAction('')} onComplete={message => { setMessages(prev => [...prev, { role: 'assistant', text: message }]); if (message.startsWith('Your wallet balance is insufficient.')) setAction('deposit'); else setAction(''); }} />}
+
+          {action && <SdcChatActions mode={action} initialMessage={actionMessage} onCancel={() => setAction('')} onComplete={message => { setMessages(prev => [...prev, { role: 'assistant', text: message }]); if (message.startsWith('Your wallet balance is insufficient.')) setAction('deposit'); else setAction(''); }} />}
           {busy && <div className="sdc-chat-row is-assistant"><div className="sdc-chat-mini-avatar"><Sparkles size={13}/></div><div className="sdc-chat-bubble sdc-chat-typing"><i/><i/><i/></div></div>}
           <div ref={endRef}/>
         </div>

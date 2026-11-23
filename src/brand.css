@@ -377,3 +377,7 @@ footer .cols li a:hover{opacity:1;transform:translateX(2px)}
 .welcome5-promo-cta{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:43px;padding:0 17px;border-radius:10px;background:#ffdc91;color:#263c2c;font-size:12px;font-weight:800;white-space:nowrap;transition:transform .18s,background .18s}
 .welcome5-promo-cta:hover{transform:translateY(-2px);background:#ffe8b7;color:#203b2a}
 @media(max-width:650px){.welcome5-home-promo{padding:15px 16px}.welcome5-promo-inner{gap:11px;align-items:flex-start;flex-wrap:wrap}.welcome5-promo-icon{width:39px;height:39px;border-radius:12px}.welcome5-promo-icon svg{width:19px}.welcome5-promo-copy{flex:1 1 calc(100% - 52px)}.welcome5-promo-eyebrow{font-size:8px}.welcome5-promo-copy h2{font-size:17px}.welcome5-promo-copy p{font-size:11px}.welcome5-promo-copy small{font-size:9px}.welcome5-promo-cta{margin-left:50px;min-height:38px;padding:0 13px;font-size:11px}}
+
+
+/* Search-friendly service discovery section */
+.home-seo-content .section-heading{max-width:860px}.home-seo-content .section-heading p{line-height:1.8}.home-seo-links{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px 22px;margin-top:22px}.home-seo-links .text-link{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border:1px solid var(--line,#e5e7eb);border-radius:12px;text-decoration:none}.home-seo-links .text-link:hover{border-color:var(--brand,#173f7a)}

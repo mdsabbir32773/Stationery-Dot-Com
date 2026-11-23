@@ -146,7 +146,7 @@ export default function SEO(){
       }
       const graph=[
         {'@type':'Organization','@id':home+'#organization',name:SITE,url:home,logo:image,description:DEFAULT_DESCRIPTION,telephone:['+8801827680520','+8801611103453'],address:{'@type':'PostalAddress',streetAddress:'116, 117, G-Nat Tower (2nd Floor), Fakirapool, VIP Road',addressLocality:'Dhaka',postalCode:'1000',addressCountry:'BD'},contactPoint:[{'@type':'ContactPoint',telephone:'+8801827680520',contactType:'customer support',areaServed:'BD',availableLanguage:['English','Bengali']},{'@type':'ContactPoint',telephone:'+8801611103453',contactType:'customer support',areaServed:'BD',availableLanguage:['English','Bengali']}],sameAs:['https://www.facebook.com/StationeryDotCom2','https://www.tiktok.com/@stationerydotcom','https://www.instagram.com/stationerydotcom']},
-        {'@type':'WebSite','@id':home+'#website',name:SITE,url:home,publisher:{'@id':home+'#organization'},potentialAction:{'@type':'SearchAction',target:new URL('/services?q={search_term_string}',window.location.origin).href,'query-input':'required name=search_term_string'}},
+        {'@type':'WebSite','@id':home+'#website',name:SITE,alternateName:['StationeryDotCom','stationerydotcom.me'],url:home,publisher:{'@id':home+'#organization'},potentialAction:{'@type':'SearchAction',target:new URL('/services?q={search_term_string}',window.location.origin).href,'query-input':'required name=search_term_string'}},
         {'@type':'WebPage','@id':canonical+'#webpage',url:canonical,name:page.title,description:description,inLanguage:'en-BD',isPartOf:{'@id':home+'#website'}},
         {'@type':'BreadcrumbList','itemListElement':breadcrumbItems}
       ];

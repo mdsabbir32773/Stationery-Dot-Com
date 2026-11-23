@@ -22,14 +22,14 @@ export default function SdcAssistant() {
   async function sendMessage(value = input) {
     const text = value.trim();
     if (!text || busy || action) return;
-    const statusIntent = /\\b(order|deposit|request|wallet)\\b.{0,24}\\b(status|track|tracking|update|check)\\b|\\b(where is|track)\\s+(?:my\\s+)?order\\b|স্ট্যাটাস|ট্র্যাক|অবস্থা/i.test(text);
-    const asksForInformation = /\\b(how|what|which|where|when|why|process|procedure|requirements?|details?|information|explain|price|cost|charge|fee|know| জানতে)\\b|কীভাবে|কিভাবে|কি লাগে|কী লাগে|প্রক্রিয়া|নিয়ম|তথ্য|দাম|কত টাকা|চার্জ|ফি|জানতে চাই/i.test(text);
-    const wantsDeposit = !statusIntent && !asksForInformation && /\\b(add (?:money|funds)|deposit|top.?up (?:my )?wallet|wallet balance)\\b|wallet e taka add|funds add|deposit korte|ওয়ালেট.*(জমা|অ্যাড)|ডিপোজিট|ব্যালেন্স.*(যোগ|জমা)/i.test(text);
-    const directBanglishOrder = /\\border\\s+(?:korte|krte)\\s+(?:chai|chay)\\b|\\border\\s+(?:korbo|krbo|dibo|dib|dite)\\b/i.test(text);
-    const explicitOrderRequest = directBanglishOrder || /\\b(place|make|submit|create) (?:an? )?order\\b|\\b(order (?:korbo|krbo|korte|krte|dibo|dib|di)\\b|order korte chai|buy|purchase|i want to (?:order|buy|get)|i would like to (?:order|buy|get)|can i get)\\b|অর্ডার (করতে|করবো|করব|দিতে|দিবো)/i.test(text);
+    const statusIntent = /\b(order|deposit|request|wallet)\b.{0,24}\b(status|track|tracking|update|check)\b|\b(where is|track)\s+(?:my\s+)?order\b|স্ট্যাটাস|ট্র্যাক|অবস্থা/i.test(text);
+    const asksForInformation = /\b(how|what|which|where|when|why|process|procedure|requirements?|details?|information|explain|price|cost|charge|fee|know| জানতে)\b|কীভাবে|কিভাবে|কি লাগে|কী লাগে|প্রক্রিয়া|নিয়ম|তথ্য|দাম|কত টাকা|চার্জ|ফি|জানতে চাই/i.test(text);
+    const wantsDeposit = !statusIntent && !asksForInformation && /\b(add (?:money|funds)|deposit|top.?up (?:my )?wallet|wallet balance)\b|wallet e taka add|funds add|deposit korte|ওয়ালেট.*(জমা|অ্যাড)|ডিপোজিট|ব্যালেন্স.*(যোগ|জমা)/i.test(text);
+    const directBanglishOrder = /\border\s+(?:korte|krte)\s+(?:chai|chay)\b|\border\s+(?:korbo|krbo|dibo|dib|dite)\b/i.test(text);
+    const explicitOrderRequest = directBanglishOrder || /\b(place|make|submit|create) (?:an? )?order\b|\b(order (?:korbo|krbo|korte|krte|dibo|dib|di)\b|order korte chai|buy|purchase|i want to (?:order|buy|get)|i would like to (?:order|buy|get)|can i get)\b|অর্ডার (করতে|করবো|করব|দিতে|দিবো)/i.test(text);
     // "chai" alone is not an order signal: "ami jante chai" is an information request.
     // A named service/package followed by a clear need/purchase phrase can start the order flow.
-    const namedServiceNeed = /\\b(?:canva|capcut|gemini|chatgpt|claude|spotify|youtube|facebook|instagram|telegram|meta|design|logo|poster|video editing|visa|air ticket|passport|followers|reactions|views|comments|shares|website|trade license|nid|tin|subscription|package|service)\\b.{0,45}\\b(?:lagbe|chai|dorkar|nibo|kinbo)\\b|\\b(?:lagbe|chai|dorkar|nibo|kinbo)\\b.{0,35}\\b(?:canva|capcut|gemini|chatgpt|claude|spotify|youtube|facebook|instagram|telegram|design|logo|poster|visa|ticket|passport|followers|website|nid|tin)\\b/i.test(text);
+    const namedServiceNeed = /\b(?:canva|capcut|gemini|chatgpt|claude|spotify|youtube|facebook|instagram|telegram|meta|design|logo|poster|video editing|visa|air ticket|passport|followers|reactions|views|comments|shares|website|trade license|nid|tin|subscription|package|service)\b.{0,45}\b(?:lagbe|chai|dorkar|nibo|kinbo)\b|\b(?:lagbe|chai|dorkar|nibo|kinbo)\b.{0,35}\b(?:canva|capcut|gemini|chatgpt|claude|spotify|youtube|facebook|instagram|telegram|design|logo|poster|visa|ticket|passport|followers|website|nid|tin)\b/i.test(text);
     const wantsOrder = !statusIntent && !asksForInformation && (explicitOrderRequest || namedServiceNeed);
     if (wantsDeposit || wantsOrder) {
       setMessages(prev => [...prev, { role: 'user', text }]);

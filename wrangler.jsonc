@@ -3,6 +3,12 @@
   "name": "stationerydotcom",
   "main": "./worker.js",
   "compatibility_date": "2026-10-05",
+  "routes": [
+    {
+      "pattern": "stationerydotcom.me",
+      "custom_domain": true
+    }
+  ],
   "ai": {
     "binding": "AI"
   },

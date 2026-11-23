@@ -37,7 +37,7 @@ try {
   await chat.getByText(/Gemini AI \/ Google AI/i).last().waitFor({ state: 'visible', timeout: 10000 });
   await orderReply.fill('12 months');
   await orderReply.press('Enter');
-  await chat.getByText(/Order-টা কোন নামে করব/i).waitFor({ state: 'visible', timeout: 10000 });
+  await chat.getByText(/অর্ডারে কোন নামটি দেব/i).waitFor({ state: 'visible', timeout: 10000 });
 
   // Fill demo-only details, confirm the review, and stop at payment without uploading or submitting.
   await orderReply.fill('Smoke Test Customer');

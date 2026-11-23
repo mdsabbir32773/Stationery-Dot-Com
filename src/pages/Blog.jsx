@@ -6,7 +6,29 @@ import './blog.css';
 
 const categories=['All','Document & Government','Meta & Social Media','SMM & Growth','Digital Subscriptions','Creative & Design','Travel Tips','Fun & Facts'];
 const dateLabel=value=>value?new Date(value).toLocaleDateString('en-BD',{day:'numeric',month:'long',year:'numeric'}):'';
-function ArticleBody({content=''}){return <div className="blog-article-body">{content.split(/\n{2,}/).filter(Boolean).map((p,i)=>{const s=p.trim();if(s.startsWith('## '))return <h2 key={i}>{s.slice(3)}</h2>;if(s.startsWith('### '))return <h3 key={i}>{s.slice(4)}</h3>;if(s.startsWith('- '))return <li key={i}>{s.slice(2)}</li>;return <p key={i}>{s}</p>;})}</div>}
+function ArticleBody({content=''}) {
+ const normalized = String(content)
+  .replace(/\\n/g, '\n')
+  .replace(/\\([*_#])/g, '$1')
+  .replace(/\\-/g, '-');
+ const blocks = normalized.split(/\n{2,}/).map(s=>s.trim()).filter(Boolean);
+ const inline = (value) => value.split(/(\*\*[^*]+\*\*)/g).map((part,i) =>
+  part.startsWith('**') && part.endsWith('**')
+   ? <strong key={i}>{part.slice(2,-2)}</strong>
+   : part
+ );
+ const nodes = [];
+ for (let i=0; i<blocks.length; i++) {
+  const s=blocks[i];
+  if (s.startsWith('## ')) nodes.push(<h2 key={i}>{inline(s.slice(3))}</h2>);
+  else if (s.startsWith('### ')) nodes.push(<h3 key={i}>{inline(s.slice(4))}</h3>);
+  else if (/^-\s/m.test(s)) {
+   const items=s.split('\n').filter(line=>line.trim().startsWith('- '));
+   nodes.push(<ul key={i}>{items.map((line,j)=><li key={j}>{inline(line.trim().slice(2))}</li>)}</ul>);
+  } else nodes.push(<p key={i}>{inline(s).map((part,j)=>typeof part==='string'?part:part)}</p>);
+ }
+ return <div className="blog-article-body">{nodes}</div>;
+}
 export default function Blog(){
  const {slug}=useParams();const[posts,setPosts]=useState([]);const[loading,setLoading]=useState(true);const[category,setCategory]=useState('All');const[query,setQuery]=useState('');const[error,setError]=useState('');
  useEffect(()=>{let live=true;supabase.from('blog_posts').select('id,title,slug,excerpt,content,category,tags,cover_image_url,author,reading_minutes,published_at').eq('status','published').not('published_at','is',null).lte('published_at',new Date().toISOString()).order('published_at',{ascending:false}).then(({data,error})=>{if(!live)return;if(error)setError('পোস্টগুলো এখন লোড করা যাচ্ছে না। কিছুক্ষণ পর আবার চেষ্টা করুন।');else setPosts(data||[]);setLoading(false);});return()=>{live=false}},[]);

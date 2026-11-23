@@ -18,6 +18,7 @@ function asksForSuggestions(text){return /\b(related|recommend|suggest|options?|
 
 export default function SdcChatActions({mode,initialMessage='',onCancel,onComplete}){
  const initialProcessed=useRef(false);
+ const actionEndRef=useRef(null);
  const hasBangla=/[\u0980-\u09ff]/.test(initialMessage);
  const isBanglish=/\b(amar|amr|ami|lagbe|chai|dorkar|nibo|kinbo|koro|korbo|daw|den|dibo)\b/i.test(initialMessage);
  const language=hasBangla?'bn':isBanglish?'bnlish':'en';
@@ -41,9 +42,9 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
  const prompts=promptSets[language];
  const packageCatalog=(svc,list=packages.filter(p=>p.service_id===svc?.id))=>{
   if(!list.length)return language==='bn'?'এই service-এ এখন active package নেই। অন্য service-এর নাম বলুন।':'There are no active packages for this service right now. Tell me another service name.';
-  const rows=list.slice(0,10).map(p=>'• '+p.name+(p.access_type?' · '+p.access_type:'')+(p.duration_months===0?' · Lifetime':p.duration_months?' · '+p.duration_months+' months':'')+' — '+(Number(p.price)>0?taka(p.price):'Price on request')).join('\\n');
-  const more=list.length>10?'\\n…and '+(list.length-10)+' more.':'';
-  return (language==='bn'?'এই service-এর available package:\\n':'Available packages for '+(svc?.name||'this service')+':\\n')+rows+more;
+  const rows=list.slice(0,10).map(p=>'• '+p.name+(p.access_type?' · '+p.access_type:'')+(p.duration_months===0?' · Lifetime':p.duration_months?' · '+p.duration_months+' months':'')+' — '+(Number(p.price)>0?taka(p.price):'Price on request')).join('\n');
+  const more=list.length>10?'\n…and '+(list.length-10)+' more.':'';
+  return (language==='bn'?'এই service-এর available package:\n':'Available packages for '+(svc?.name||'this service')+':\n')+rows+more;
  };
  const serviceCatalog=()=>services.slice(0,12).map(x=>x.name).join(', ')+(services.length>12?'…':'');
 
@@ -65,6 +66,7 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
  }
  function choosePackage(id){const p=servicePackages.find(x=>x.id===id);if(!p)return;setPackageId(id);if(isSmm){go('target',prompts.target);}else go('name',(language==='bn'?'বুঝেছি—':'Got it—')+p.name+' ('+(Number(p.price)>0?taka(p.price):'Price on request')+'). '+(language==='bn'?'Order-টা কোন নামে করব?':'What name should I put on the order?'));}
  function currentPrompt(){return prompts[step]||'';}
+ useEffect(()=>{actionEndRef.current?.scrollIntoView({behavior:'smooth'});},[messages,step,error,loading,result]);
  function handleServiceQuery(query){
   const serviceMatches=rankCatalog(query,services,x=>(x.name||'')+' '+(x.category||''));
   const packageMatches=rankCatalog(query,packages,x=>(x.name||'')+' '+(x.access_type||'')+' '+(x.duration_months||'')+' '+(services.find(y=>y.id===x.service_id)?.name||''));
@@ -77,7 +79,7 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
   }
   const pb=packageMatches[0],pn=packageMatches[1];
   if(pb&&pb.score>=82&&(!pn||pb.score-pn.score>=12)){const svc=services.find(x=>x.id===pb.item.service_id);if(svc){chooseService(svc.id,pb.item.id);return;}}
-  if(asksForSuggestions(query)){bot((language==='bn'?'অবশ্যই। Available service-গুলো হলো:\\n• ':'Here are the available services:\\n• ')+services.slice(0,12).map(x=>x.name).join('\\n• ')+'\\n'+(language==='bn'?'যেটা দরকার, নামটা বলুন।':'Tell me the one you need.'));return;}
+  if(asksForSuggestions(query)){bot((language==='bn'?'অবশ্যই। Available service-গুলো হলো:\n• ':'Here are the available services:\n• ')+services.slice(0,12).map(x=>x.name).join('\n• ')+'\n'+(language==='bn'?'যেটা দরকার, নামটা বলুন।':'Tell me the one you need.'));return;}
   const close=serviceMatches.filter(x=>x.score>=50).slice(0,5).map(x=>x.item.name);
   if(close.length){bot((language==='bn'?'এই service-গুলোর সাথে মিল পেয়েছি: ':'I found a few related services: ')+close.join(', ')+(language==='bn'?'। কোনটার কথা বলছেন, নামটা একটু পরিষ্কার করে বলবেন?':'. Which one did you mean?'));return;}
   bot((language==='bn'?'নামটা ঠিক মেলাতে পারিনি। service বা কাজের নাম আরেকটু বলবেন? Available: ':'I could not match that yet. Tell me the service name or what you need it for. Available: ')+serviceCatalog());
@@ -88,7 +90,7 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
   const best=matches[0],next=matches[1];
   if(best&&best.score>=76&&(!next||best.score-next.score>=10)){choosePackage(best.item.id);return;}
   const close=matches.filter(x=>x.score>=48).slice(0,6).map(x=>'• '+x.item.name+' — '+(Number(x.item.price)>0?taka(x.item.price):'Price on request'));
-  if(close.length)bot((language==='bn'?'এই package-গুলো আপনার কথার সাথে মিলে:\\n':'These packages seem related:\\n')+close.join('\\n')+'\\n'+(language==='bn'?'যেটা চান, নামটা বলুন।':'Tell me which package name you want.'));
+  if(close.length)bot((language==='bn'?'এই package-গুলো আপনার কথার সাথে মিলে:\n':'These packages seem related:\n')+close.join('\n')+'\n'+(language==='bn'?'যেটা চান, নামটা বলুন।':'Tell me which package name you want.'));
   else bot((language==='bn'?'এই নামে package পেলাম না। ':'I could not find that package name. ')+packageCatalog(service));
  }
  useEffect(()=>{if(loading||mode!=='order'||!initialMessage||initialProcessed.current||!services.length)return;initialProcessed.current=true;handleServiceQuery(initialMessage);},[loading,mode,initialMessage,services,packages]);
@@ -128,6 +130,6 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
   {step==='review'&&<div className="sdc-convo-review">{mode==='deposit'?<><b>Deposit amount: {taka(amount)}</b><p>Account: signed-in customer</p></>:<><b>{service?.name}</b><p>Package: {pack?.name}</p>{isSmm&&<p>Target: {target}<br/>Quantity: {Number(quantity).toLocaleString()}<br/>Estimated total: {taka(smmTotal)}<br/>Wallet balance: {balance===null?'Loading…':taka(balance)}</p>}{!isSmm&&<p>Total: {Number(pack?.price)>0?taka(total):'Price on request'}</p>}<p>Name: {name}<br/>Mobile: {phone}{whatsapp&&<><br/>WhatsApp: {whatsapp}</>}{email&&<><br/>Email: {email}</>}{notes&&<><br/>Note: {notes}</>}</p>{docs.length>0&&<p>Files: {docs.map(f=>f.name).join(', ')}</p>}</>}<button className="sdc-action-primary" disabled={busy||(isSmm&&balance!==null&&smmTotal>balance)} onClick={confirmDetails}>{busy?<Loader2 className="sdc-spin" size={16}/>:mode==='deposit'?'Confirm details & show payment QR':isSmm?'Confirm & place SMM order':Number(pack?.price)>0?'Confirm details & show payment QR':'Confirm & submit quote request'} <ArrowRight size={15}/></button><button className="sdc-action-secondary" onClick={()=>{setError('');go(mode==='deposit'?'amount':'service',mode==='deposit'?prompts.amount:prompts.service);}}>Change details</button></div>}
   {step==='payment'&&<div className="sdc-convo-payment"><PaymentQR settings={settings} total={mode==='deposit'?Number(amount):total} method={qrMethod}/><label className="sdc-convo-control">Payment screenshot (JPG / PNG / WEBP, max 5MB)<input type="file" accept="image/jpeg,image/png,image/webp" onChange={chooseProof}/></label>{proof&&<small>{proof.name}</small>}<button className="sdc-action-primary" disabled={!proof} onClick={()=>go('paid',prompts.paid)}>Continue <ArrowRight size={15}/></button></div>}
   {step==='paid'&&<div className="sdc-convo-review"><label className="sdc-action-check"><input type="checkbox" checked={paid} onChange={e=>setPaid(e.target.checked)}/> I have completed this payment and the screenshot is genuine.</label><button className="sdc-action-primary" disabled={!paid||busy} onClick={submit}>{busy?<><Loader2 className="sdc-spin" size={16}/>Submitting…</>:mode==='deposit'?'Submit deposit request':'Submit order'} <ArrowRight size={15}/></button></div>}
-  <p className="sdc-convo-foot"><WalletCards size={13}/> Payment proof is reviewed by our team. No automatic payment approval or wallet credit.</p>
+  <p className="sdc-convo-foot"><WalletCards size={13}/> Payment proof is reviewed by our team. No automatic payment approval or wallet credit.</p><div ref={actionEndRef}/>
  </section>;
 }

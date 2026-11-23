@@ -92,7 +92,7 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
   if(asksForSuggestions(query)){bot((language==='bn'?'অবশ্যই। Available service-গুলো হলো:\n• ':'Here are the available services:\n• ')+services.slice(0,12).map(x=>x.name).join('\n• ')+'\n'+(language==='bn'?'যেটা দরকার, নামটা বলুন।':'Tell me the one you need.'));return;}
   const close=serviceMatches.filter(x=>x.score>=50).slice(0,5).map(x=>x.item.name);
   if(close.length){bot((language==='bn'?'এই service-গুলোর সাথে মিল পেয়েছি: ':'I found a few related services: ')+close.join(', ')+(language==='bn'?'। কোনটার কথা বলছেন, নামটা একটু পরিষ্কার করে বলবেন?':'. Which one did you mean?'));return;}
-  bot((language==='bn'?'নামটা ঠিক মেলাতে পারিনি। service বা কাজের নাম আরেকটু বলবেন? Available: ':'I could not match that yet. Tell me the service name or what you need it for. Available: ')+serviceCatalog());
+  bot(language==='bn'?'কোন সেবাটি নিতে চান? নাম লিখুন বা কী দরকার বলুন—যেমন Gemini, Canva বা Facebook। আমি সেই অনুযায়ী package দেখাব।':'Which service do you need? Tell me its name or what you need it for—for example Gemini, Canva or Facebook—and I’ll find matching packages.');
  }
  function handlePackageQuery(query){
   const years=query.match(/\b(\d+)\s*(?:years?|yrs?)\b/i);

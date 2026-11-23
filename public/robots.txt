@@ -1,4 +1,5 @@
 User-agent: *
+# Primary public domain: stationerydotcom.me
 Allow: /
 Disallow: /admin
 Disallow: /account

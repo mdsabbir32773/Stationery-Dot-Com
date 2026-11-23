@@ -16,6 +16,18 @@ try {
     throw new Error(`Homepage returned HTTP ${response?.status() ?? 'no response'}`);
   }
 
+  const smmResponse = await page.goto(`${baseURL}/smm`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  if (!smmResponse || smmResponse.status() >= 400) {
+    throw new Error(`SMM page returned HTTP ${smmResponse?.status() ?? 'no response'}`);
+  }
+  const welcomeOffer = page.locator('.welcome5-smm-banner');
+  await welcomeOffer.waitFor({ state: 'visible', timeout: 15000 });
+  const offerText = await welcomeOffer.innerText();
+  if (!/WELCOME5/.test(offerText) || !/5% OFF/.test(offerText) || !/৳300/.test(offerText) || !/৳50/.test(offerText)) {
+    throw new Error('WELCOME5 SMM offer banner is missing its code or discount terms.');
+  }
+
+  await page.goto(baseURL, { waitUntil: 'domcontentloaded', timeout: 30000 });
   const launcher = page.getByRole('button', { name: 'Chat with SDC Assistant' });
   await launcher.waitFor({ state: 'visible', timeout: 15000 });
   await launcher.click();
@@ -83,7 +95,7 @@ try {
     throw new Error('Browser console/page errors:\n' + errors.slice(0, 8).join('\n'));
   }
 
-  console.log('PASS: custom domain, chat launcher, Gemini service matching, package duration selection, payment QR/screenshot upload, and guest deposit sign-in gate.');
+  console.log('PASS: public WELCOME5 SMM offer, custom domain, chat launcher, Gemini service matching, package duration selection, payment QR/screenshot upload, and guest deposit sign-in gate.');
 } finally {
   await browser.close();
 }

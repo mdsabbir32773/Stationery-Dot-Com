@@ -88,3 +88,5 @@
 .sdc-convo-payment{margin:8px 0 12px 32px}
 .sdc-convo-foot{margin-left:32px}
 @media(max-width:600px){.sdc-convo-control,.sdc-convo-review,.sdc-convo-reply,.sdc-convo-payment,.sdc-convo-foot{margin-left:32px}.sdc-convo-options{max-height:150px}.sdc-convo-msg{font-size:12.5px}}
+
+.sdc-convo-upload{padding:10px;border:1px dashed #e8b89f;border-radius:11px;background:#fffaf7}.sdc-convo-upload>span{display:flex;align-items:center;gap:7px;color:#a74c22;font-weight:700}.sdc-convo-upload input[type=file]{width:100%;margin-top:5px}.sdc-convo-upload small{color:#7b8493;font-size:10px}

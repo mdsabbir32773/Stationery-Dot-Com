@@ -273,6 +273,13 @@ export default {
   },
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+
+    // Keep the workers.dev hostname as a redirect-only alias for the public site.
+    // The Meta webhook remains on workers.dev because its callback is registered there.
+    if (url.hostname === "stationerydotcom.stdc.workers.dev" && url.pathname !== META_WEBHOOK_PATH && url.pathname !== "/_internal/meta-webhook-setup") {
+      url.hostname = "stationerydotcom.me";
+      return Response.redirect(url.toString(), 308);
+    }
     if (url.pathname === "/_internal/meta-webhook-setup" && request.method === "GET") {
       if (url.searchParams.get("key") !== env.META_VERIFY_TOKEN) return new Response("Forbidden", { status: 403 });
       return setupMetaWebhooks(env);

@@ -64,7 +64,9 @@ try {
 
   // Reload to leave the unfinished order and check that guest wallet requests still require sign-in.
   await page.reload({ waitUntil: 'domcontentloaded', timeout: 30000 });
-  await page.getByRole('button', { name: 'Chat with SDC Assistant' }).click();
+  const reloadedLauncher = page.getByRole('button', { name: 'Chat with SDC Assistant' });
+  await reloadedLauncher.waitFor({ state: 'visible', timeout: 15000 });
+  await reloadedLauncher.click();
   const depositChat = page.locator('[aria-label="SDC Assistant chat"]');
   await depositChat.waitFor({ state: 'visible', timeout: 10000 });
   const depositCompose = depositChat.locator('.sdc-chat-compose input');

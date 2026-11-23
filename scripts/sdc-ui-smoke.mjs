@@ -51,7 +51,7 @@ try {
   await chat.getByText(/Order-এর জন্য email দেবেন/i).last().waitFor({ state: 'visible', timeout: 10000 });
   await orderReply.fill('skip');
   await orderReply.press('Enter');
-  await chat.getByText(/Team-এর জন্য extra instruction আছে/i).last().waitFor({ state: 'visible', timeout: 10000 });
+  await chat.getByText(/টিমকে জানানোর মতো কোনো নির্দেশনা আছে/i).last().waitFor({ state: 'visible', timeout: 10000 });
   await orderReply.fill('skip');
   await orderReply.press('Enter');
   await chat.getByText(/Order-টা একবার পড়ে শোনাই/i).last().waitFor({ state: 'visible', timeout: 10000 });

@@ -345,6 +345,33 @@ export default {
       }
       return new Response("Method Not Allowed", { status: 405, headers: { allow: "GET, POST" } });
     }
-    return env.ASSETS.fetch(request);
+    const assetResponse = await env.ASSETS.fetch(request);
+    const acceptsHtml = request.method === "GET" && (request.headers.get("accept") || "").includes("text/html");
+    const isPageRoute = !url.pathname.split("/").pop()?.includes(".");
+    if (acceptsHtml && isPageRoute && assetResponse.headers.get("content-type")?.includes("text/html")) {
+      let html = await assetResponse.text();
+      const route = url.pathname.replace(/\\/+$/, "") || "/";
+      const privateRoute = route === "/admin" || route.startsWith("/admin/") ||
+        route === "/account" || route === "/cart" || route === "/order" ||
+        route.startsWith("/order-success/") || route.startsWith("/invoice/") ||
+        (route === "/track-order" && url.searchParams.has("token"));
+      const robots = privateRoute ? "noindex,nofollow" : "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1";
+      const canonical = xmlEscape(new URL(route, url.origin).href);
+      const canonicalTag = '<link rel="canonical" href="' + canonical + '"/>';
+      const robotsTag = '<meta name="robots" content="' + robots + '"/>';
+      const ogUrlTag = '<meta property="og:url" content="' + canonical + '"/>';
+      if (/<link[^>]*rel=["']canonical["'][^>]*>/i.test(html)) html = html.replace(/<link[^>]*rel=["']canonical["'][^>]*>/i, canonicalTag);
+      else html = html.replace("</head>", canonicalTag + "</head>");
+      if (/<meta[^>]*name=["']robots["'][^>]*>/i.test(html)) html = html.replace(/<meta[^>]*name=["']robots["'][^>]*>/i, robotsTag);
+      else html = html.replace("</head>", robotsTag + "</head>");
+      if (/<meta[^>]*property=["']og:url["'][^>]*>/i.test(html)) html = html.replace(/<meta[^>]*property=["']og:url["'][^>]*>/i, ogUrlTag);
+      else html = html.replace("</head>", ogUrlTag + "</head>");
+      const headers = new Headers(assetResponse.headers);
+      headers.delete("content-length");
+      headers.delete("content-encoding");
+      headers.delete("etag");
+      return new Response(html, { status: assetResponse.status, statusText: assetResponse.statusText, headers });
+    }
+    return assetResponse;
   }
 };

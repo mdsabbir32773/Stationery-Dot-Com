@@ -360,3 +360,20 @@ footer .cols li a:hover{opacity:1;transform:translateX(2px)}
   .account-order-list>.account-order-rich>.account-order-details{grid-template-columns:minmax(0,1fr)!important}
   .account-order-details .account-order-detail-wide{grid-column:1/-1!important}
 }
+
+
+/* Homepage WELCOME5 campaign banner */
+.welcome5-home-promo{position:relative;overflow:hidden;background:linear-gradient(112deg,#173c2c 0%,#245b3e 55%,#397b50 100%);color:#fff;padding:20px 22px}
+.welcome5-home-promo:before{content:"";position:absolute;width:290px;height:290px;border:1px solid #ffffff20;border-radius:50%;right:12%;top:-205px;box-shadow:0 0 0 35px #ffffff08,0 0 0 70px #ffffff06;pointer-events:none}
+.welcome5-promo-inner{position:relative;z-index:1;max-width:1160px;margin:0 auto;display:flex;align-items:center;gap:18px}
+.welcome5-promo-icon{width:48px;height:48px;flex:none;border-radius:15px;background:#ffffff18;color:#f7d58a;display:grid;place-items:center}
+.welcome5-promo-copy{min-width:0;flex:1}
+.welcome5-promo-eyebrow{display:block;color:#c5dfc9;font-size:9px;letter-spacing:.17em;font-weight:850;margin-bottom:4px}
+.welcome5-promo-copy h2{font-size:clamp(17px,2vw,22px);line-height:1.2;margin:0 0 4px;color:#fff;font-weight:650;letter-spacing:-.025em}
+.welcome5-promo-copy h2 strong{color:#ffdc91}
+.welcome5-promo-copy p{font-size:12px;line-height:1.4;margin:0;color:#f0f6ee}
+.welcome5-promo-copy p b{display:inline-block;color:#203b2a;background:#ffdc91;padding:2px 7px;border-radius:5px;letter-spacing:.04em}
+.welcome5-promo-copy small{display:block;margin-top:3px;color:#c5d9c9;font-size:10px}
+.welcome5-promo-cta{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:43px;padding:0 17px;border-radius:10px;background:#ffdc91;color:#263c2c;font-size:12px;font-weight:800;white-space:nowrap;transition:transform .18s,background .18s}
+.welcome5-promo-cta:hover{transform:translateY(-2px);background:#ffe8b7;color:#203b2a}
+@media(max-width:650px){.welcome5-home-promo{padding:15px 16px}.welcome5-promo-inner{gap:11px;align-items:flex-start;flex-wrap:wrap}.welcome5-promo-icon{width:39px;height:39px;border-radius:12px}.welcome5-promo-icon svg{width:19px}.welcome5-promo-copy{flex:1 1 calc(100% - 52px)}.welcome5-promo-eyebrow{font-size:8px}.welcome5-promo-copy h2{font-size:17px}.welcome5-promo-copy p{font-size:11px}.welcome5-promo-copy small{font-size:9px}.welcome5-promo-cta{margin-left:50px;min-height:38px;padding:0 13px;font-size:11px}}

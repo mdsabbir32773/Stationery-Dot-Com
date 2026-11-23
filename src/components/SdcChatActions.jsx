@@ -74,7 +74,13 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
   const exactNamed=services.filter(s=>normalized(query).includes(normalized(s.name))).sort((a,b)=>normalized(b.name).length-normalized(a.name).length)[0];
   if(exactNamed||(best&&best.score>=74&&(!next||best.score-next.score>=10))){
    const svc=exactNamed||best.item;
-   const within=rankCatalog(query,packages.filter(x=>x.service_id===svc.id),x=>{const duration=x.duration_months===0?'lifetime':x.duration_months%12===0?(x.duration_months/12)+' year':x.duration_months+' months';return (x.name||'')+' '+(x.access_type||'')+' '+duration+' '+(x.duration_months||'')+' '+(x.price||'')+' '+svc.name;});
+   const years=query.match(/\\b(\\d+)\\s*(?:years?|yrs?)\\b/i);
+   const months=query.match(/\\b(\\d+)\\s*(?:months?|mos?)\\b/i);
+   const wantsLifetime=/\\b(lifetime|forever)\\b|আজীবন/i.test(query);
+   const requestedMonths=years?Number(years[1])*12:months?Number(months[1]):null;
+   const durationMatches=packages.filter(x=>x.service_id===svc.id&&(wantsLifetime?x.duration_months===0:requestedMonths!==null?Number(x.duration_months)===requestedMonths:false));
+   if(exactNamed&&durationMatches.length===1){chooseService(svc.id,durationMatches[0].id);return;}
+   const within=rankCatalog(query,durationMatches.length?durationMatches:packages.filter(x=>x.service_id===svc.id),x=>{const duration=x.duration_months===0?'lifetime':x.duration_months%12===0?(x.duration_months/12)+' year':x.duration_months+' months';return (x.name||'')+' '+(x.access_type||'')+' '+duration+' '+(x.duration_months||'')+' '+(x.price||'')+' '+svc.name;});
    const match=within[0]&&within[0].score>=54&&(!within[1]||within[0].score-within[1].score>=8)?within[0].item:null;
    chooseService(svc.id,match?.id||'');return;
   }

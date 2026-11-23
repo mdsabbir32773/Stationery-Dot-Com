@@ -9,7 +9,7 @@ const proofTypes=['image/jpeg','image/png','image/webp'];
 const docTypes=['image/jpeg','image/png','image/webp','application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
 const extOf=f=>f.name.split('.').pop().toLowerCase();
 const STOPWORDS=new Set(['i','me','my','we','want','need','looking','for','to','a','an','the','some','please','order','buy','purchase','get','give','show','find','related','recommend','recommendation','package','packages','service','services','price','cost','of','and','with','have','you','can','could','do','on','from','amar','amr','ami','amake','ekta','ta','lagbe','chai','dorkar','nibo','kinbo','den','dao','daw','koro','korbo','korte','dibo','jonno','কি','কী','আমার','আমি','আমাকে','একটা','লাগবে','চাই','দরকার','নেব','কিনব','দেন','দাও','করতে','অর্ডার','প্যাকেজ','সার্ভিস','দাম','কত','আছে','দেখান','দেখাও']);
-function normalized(value){return String(value||'').toLowerCase().normalize('NFKC').replace(/[^a-z0-9\u0980-\u09ff]+/g,' ').trim();}
+function normalized(value){return String(value||'').toLowerCase().normalize('NFKC').replace(/(\d+)(year|yr|month|mo)\b/g,'$1 $2').replace(/[^a-z0-9\u0980-\u09ff]+/g,' ').trim();}
 function tokens(value){return normalized(value).split(/\s+/).filter(word=>word.length>1&&!STOPWORDS.has(word));}
 function catalogScore(query,label){const q=normalized(query),c=normalized(label);if(!q||!c)return 0;if(q===c)return 100;const qt=tokens(query),ct=tokens(label);if(!qt.length||!ct.length)return 0;const overlap=ct.filter(word=>qt.includes(word)).length;if(!overlap)return 0;return Math.round((overlap/ct.length*.72+overlap/qt.length*.28)*100);}
 function rankCatalog(query,items,labelOf){return items.map(item=>({item,score:catalogScore(query,labelOf(item))})).filter(row=>row.score>=42).sort((a,b)=>b.score-a.score);}
@@ -21,7 +21,7 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
  const actionEndRef=useRef(null);
  const hasBangla=/[\u0980-\u09ff]/.test(initialMessage);
  const isBanglish=/\b(amar|amr|ami|lagbe|chai|dorkar|nibo|kinbo|koro|korbo|daw|den|dibo)\b/i.test(initialMessage);
- const language=hasBangla?'bn':isBanglish?'bnlish':'en';
+ const language=hasBangla?'bn':isBanglish?'bn':'en';
  const[services,setServices]=useState([]),[packages,setPackages]=useState([]),[settings,setSettings]=useState({});
  const[session,setSession]=useState(null),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[error,setError]=useState(''),[result,setResult]=useState(''),[successLink,setSuccessLink]=useState(null);
  const[step,setStep]=useState(mode==='deposit'?'amount':'service'),[messages,setMessages]=useState([]),[reply,setReply]=useState('');
@@ -69,12 +69,13 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
  useEffect(()=>{actionEndRef.current?.scrollIntoView({behavior:'smooth'});},[messages,step,error,loading,result]);
  function handleServiceQuery(query){
   const serviceMatches=rankCatalog(query,services,x=>(x.name||'')+' '+(x.category||''));
-  const packageMatches=rankCatalog(query,packages,x=>(x.name||'')+' '+(x.access_type||'')+' '+(x.duration_months||'')+' '+(services.find(y=>y.id===x.service_id)?.name||''));
+  const packageMatches=rankCatalog(query,packages,x=>{const d=x.duration_months===0?'lifetime':x.duration_months%12===0?(x.duration_months/12)+' year':x.duration_months+' months';return (x.name||'')+' '+(x.access_type||'')+' '+d+' '+x.duration_months+' '+(services.find(y=>y.id===x.service_id)?.name||'');});
   const best=serviceMatches[0],next=serviceMatches[1];
-  if(best&&best.score>=74&&(!next||best.score-next.score>=10)){
-   const svc=best.item;
-   const within=rankCatalog(query,packages.filter(x=>x.service_id===svc.id),x=>(x.name||'')+' '+(x.access_type||'')+' '+(x.duration_months||'')+' '+(x.price||''));
-   const match=within[0]&&within[0].score>=76&&(!within[1]||within[0].score-within[1].score>=10)?within[0].item:null;
+  const exactNamed=services.filter(s=>normalized(query).includes(normalized(s.name))).sort((a,b)=>normalized(b.name).length-normalized(a.name).length)[0];
+  if(exactNamed||(best&&best.score>=74&&(!next||best.score-next.score>=10))){
+   const svc=exactNamed||best.item;
+   const within=rankCatalog(query,packages.filter(x=>x.service_id===svc.id),x=>{const duration=x.duration_months===0?'lifetime':x.duration_months%12===0?(x.duration_months/12)+' year':x.duration_months+' months';return (x.name||'')+' '+(x.access_type||'')+' '+duration+' '+(x.duration_months||'')+' '+(x.price||'')+' '+svc.name;});
+   const match=within[0]&&within[0].score>=54&&(!within[1]||within[0].score-within[1].score>=8)?within[0].item:null;
    chooseService(svc.id,match?.id||'');return;
   }
   const pb=packageMatches[0],pn=packageMatches[1];
@@ -111,7 +112,7 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
    if(/\b(yes|confirm|confirmed|correct|looks good|proceed|place order|ok|okay|ji|thik|thik ache|ha|hmm)\b|হ্যাঁ|ঠিক আছে|নিশ্চিত|জি/i.test(v)){await confirmDetails();return;}
    bot(language==='bn'?'Details ঠিক থাকলে “confirm” লিখুন। কিছু বদলাতে চাইলে কী বদলাবেন বলুন।':'If the details look right, reply “confirm”. Tell me what you want to change otherwise.');
   }
-  else if(step==='payment'){if(!proof){setError(language==='bn'?'আগে payment screenshot upload করুন।':'Upload the payment screenshot first.');return;}if(/\b(paid|done|yes|submit|confirm|complete|completed|হয়েছে|হয়েছে|দিয়েছি|পেইড)\b/i.test(v)){await submit(true);return;}bot(language==='bn'?'Screenshot upload হলে “paid” লিখুন, তাহলে order জমা হবে।':'Once the screenshot is uploaded, reply “paid” and I’ll submit the order.');}
+  else if(step==='payment'){if(/\\b(qr|code|qrcode)\\b|কিউআর/i.test(v)){bot(language==='bn'?'QR code-টা এই chat-এই payment section-এ দেখাচ্ছে। উপরের QR scan করে exact amount pay করুন, তারপর screenshot upload করুন।':'The QR code is shown here in the payment section above. Scan it, pay the exact amount, then upload the receipt screenshot.');return;}if(!proof){setError(language==='bn'?'আগে payment screenshot upload করুন।':'Upload the payment screenshot first.');return;}if(/\b(paid|done|yes|submit|confirm|complete|completed|হয়েছে|হয়েছে|দিয়েছি|পেইড)\b/i.test(v)){await submit(true);return;}bot(language==='bn'?'Screenshot upload হলে “paid” লিখুন, তাহলে order জমা হবে।':'Once the screenshot is uploaded, reply “paid” and I’ll submit the order.');}
  }
  function skip(){user('Skip');if(step==='whatsapp')go('email',prompts.email);else if(step==='email')go('notes',prompts.notes);else if(step==='notes'){if(service?.requires_file)go('docs',prompts.docs);else go('review',prompts.review);}else if(step==='amount')setError('Please enter a deposit amount to continue.');}
  function chooseDocs(e){const fs=[...(e.target.files||[])];if(fs.length>5){setError('Maximum 5 supporting files.');return;}for(const f of fs){if(!docTypes.includes(f.type)||f.size>10*1024*1024){setError('Supporting files: JPG, PNG, WEBP, PDF or DOC/DOCX; max 10MB each.');return;}}setError('');setDocs(fs);}

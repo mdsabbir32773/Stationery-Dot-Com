@@ -16,7 +16,7 @@ export default function SdcAssistant() {
   const endRef = useRef(null);
   const inputRef = useRef(null);
 
-  useEffect(() => { if (open) { endRef.current?.scrollIntoView({ behavior: 'smooth' }); setTimeout(() => inputRef.current?.focus(), 120); } }, [open, messages, busy]);
+  useEffect(() => { if (open) { endRef.current?.scrollIntoView({ behavior: 'smooth' }); if (!action) setTimeout(() => inputRef.current?.focus(), 120); } }, [open, messages, busy, action]);
   useEffect(() => { if (open) endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
   async function sendMessage(value = input) {
@@ -28,6 +28,7 @@ export default function SdcAssistant() {
     const wantsOrder = !statusIntent && !asksForInformation && (/\b(place|make|submit|create) (?:an? )?order\b|\b(order korte|order dibo|order korte chai|buy|purchase)\b|অর্ডার (করতে|দিতে|দিবো|করব)/i.test(text));
     if (wantsDeposit || wantsOrder) {
       setMessages(prev => [...prev, { role: 'user', text }]);
+      setInput('');
       setAction(wantsDeposit ? 'deposit' : 'order');
       return;
     }
@@ -69,7 +70,7 @@ export default function SdcAssistant() {
             <Link className="sdc-chat-starter-link" to="/account" onClick={() => setOpen(false)}>My account & wallet <ArrowUpRight size={13}/></Link>
             <a className="sdc-chat-starter-link" href="https://wa.me/8801827680520" target="_blank" rel="noopener noreferrer">Talk to a person on WhatsApp <ArrowUpRight size={13}/></a>
           </div>}
-          {action && <SdcChatActions mode={action} onCancel={() => setAction('')} onComplete={message => { setMessages(prev => [...prev, { role: 'assistant', text: message }]); if (message.startsWith('Your wallet balance is insufficient.')) setAction('deposit'); }} />}
+          {action && <SdcChatActions mode={action} onCancel={() => setAction('')} onComplete={message => { setMessages(prev => [...prev, { role: 'assistant', text: message }]); if (message.startsWith('Your wallet balance is insufficient.')) setAction('deposit'); else setAction(''); }} />}
           {busy && <div className="sdc-chat-row is-assistant"><div className="sdc-chat-mini-avatar"><Sparkles size={13}/></div><div className="sdc-chat-bubble sdc-chat-typing"><i/><i/><i/></div></div>}
           <div ref={endRef}/>
         </div>

@@ -20,7 +20,7 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
  const initialProcessed=useRef(false);
  const actionEndRef=useRef(null);
  const hasBangla=/[\u0980-\u09ff]/.test(initialMessage);
- const isBanglish=/\b(amar|amr|ami|lagbe|chai|dorkar|nibo|kinbo|koro|korbo|daw|den|dibo)\b/i.test(initialMessage);
+ const isBanglish=/\b(amar|amr|ami|lagbe|chai|dorkar|nibo|kinbo|koro|korbo|krbo|korte|krte|daw|den|dibo)\b/i.test(initialMessage);
  const language=hasBangla?'bn':isBanglish?'bn':'en';
  const[services,setServices]=useState([]),[packages,setPackages]=useState([]),[settings,setSettings]=useState({});
  const[session,setSession]=useState(null),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[error,setError]=useState(''),[result,setResult]=useState(''),[successLink,setSuccessLink]=useState(null);

@@ -1,26 +1,24 @@
 name: SDC UI smoke test
 
 on:
-  workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'src/**'
-      - 'supabase/functions/sdc-assistant/**'
-      - 'scripts/sdc-ui-smoke.mjs'
-      - '.github/workflows/sdc-ui-smoke.yml'
-      - 'package.json'
-      - 'package-lock.json'
+  workflow_run:
+    workflows:
+      - Build and deploy Stationery Dot Com to Cloudflare Workers
+    types:
+      - completed
 
 permissions:
   contents: read
 
 jobs:
   smoke:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 6
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22

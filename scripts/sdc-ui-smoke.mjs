@@ -82,15 +82,20 @@ try {
   }
 
   // Unknown client-side routes must return a real HTTP 404 and remain non-indexable.
-  const missingPage = await page.goto(`${baseURL}/this-page-does-not-exist-sdc-smoke`, { waitUntil: 'domcontentloaded', timeout: 30000 });
-  if (!missingPage || missingPage.status() !== 404) {
-    throw new Error(`Unknown public route should return HTTP 404, got ${missingPage?.status() ?? 'no response'}`);
-  }
-  const missingRobots = await page.locator('meta[name="robots"]').getAttribute('content');
+  const missingPage = await page.request.get(`${baseURL}/this-page-does-not-exist-sdc-smoke`, { headers: { accept: 'text/html' } });
   const missingHtmlText = await missingPage.text();
-  if (!missingRobots?.includes('noindex') || !/<meta[^>]+name=["']robots["'][^>]+content=["'][^"']*noindex/i.test(missingHtmlText) ||
-      !(await page.title()).toLowerCase().includes('page not found')) {
-    throw new Error(`Unknown route check failed: clientRobots=${missingRobots}, serverNoindex=${/<meta[^>]+name=["']robots["'][^>]+content=["'][^"']*noindex/i.test(missingHtmlText)}, title=${await page.title()}`);
+  if (missingPage.status() !== 404 || !/<meta[^>]+name=["']robots["'][^>]+content=["'][^"']*noindex/i.test(missingHtmlText)) {
+    throw new Error(`Unknown public route must return HTTP 404 with server-side noindex, got status=${missingPage.status()}`);
+  }
+  await page.evaluate(() => {
+    window.history.pushState({}, '', '/this-page-does-not-exist-sdc-smoke');
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  });
+  await page.waitForFunction(() => document.title.toLowerCase().includes('page not found') &&
+    document.querySelector('meta[name="robots"]')?.content.includes('noindex'));
+  const missingRobots = await page.locator('meta[name="robots"]').getAttribute('content');
+  if (!missingRobots?.includes('noindex')) {
+    throw new Error('SPA navigation to an unknown route did not apply noindex metadata.');
   }
 
   const checkoutAlias = await page.request.get(`${baseURL}/checkout`, { maxRedirects: 0 });
@@ -127,16 +132,18 @@ try {
     throw new Error('Private invoice route is missing its noindex directive.');
   }
 
-  const invoiceRootResponse = await page.goto(`${baseURL}/invoice`, { waitUntil: 'domcontentloaded', timeout: 30000 });
-  if (!invoiceRootResponse || invoiceRootResponse.status() !== 404 ||
-      !(await page.locator('meta[name="robots"]').getAttribute('content'))?.includes('noindex')) {
-    throw new Error('Invoice root without an invoice code must return 404 and noindex.');
+  const invoiceRootResponse = await page.request.get(`${baseURL}/invoice`, { headers: { accept: 'text/html' } });
+  const invoiceRootHtml = await invoiceRootResponse.text();
+  if (invoiceRootResponse.status() !== 404 ||
+      !/<meta[^>]+name=["']robots["'][^>]+content=["'][^"']*noindex/i.test(invoiceRootHtml)) {
+    throw new Error('Invoice root without an invoice code must return 404 and server-side noindex.');
   }
 
-  const orderSuccessRootResponse = await page.goto(`${baseURL}/order-success`, { waitUntil: 'domcontentloaded', timeout: 30000 });
-  if (!orderSuccessRootResponse || orderSuccessRootResponse.status() !== 404 ||
-      !(await page.locator('meta[name="robots"]').getAttribute('content'))?.includes('noindex')) {
-    throw new Error('Order-success root without an order code must return 404 and noindex.');
+  const orderSuccessRootResponse = await page.request.get(`${baseURL}/order-success`, { headers: { accept: 'text/html' } });
+  const orderSuccessRootHtml = await orderSuccessRootResponse.text();
+  if (orderSuccessRootResponse.status() !== 404 ||
+      !/<meta[^>]+name=["']robots["'][^>]+content=["'][^"']*noindex/i.test(orderSuccessRootHtml)) {
+    throw new Error('Order-success root without an order code must return 404 and server-side noindex.');
   }
 
   const accountResponse = await page.goto(`${baseURL}/account`, { waitUntil: 'domcontentloaded', timeout: 30000 });

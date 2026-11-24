@@ -73,6 +73,17 @@ try {
     throw new Error('Public Track Order landing page is incorrectly marked noindex.');
   }
 
+  // SPA navigation to a private tokenized tracking URL must refresh noindex metadata.
+  await page.evaluate(() => {
+    window.history.pushState({}, '', '/track-order?token=SEO-SMOKE-TEST');
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  });
+  await page.waitForFunction(() => document.querySelector('meta[name="robots"]')?.content.includes('noindex'));
+  const spaTrackingRobots = await page.locator('meta[name="robots"]').getAttribute('content');
+  if (!spaTrackingRobots?.includes('noindex')) {
+    throw new Error('SPA navigation to token-based tracking URL did not apply noindex.');
+  }
+
   const invoiceResponse = await page.goto(`${baseURL}/invoice/SEO-SMOKE-TEST`, { waitUntil: 'domcontentloaded', timeout: 30000 });
   if (!invoiceResponse || invoiceResponse.status() >= 400) {
     throw new Error(`Invoice route returned HTTP ${invoiceResponse?.status() ?? 'no response'}`);

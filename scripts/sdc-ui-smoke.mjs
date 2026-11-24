@@ -117,6 +117,21 @@ try {
     throw new Error('WebSite site-name structured data should only be present on the homepage.');
   }
 
+  const blogArticleResponse = await page.goto(`${baseURL}/blog/personal-vs-shared-digital-subscription-guide`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  if (!blogArticleResponse || blogArticleResponse.status() >= 400) {
+    throw new Error(`Published blog article returned HTTP ${blogArticleResponse?.status() ?? 'no response'}`);
+  }
+  await page.locator('.blog-detail h1').waitFor({ state: 'visible', timeout: 15000 });
+  await page.waitForFunction(() => document.title.includes('Personal নাকি Shared Subscription?'));
+  const blogGraph = JSON.parse(await page.locator('#stationery-seo-jsonld').textContent())['@graph'] || [];
+  if (!blogGraph.some(node => node['@type'] === 'BlogPosting')) {
+    throw new Error('Published blog article is missing BlogPosting structured data.');
+  }
+  const blogDescription = await page.locator('meta[name="description"]').getAttribute('content');
+  if (!blogDescription || blogDescription.length > 165) {
+    throw new Error('Blog article meta description is missing or exceeds the 165-character limit.');
+  }
+
   const documentResponse = await page.goto(`${baseURL}/document-services`, { waitUntil: 'domcontentloaded', timeout: 30000 });
   if (!documentResponse || documentResponse.status() >= 400) {
     throw new Error(`Document services page returned HTTP ${documentResponse?.status() ?? 'no response'}`);
@@ -250,7 +265,7 @@ try {
     throw new Error('Browser console/page errors:\n' + errors.slice(0, 8).join('\n'));
   }
 
-  console.log('PASS: crawlable robots and sitemap endpoints, public Track Order indexing, private invoice/account/token-tracking noindex, homepage-only WebSite schema, branded homepage and PNG favicon, digital subscriptions, document, Meta and creative services landing pages, private-route noindex, canonical host redirects, contextual service-to-category links, Facebook reviews service SEO metadata, SMM page and WELCOME5 offer, chat launcher, Gemini service matching, package duration selection, payment QR/screenshot upload, and guest deposit sign-in gate.');
+  console.log('PASS: crawlable robots and sitemap endpoints, public Track Order indexing, private invoice/account/token-tracking noindex, published blog title, excerpt and BlogPosting schema, homepage-only WebSite schema, branded homepage and PNG favicon, digital subscriptions, document, Meta and creative services landing pages, private-route noindex, canonical host redirects, contextual service-to-category links, Facebook reviews service SEO metadata, SMM page and WELCOME5 offer, chat launcher, Gemini service matching, package duration selection, payment QR/screenshot upload, and guest deposit sign-in gate.');
 } finally {
   await browser.close();
 }

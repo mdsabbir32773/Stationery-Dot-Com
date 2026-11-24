@@ -352,6 +352,7 @@ export default {
       let html = await assetResponse.text();
       // Canonical SEO host and indexability rules are covered by the public browser smoke test.
       // Public category landing pages are also covered by the SEO smoke suite.
+      // Meta and creative service landing pages share the same canonical and indexability rules.
       const route = url.pathname.replace(/\/+$/, "") || "/";
       const privateRoute = route === "/admin" || route.startsWith("/admin/") ||
         route === "/account" || route === "/cart" || route === "/order" ||

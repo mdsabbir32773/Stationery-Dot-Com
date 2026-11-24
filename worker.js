@@ -355,6 +355,7 @@ export default {
       // Meta and creative service landing pages share the same canonical and indexability rules.
       // Service detail pages link back to their matching category landing pages.
       // Search favicon format and public asset delivery are covered by the smoke suite.
+      // WebSite site-name schema is emitted only for the canonical homepage.
       const route = url.pathname.replace(/\/+$/, "") || "/";
       if (route !== "/") {
         const schemaMatch = html.match(/<script id="stationery-seo-jsonld" type="application\\/ld\\+json">([\\s\\S]*?)<\\/script>/i);

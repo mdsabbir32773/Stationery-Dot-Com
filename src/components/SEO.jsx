@@ -92,6 +92,7 @@ export default function SEO(){
             'smm-fb-fol-bd-life':{title:'Facebook Followers BD Lifetime Refill | Stationery Dot Com',description:'Review the Bangladesh premium Facebook follower option with lifetime refill terms, quantity limits and listed price.'},
             'smm-fb-rea-ww':{title:'Facebook Reactions Worldwide | Stationery Dot Com',description:'Explore worldwide Facebook reaction options and review available reaction types, quantity limits and listed pricing.'},
             'smm-fb-rea-bd':{title:'Facebook Reactions BD | Stationery Dot Com',description:'Review Bangladesh Facebook reaction options, available reaction types, quantity limits and listed pricing.'},
+            'smm-fb-reviews-genuine':{title:'Facebook Reviews Service Bangladesh | Stationery Dot Com',description:'Review the Facebook review service details, quantity limits, listed price and order requirements before placing an order.'},
             'smm-fb-views-nr':{title:'Facebook Video & Reels Views | Stationery Dot Com',description:'Review the Facebook video and Reels views option, quantity limits, listed price and no-refill terms.'},
             'smm-fb-views-r1':{title:'Facebook Video/Reels Views & Refill | Stationery Dot Com',description:'Explore the Facebook video and Reels views option with one-time refill terms, quantity limits and listed pricing.'},
             'smm-fb-com-rnd':{title:'Facebook Comments Service | Stationery Dot Com',description:'Review the random Facebook comments service, quantity limits, listed pricing and order requirements.'},

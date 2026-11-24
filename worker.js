@@ -358,7 +358,7 @@ export default {
       // WebSite site-name schema is emitted only for the canonical homepage.
       const route = url.pathname.replace(/\/+$/, "") || "/";
       if (route !== "/") {
-        const schemaMatch = html.match(/<script id="stationery-seo-jsonld" type="application\\/ld\\+json">([\\s\\S]*?)<\\/script>/i);
+        const schemaMatch = html.match(/<script id="stationery-seo-jsonld" type="application\/ld\+json">([\s\S]*?)<\/script>/i);
         if (schemaMatch) {
           try {
             const schema = JSON.parse(schemaMatch[1]);

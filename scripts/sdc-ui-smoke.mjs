@@ -56,6 +56,25 @@ try {
     throw new Error('PNG favicon did not return a successful image/png response.');
   }
 
+  // Mobile quick-nav must navigate, reset the viewport, and show the active destination.
+  const mobilePage = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  mobilePage.on('pageerror', error => errors.push(error.message));
+  mobilePage.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
+  await mobilePage.goto(baseURL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  await mobilePage.locator('.sdc-mobile-nav').waitFor({ state: 'visible', timeout: 10000 });
+  await mobilePage.evaluate(() => window.scrollTo(0, Math.max(500, document.body.scrollHeight - window.innerHeight)));
+  await mobilePage.locator('.sdc-mobile-nav a[href="/services"]').click();
+  await mobilePage.waitForURL('**/services');
+  await mobilePage.waitForFunction(() => window.scrollY <= 2);
+  await mobilePage.locator('h1').first().waitFor({ state: 'visible', timeout: 15000 });
+  if (!(await mobilePage.locator('.sdc-mobile-nav a[href="/services"]').getAttribute('aria-current'))) {
+    throw new Error('Mobile quick navigation did not visibly mark Services as the active page.');
+  }
+  await mobilePage.evaluate(() => window.scrollTo(0, Math.max(500, document.body.scrollHeight - window.innerHeight)));
+  await mobilePage.locator('.sdc-mobile-nav a[href="/services"]').click();
+  await mobilePage.waitForFunction(() => window.scrollY <= 2, { timeout: 10000 });
+  await mobilePage.close();
+
   // Verify crawl configuration and sitemap coverage on the deployed domain.
   const [robotsResponse, sitemapResponse] = await Promise.all([
     page.request.get(`${baseURL}/robots.txt`),

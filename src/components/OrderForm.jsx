@@ -3,6 +3,7 @@ import {Link,useNavigate} from 'react-router-dom';
 import {Lock,Minus,Plus,Loader2,AlertCircle,UserRound} from 'lucide-react';
 import {supabase,taka} from '../lib/supabase';
 import PaymentQR from './PaymentQR';
+import {getPaymentMethods} from '../lib/paymentMethods';
 import {subscriptionDurationLabel} from '../lib/subscription';
 import CouponBox from './CouponBox';
 import {trackInitiateCheckout} from '../lib/metaPixel';
@@ -14,8 +15,7 @@ const Fld=({l,children})=><label className="fld"><span>{l}</span>{children}</lab
 
 export default function OrderForm({service,pkg,settings}){
   const nav=useNavigate();
-  const methods=[settings.payment_qr_url?{name:'Bangla QR',number:'Scan the QR to pay',qr:settings.payment_qr_url}:null].filter(Boolean);
-  if(!methods.length&&(settings.payment_number||settings.payment_method_name))methods.push({name:settings.payment_method_name||'Mobile banking',number:settings.payment_number,qr:settings.payment_qr_url});
+  const methods=getPaymentMethods(settings);
   const[f,setF]=useState({customer_name:'',phone:'',whatsapp:'',email:'',quantity:1,notes:'',method:'',transaction_id:''});
   const[files,setFiles]=useState([]);
   const[proof,setProof]=useState(null);

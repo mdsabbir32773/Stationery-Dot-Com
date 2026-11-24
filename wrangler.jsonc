@@ -7,6 +7,10 @@
     {
       "pattern": "stationerydotcom.me",
       "custom_domain": true
+    },
+    {
+      "pattern": "www.stationerydotcom.me/*",
+      "zone_name": "stationerydotcom.me"
     }
   ],
   "ai": {

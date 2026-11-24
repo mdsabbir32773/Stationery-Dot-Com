@@ -176,9 +176,7 @@ try {
   await catalogRecoveryAlert.waitFor({ state: 'visible', timeout: 15000 });
   const beforeCatalogRetry = failedServiceRequests;
   await catalogRecoveryAlert.getByRole('button', { name: 'Try again' }).click();
-  await recoveryPage.waitForFunction(previous => window.__sdcFailedRequests > previous, beforeCatalogRetry, { timeout: 15000 }).catch(async () => {
-    await recoveryPage.waitForTimeout(500);
-  });
+  await recoveryPage.waitForTimeout(1000);
   if (failedServiceRequests <= beforeCatalogRetry) {
     throw new Error('Services catalog retry did not re-request its service list.');
   }

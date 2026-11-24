@@ -87,7 +87,32 @@ try {
   mobilePage.on('pageerror', error => errors.push(error.message));
   mobilePage.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
   await mobilePage.goto(baseURL, { waitUntil: 'domcontentloaded', timeout: 30000 });
-  await mobilePage.locator('.sdc-mobile-nav').waitFor({ state: 'visible', timeout: 10000 });
+  try {
+    await mobilePage.waitForFunction(() => {
+      const nav = document.querySelector('.sdc-mobile-nav');
+      if (!nav) return false;
+      const style = getComputedStyle(nav);
+      const rect = nav.getBoundingClientRect();
+      return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+    }, { timeout: 15000 });
+  } catch {
+    const mobileNavDiagnostics = await mobilePage.evaluate(() => {
+      const nav = document.querySelector('.sdc-mobile-nav');
+      const style = nav ? getComputedStyle(nav) : null;
+      const rect = nav?.getBoundingClientRect();
+      return {
+        innerWidth: window.innerWidth,
+        clientWidth: document.documentElement.clientWidth,
+        viewportMeta: document.querySelector('meta[name="viewport"]')?.content,
+        navExists: Boolean(nav),
+        display: style?.display,
+        visibility: style?.visibility,
+        rect: rect ? { width: rect.width, height: rect.height, bottom: rect.bottom } : null,
+        stylesheets: [...document.styleSheets].map(sheet => sheet.href).filter(Boolean)
+      };
+    });
+    throw new Error('Mobile quick navigation is not visible: ' + JSON.stringify(mobileNavDiagnostics));
+  }
   await mobilePage.evaluate(() => window.scrollTo(0, Math.max(500, document.body.scrollHeight - window.innerHeight)));
   await mobilePage.locator('.sdc-mobile-nav a[href="/services"]').click();
   await mobilePage.waitForURL('**/services');

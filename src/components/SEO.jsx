@@ -93,7 +93,7 @@ export default function SEO(){
             'smm-fb-rea-ww':{title:'Facebook Reactions Worldwide | Stationery Dot Com',description:'Explore worldwide Facebook reaction options and review available reaction types, quantity limits and listed pricing.'},
             'smm-fb-rea-bd':{title:'Facebook Reactions BD | Stationery Dot Com',description:'Review Bangladesh Facebook reaction options, available reaction types, quantity limits and listed pricing.'},
             'smm-fb-views-nr':{title:'Facebook Video & Reels Views | Stationery Dot Com',description:'Review the Facebook video and Reels views option, quantity limits, listed price and no-refill terms.'},
-            'smm-fb-views-r1':{title:'Facebook Video & Reels Views with Refill | Stationery Dot Com',description:'Explore the Facebook video and Reels views option with one-time refill terms, quantity limits and listed pricing.'},
+            'smm-fb-views-r1':{title:'Facebook Video/Reels Views & Refill | Stationery Dot Com',description:'Explore the Facebook video and Reels views option with one-time refill terms, quantity limits and listed pricing.'},
             'smm-fb-com-rnd':{title:'Facebook Comments Service | Stationery Dot Com',description:'Review the random Facebook comments service, quantity limits, listed pricing and order requirements.'},
             'smm-fb-com-cus':{title:'Custom Facebook Comments Service | Stationery Dot Com',description:'Explore custom Facebook comments and review the required post details, quantity limits and listed pricing.'},
             'smm-fb-com-pcus':{title:'Premium Custom Facebook Comments | Stationery Dot Com',description:'Review the premium custom Facebook comments option, order requirements, quantity limits and listed pricing.'},

@@ -48,7 +48,7 @@ async function dynamicSitemap(env) {
     const loc = origin + path;
     urls.set(loc, lastmod ? String(lastmod).slice(0, 10) : null);
   };
-  ["/", "/about", "/services", "/digital-subscriptions", "/smm", "/contact", "/help", "/blog", "/refund-policy", "/delivery-policy", "/privacy-policy", "/terms-of-service"].forEach(path => add(path));
+  ["/", "/about", "/services", "/digital-subscriptions", "/document-services", "/smm", "/contact", "/help", "/blog", "/refund-policy", "/delivery-policy", "/privacy-policy", "/terms-of-service"].forEach(path => add(path));
   for (const service of services || []) {
     if (service?.slug && /^[a-z0-9-]+$/.test(service.slug)) add("/services/" + service.slug);
   }

@@ -82,6 +82,13 @@ try {
   if (!legacyResponse || new URL(page.url()).hostname !== 'stationerydotcom.me') {
     throw new Error('The workers.dev hostname did not redirect to the canonical domain.');
   }
+  await page.getByRole('link', { name: /Browse all digital subscriptions/ }).waitFor({ state: 'visible', timeout: 15000 });
+
+  const documentDetailResponse = await page.goto(`${baseURL}/services/birth-certificate`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  if (!documentDetailResponse || documentDetailResponse.status() >= 400) {
+    throw new Error(`Birth certificate detail page returned HTTP ${documentDetailResponse?.status() ?? 'no response'}`);
+  }
+  await page.getByRole('link', { name: /Browse all document services/ }).waitFor({ state: 'visible', timeout: 15000 });
 
   const smmResponse = await page.goto(`${baseURL}/smm`, { waitUntil: 'domcontentloaded', timeout: 30000 });
   if (!smmResponse || smmResponse.status() >= 400) {
@@ -163,7 +170,7 @@ try {
     throw new Error('Browser console/page errors:\n' + errors.slice(0, 8).join('\n'));
   }
 
-  console.log('PASS: branded homepage schema, digital subscriptions, document, Meta and creative services landing pages, private-route noindex, canonical host redirects, SMM page and WELCOME5 offer, chat launcher, Gemini service matching, package duration selection, payment QR/screenshot upload, and guest deposit sign-in gate.');
+  console.log('PASS: branded homepage schema, digital subscriptions, document, Meta and creative services landing pages, private-route noindex, canonical host redirects, contextual service-to-category links, SMM page and WELCOME5 offer, chat launcher, Gemini service matching, package duration selection, payment QR/screenshot upload, and guest deposit sign-in gate.');
 } finally {
   await browser.close();
 }

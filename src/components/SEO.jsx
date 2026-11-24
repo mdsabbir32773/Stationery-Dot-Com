@@ -3,7 +3,7 @@ import {useLocation} from 'react-router-dom';
 import {supabase} from '../lib/supabase';
 
 const SITE='Stationery Dot Com';
-const DEFAULT_DESCRIPTION='Stationery Dot Com is an online digital service platform in Bangladesh for document and government services, Meta ads, social media growth, SMM services, digital subscriptions and creative design.';
+const DEFAULT_DESCRIPTION='Stationery Dot Com is a Dhaka-based online service platform in Bangladesh for document and government services, Meta ads, social media growth, SMM services, digital subscriptions and creative design.';
 const KEYWORDS='Stationery Dot Com, online services Bangladesh, digital services Bangladesh, document services Bangladesh, government document service Bangladesh, NID service Bangladesh, passport service Bangladesh, birth certificate service Bangladesh, Meta ads Bangladesh, Facebook ads service Bangladesh, social media marketing Bangladesh, SMM panel Bangladesh, Instagram growth Bangladesh, digital subscriptions Bangladesh, Canva Pro Bangladesh, ChatGPT Plus Bangladesh, graphic design Bangladesh, web design Bangladesh, video editing Bangladesh';
 
 function clean(value){return String(value||'').replace(/\s+/g,' ').trim();}
@@ -25,15 +25,15 @@ export default function SEO(){
     const run=async()=>{
       const route=pathname.replace(/\/+$/,'')||'/';
       const pages={
-        '/':{title:'Stationery Dot Com | Online Digital Services in Bangladesh',description:'Order online document and government services, Meta ads, social media growth, SMM services, digital subscriptions and creative design from Stationery Dot Com.'},
-        '/about':{title:'About Stationery Dot Com | Online Services in Bangladesh',description:'Learn about Stationery Dot Com, our online service catalogue and how to contact our team.'},
+        '/':{title:'Stationery Dot Com | Online Digital Services in Bangladesh',description:'Dhaka-based Stationery Dot Com offers online document services, Meta ads, social media growth, SMM, digital subscriptions and creative design across Bangladesh.'},
+        '/about':{title:'About Stationery Dot Com | Dhaka, Bangladesh',description:'Learn about Stationery Dot Com, a Dhaka-based online service platform for digital subscriptions, SMM, Meta support, document assistance and creative services.'},
         '/refund-policy':{title:'Refund & Cancellation Policy | Stationery Dot Com',description:'Understand how Stationery Dot Com reviews order cancellation and refund requests.'},
         '/delivery-policy':{title:'Service Delivery Policy | Stationery Dot Com',description:'Learn how Stationery Dot Com reviews orders and handles online service delivery.'},
         '/services':{title:'Online Services in Bangladesh | Stationery Dot Com',description:'Explore document and government services, Meta and social media marketing, SMM panel, digital subscriptions, graphic design, web design and video services.'},
         '/smm':{title:'SMM Panel Bangladesh | Stationery Dot Com',description:'Compare Facebook followers, reactions, video views, comments and shares, plus Instagram and Telegram services with listed rates and refill terms at Stationery Dot Com.'},
         '/track-order':{title:'Track Order Online | Stationery Dot Com',description:'Track your Stationery Dot Com order using your Order ID and see the latest order status.'},
         '/invoice':{title:'Invoice | Stationery Dot Com',description:'View your Stationery Dot Com order invoice.',noindex:true},
-        '/contact':{title:'Contact Stationery Dot Com | Online Support',description:'Contact Stationery Dot Com for online service support, order help and service enquiries.'},
+        '/contact':{title:'Contact Stationery Dot Com | Dhaka, Bangladesh',description:'Contact Stationery Dot Com in Dhaka for digital subscriptions, SMM, Meta advertising, document support and creative services. Call or message our team.'},
         '/help':{title:'Help Center | Stationery Dot Com',description:'Find answers about ordering, payments, wallet deposits, delivery, documents and customer support at Stationery Dot Com.'},
         '/blog':{title:'Digital Services, SMM & Online Service Guides | Stationery Dot Com Blog',description:'Practical Bangladesh-focused guides about digital subscriptions, Facebook marketing, SMM, online services, documents and creative work.'},
         '/privacy-policy':{title:'Privacy Policy | Stationery Dot Com',description:'Read the Stationery Dot Com privacy policy and learn how customer information is handled.'},

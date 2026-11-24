@@ -3,7 +3,7 @@ import {useLocation} from 'react-router-dom';
 import {supabase} from '../lib/supabase';
 
 const SITE='Stationery Dot Com';
-const DEFAULT_DESCRIPTION='Stationery Dot Com is a Dhaka-based online service platform in Bangladesh for document and government services, Meta ads, social media growth, SMM services, digital subscriptions and creative design.';
+const DEFAULT_DESCRIPTION='Stationery Dot Com is a Dhaka-based online service provider in Bangladesh for document and government services, Meta ads, social media growth, SMM services, digital subscriptions and creative design.';
 const KEYWORDS='Stationery Dot Com, online services Bangladesh, digital services Bangladesh, document services Bangladesh, government document service Bangladesh, NID service Bangladesh, passport service Bangladesh, birth certificate service Bangladesh, Meta ads Bangladesh, Facebook ads service Bangladesh, social media marketing Bangladesh, SMM panel Bangladesh, Instagram growth Bangladesh, digital subscriptions Bangladesh, Canva Pro Bangladesh, ChatGPT Plus Bangladesh, graphic design Bangladesh, web design Bangladesh, video editing Bangladesh';
 
 function clean(value){return String(value||'').replace(/\s+/g,' ').trim();}
@@ -25,7 +25,7 @@ export default function SEO(){
     const run=async()=>{
       const route=pathname.replace(/\/+$/,'')||'/';
       const pages={
-        '/':{title:'Stationery Dot Com | Online Digital Services in Bangladesh',description:'Dhaka-based Stationery Dot Com offers online document services, Meta ads, social media growth, SMM, digital subscriptions and creative design across Bangladesh.'},
+        '/':{title:'Stationery Dot Com | Online Service Provider in Bangladesh',description:'Dhaka-based Stationery Dot Com offers digital subscriptions, Meta ads, SMM, document assistance and creative services across Bangladesh.'},
         '/about':{title:'About Stationery Dot Com | Dhaka, Bangladesh',description:'Learn about Stationery Dot Com, a Dhaka-based online service platform for digital subscriptions, SMM, Meta support, document assistance and creative services.'},
         '/refund-policy':{title:'Refund & Cancellation Policy | Stationery Dot Com',description:'Understand how Stationery Dot Com reviews order cancellation and refund requests.'},
         '/delivery-policy':{title:'Service Delivery Policy | Stationery Dot Com',description:'Learn how Stationery Dot Com reviews orders and handles online service delivery.'},

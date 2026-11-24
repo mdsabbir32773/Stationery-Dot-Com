@@ -16,12 +16,58 @@ try {
     throw new Error(`Homepage returned HTTP ${response?.status() ?? 'no response'}`);
   }
 
+  if (!(await page.title()).includes('Stationery Dot Com')) {
+    throw new Error('Homepage title does not identify Stationery Dot Com.');
+  }
+  const canonical = await page.locator('link[rel="canonical"]').getAttribute('href');
+  if (canonical !== `${baseURL}/`) {
+    throw new Error(`Homepage canonical is incorrect: ${canonical}`);
+  }
+  await page.waitForFunction(() => Boolean(document.querySelector('#stationery-seo-jsonld')?.textContent));
+  const graph = JSON.parse(await page.locator('#stationery-seo-jsonld').textContent());
+  const nodes = graph['@graph'] || [];
+  const website = nodes.find(node => node['@type'] === 'WebSite');
+  const organization = nodes.find(node => node['@type'] === 'Organization');
+  if (website?.name !== 'Stationery Dot Com' || !website.alternateName?.includes('stationerydotcom.me')) {
+    throw new Error('Homepage WebSite structured data is missing the Stationery Dot Com brand identity.');
+  }
+  if (!organization?.sameAs?.includes('https://share.google/xEArz6d6u5OedmY07') ||
+      organization.logo !== `${baseURL}/stationery-dot-com-logo.webp`) {
+    throw new Error('Organization structured data is missing the Google Business Profile link or brand logo.');
+  }
+
+  const subscriptionResponse = await page.goto(`${baseURL}/digital-subscriptions`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  if (!subscriptionResponse || subscriptionResponse.status() >= 400) {
+    throw new Error(`Digital subscriptions page returned HTTP ${subscriptionResponse?.status() ?? 'no response'}`);
+  }
+  await page.getByRole('heading', { name: 'Digital Subscriptions in Bangladesh' }).waitFor({ state: 'visible', timeout: 15000 });
+  await page.waitForFunction(() => document.title.includes('Digital Subscriptions Bangladesh'));
+
+  const cartResponse = await page.goto(`${baseURL}/cart`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  if (!cartResponse || cartResponse.status() >= 400) {
+    throw new Error(`Cart page returned HTTP ${cartResponse?.status() ?? 'no response'}`);
+  }
+  const cartRobots = await page.locator('meta[name="robots"]').getAttribute('content');
+  if (!cartRobots?.includes('noindex')) {
+    throw new Error('Customer cart route is missing its noindex directive.');
+  }
+
+  const wwwResponse = await page.goto('https://www.stationerydotcom.me/services/canva', { waitUntil: 'domcontentloaded', timeout: 30000 });
+  if (!wwwResponse || new URL(page.url()).hostname !== 'stationerydotcom.me') {
+    throw new Error('The www hostname did not redirect to the canonical domain.');
+  }
+  const legacyResponse = await page.goto('https://stationerydotcom.stdc.workers.dev/services/canva', { waitUntil: 'domcontentloaded', timeout: 30000 });
+  if (!legacyResponse || new URL(page.url()).hostname !== 'stationerydotcom.me') {
+    throw new Error('The workers.dev hostname did not redirect to the canonical domain.');
+  }
+
   const smmResponse = await page.goto(`${baseURL}/smm`, { waitUntil: 'domcontentloaded', timeout: 30000 });
   if (!smmResponse || smmResponse.status() >= 400) {
     throw new Error(`SMM page returned HTTP ${smmResponse?.status() ?? 'no response'}`);
   }
+  await page.getByRole('heading', { name: /SMM Panel Bangladesh/ }).waitFor({ state: 'visible', timeout: 15000 });
   const welcomeOffer = page.locator('.welcome5-smm-banner');
-  await welcomeOffer.waitFor({ state: 'visible', timeout: 15000 });
+  await welcomeOffer.waitFor({ state: 'visible', timeout: 25000 });
   const offerText = await welcomeOffer.innerText();
   if (!/WELCOME5/.test(offerText) || !/5% OFF/.test(offerText) || !/৳300/.test(offerText) || !/৳50/.test(offerText)) {
     throw new Error('WELCOME5 SMM offer banner is missing its code or discount terms.');
@@ -95,7 +141,7 @@ try {
     throw new Error('Browser console/page errors:\n' + errors.slice(0, 8).join('\n'));
   }
 
-  console.log('PASS: public WELCOME5 SMM offer, custom domain, chat launcher, Gemini service matching, package duration selection, payment QR/screenshot upload, and guest deposit sign-in gate.');
+  console.log('PASS: branded homepage schema, digital subscriptions landing page, private-route noindex, canonical host redirects, SMM page and WELCOME5 offer, chat launcher, Gemini service matching, package duration selection, payment QR/screenshot upload, and guest deposit sign-in gate.');
 } finally {
   await browser.close();
 }

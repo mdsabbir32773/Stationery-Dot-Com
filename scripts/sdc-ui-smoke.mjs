@@ -119,7 +119,7 @@ try {
     throw new Error(`Creative services page returned HTTP ${creativeResponse?.status() ?? 'no response'}`);
   }
   await page.getByRole('heading', { name: 'Graphic Design, Video Editing & Web Design in Bangladesh' }).waitFor({ state: 'visible', timeout: 15000 });
-  await page.waitForFunction(() => document.title.includes('Graphic Design & Video Editing Bangladesh'));
+  await page.waitForFunction(() => document.title.includes('Graphic Design & Video Editing BD'));
 
   const cartResponse = await page.goto(`${baseURL}/cart`, { waitUntil: 'domcontentloaded', timeout: 30000 });
   if (!cartResponse || cartResponse.status() >= 400) {

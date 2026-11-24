@@ -76,6 +76,41 @@ async function dynamicSitemap(env) {
     }
   });
 }
+async function isKnownPageRoute(path, env) {
+  const staticRoutes = new Set([
+    "/", "/about", "/refund-policy", "/delivery-policy", "/services",
+    "/digital-subscriptions", "/document-services", "/meta-services",
+    "/creative-services", "/smm", "/order", "/cart", "/checkout",
+    "/track-order", "/contact", "/help", "/blog", "/account",
+    "/privacy-policy", "/terms-of-service", "/admin", "/admin/login"
+  ]);
+  if (staticRoutes.has(path)) return true;
+  if (/^\/(?:invoice|order-success)\/[^/]+$/.test(path)) return true;
+  if (/^\/admin\/(?:services|smm|deposits|packages|coupons|activity|support|content|settings|reviews|orders|customers)$/.test(path)) return true;
+  if (/^\/admin\/(?:orders|customers)\/[^/]+$/.test(path)) return true;
+
+  const serviceMatch = path.match(/^\/services\/([a-z0-9-]+)$/);
+  if (serviceMatch) {
+    try {
+      const rows = await db(env, "services?select=id&slug=eq." + encodeURIComponent(serviceMatch[1]) + "&is_active=eq.true&limit=1");
+      return Boolean(rows?.length);
+    } catch {
+      return null;
+    }
+  }
+  const blogMatch = path.match(/^\/blog\/([a-z0-9-]+)$/);
+  if (blogMatch) {
+    try {
+      const now = encodeURIComponent(new Date().toISOString());
+      const rows = await db(env, "blog_posts?select=id&slug=eq." + encodeURIComponent(blogMatch[1]) + "&status=eq.published&published_at=not.is.null&published_at=lte." + now + "&limit=1");
+      return Boolean(rows?.length);
+    } catch {
+      return null;
+    }
+  }
+  return false;
+}
+
 async function getPageAccessToken(env, pageId) {
   const configuredToken = env.META_PAGE_ACCESS_TOKEN;
   if (!configuredToken) throw new Error("META_PAGE_ACCESS_TOKEN is not configured");
@@ -357,9 +392,11 @@ export default {
       }
       return secureResponse(new Response("Method Not Allowed", { status: 405, headers: { allow: "GET, POST" } }));
     }
-    const assetResponse = await env.ASSETS.fetch(request);
     const acceptsHtml = request.method === "GET" && (request.headers.get("accept") || "").includes("text/html");
     const isPageRoute = !url.pathname.split("/").pop()?.includes(".");
+    const route = url.pathname.replace(/\/+$/, "") || "/";
+    const routeExists = acceptsHtml && isPageRoute ? await isKnownPageRoute(route, env) : null;
+    const assetResponse = await env.ASSETS.fetch(request);
     if (acceptsHtml && isPageRoute && assetResponse.headers.get("content-type")?.includes("text/html")) {
       let html = await assetResponse.text();
       // Canonical SEO host and indexability rules are covered by the public browser smoke test.
@@ -368,7 +405,6 @@ export default {
       // Service detail pages link back to their matching category landing pages.
       // Search favicon format and public asset delivery are covered by the smoke suite.
       // WebSite site-name schema is emitted only for the canonical homepage.
-      const route = url.pathname.replace(/\/+$/, "") || "/";
       if (route !== "/") {
         const schemaMatch = html.match(/<script id="stationery-seo-jsonld" type="application\/ld\+json">([\s\S]*?)<\/script>/i);
         if (schemaMatch) {
@@ -401,7 +437,7 @@ export default {
       headers.delete("content-length");
       headers.delete("content-encoding");
       headers.delete("etag");
-      return secureResponse(new Response(html, { status: assetResponse.status, statusText: assetResponse.statusText, headers }));
+      return secureResponse(new Response(html, { status: routeExists === false ? 404 : assetResponse.status, statusText: routeExists === false ? "Not Found" : assetResponse.statusText, headers }));
     }
     return secureResponse(assetResponse);
   }

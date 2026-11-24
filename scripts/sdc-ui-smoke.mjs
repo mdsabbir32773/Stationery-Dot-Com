@@ -16,6 +16,18 @@ try {
     throw new Error(`Homepage returned HTTP ${response?.status() ?? 'no response'}`);
   }
 
+  const homepageHeaders = response.headers();
+  for (const [header, expected] of Object.entries({
+    'x-content-type-options': 'nosniff',
+    'referrer-policy': 'strict-origin-when-cross-origin',
+    'x-frame-options': 'DENY',
+    'permissions-policy': 'camera=(), microphone=(), geolocation=()'
+  })) {
+    if ((homepageHeaders[header] || '').toLowerCase() !== expected.toLowerCase()) {
+      throw new Error(`Homepage security header ${header} is missing or incorrect: ${homepageHeaders[header] || 'missing'}`);
+    }
+  }
+
   if (!(await page.title()).includes('Stationery Dot Com')) {
     throw new Error('Homepage title does not identify Stationery Dot Com.');
   }
@@ -51,6 +63,11 @@ try {
   ]);
   if (robotsResponse.status() !== 200 || sitemapResponse.status() !== 200) {
     throw new Error(`Robots/sitemap endpoint failed: robots=${robotsResponse.status()}, sitemap=${sitemapResponse.status()}`);
+  }
+  const sitemapHeaders = sitemapResponse.headers();
+  if ((sitemapHeaders['x-content-type-options'] || '').toLowerCase() !== 'nosniff' ||
+      (sitemapHeaders['x-frame-options'] || '').toLowerCase() !== 'deny') {
+    throw new Error('Worker-generated sitemap is missing security response headers.');
   }
   const robotsText = await robotsResponse.text();
   const sitemapText = await sitemapResponse.text();

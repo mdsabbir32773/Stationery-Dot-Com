@@ -5,7 +5,7 @@ export default function About() {
   return <main className="legal-page wrap">
     <span className="eyebrow">GET TO KNOW US</span>
     <h1>About Stationery Dot Com</h1>
-    <p>Stationery Dot Com is a Bangladesh-based online service platform. We bring a range of digital, creative, social media and document-support services together so customers can explore available options, review package details and place requests online.</p>
+    <p>Stationery Dot Com is a Dhaka-based online service platform serving customers across Bangladesh. We bring digital, creative, social media and document-support services together so customers can explore available options, review package details and place requests online.</p>
     <h2>What we help with</h2>
     <ul>
       <li><strong>Document and application support:</strong> assistance with birth certificate, NID, passport and trade-license related requests.</li>

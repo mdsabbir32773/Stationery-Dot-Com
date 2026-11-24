@@ -138,6 +138,14 @@ try {
   if (!blogGraph.some(node => node['@type'] === 'BlogPosting')) {
     throw new Error('Published blog article is missing BlogPosting structured data.');
   }
+  const blogOgType = await page.locator('meta[property="og:type"]').getAttribute('content');
+  if (blogOgType !== 'article') {
+    throw new Error(`Published blog article Open Graph type should be article, got: ${blogOgType}`);
+  }
+  const blogPublishedTime = await page.locator('meta[property="article:published_time"]').getAttribute('content');
+  if (!blogPublishedTime) {
+    throw new Error('Published blog article is missing article:published_time metadata.');
+  }
   await page.locator('.blog-article-body a[href="/digital-subscriptions"]').waitFor({ state: 'visible', timeout: 10000 });
   const blogDescription = await page.locator('meta[name="description"]').getAttribute('content');
   if (!blogDescription || blogDescription.length > 165) {

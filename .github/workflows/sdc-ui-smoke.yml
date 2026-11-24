@@ -10,6 +10,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: sdc-ui-smoke
+  cancel-in-progress: true
+
 jobs:
   smoke:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}

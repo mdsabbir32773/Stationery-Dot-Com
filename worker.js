@@ -356,6 +356,18 @@ export default {
       // Service detail pages link back to their matching category landing pages.
       // Search favicon format and public asset delivery are covered by the smoke suite.
       const route = url.pathname.replace(/\/+$/, "") || "/";
+      if (route !== "/") {
+        const schemaMatch = html.match(/<script id="stationery-seo-jsonld" type="application\\/ld\\+json">([\\s\\S]*?)<\\/script>/i);
+        if (schemaMatch) {
+          try {
+            const schema = JSON.parse(schemaMatch[1]);
+            if (Array.isArray(schema["@graph"])) {
+              schema["@graph"] = schema["@graph"].filter(node => node["@type"] === "Organization");
+              html = html.replace(schemaMatch[0], '<script id="stationery-seo-jsonld" type="application/ld+json">' + JSON.stringify(schema) + '</script>');
+            }
+          } catch {}
+        }
+      }
       const privateRoute = route === "/admin" || route.startsWith("/admin/") ||
         route === "/account" || route === "/cart" || route === "/order" ||
         route.startsWith("/order-success/") || route.startsWith("/invoice/") ||

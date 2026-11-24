@@ -32,5 +32,5 @@ jobs:
         run: npm install --no-save --package-lock=false playwright
       - name: Install Chromium
         run: npx playwright install chromium --only-shell
-      - name: Test live SDC chat workflows
+      - name: Test live site UX, checkout and security workflows
         run: node scripts/sdc-ui-smoke.mjs

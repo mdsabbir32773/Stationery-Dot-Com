@@ -354,6 +354,7 @@ export default {
       // Public category landing pages are also covered by the SEO smoke suite.
       // Meta and creative service landing pages share the same canonical and indexability rules.
       // Service detail pages link back to their matching category landing pages.
+      // Search favicon format and public asset delivery are covered by the smoke suite.
       const route = url.pathname.replace(/\/+$/, "") || "/";
       const privateRoute = route === "/admin" || route.startsWith("/admin/") ||
         route === "/account" || route === "/cart" || route === "/order" ||

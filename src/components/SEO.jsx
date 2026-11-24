@@ -172,6 +172,6 @@ export default function SEO(){
     };
     run();
     return()=>{cancelled=true;};
-  },[pathname]);
+  },[pathname,search]);
   return null;
 }

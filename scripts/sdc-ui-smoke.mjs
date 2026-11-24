@@ -1,8 +1,34 @@
 import { chromium } from 'playwright';
+import { getPaymentMethods } from '../src/lib/paymentMethods.js';
+import { getSmmUnitPrice } from '../src/lib/smmPricing.js';
 
 const baseURL = process.env.SDC_BASE_URL || 'https://stationerydotcom.me';
 const browser = await chromium.launch({ headless: true });
 const errors = [];
+
+const paymentMethods = getPaymentMethods({
+  payment_bkash_number: '01700000000',
+  payment_bkash_qr_url: '/bkash-qr.png',
+  payment_nagad_number: '01800000000',
+  payment_nagad_qr_url: '/nagad-qr.png',
+  payment_rocket_number: '01900000000',
+  payment_bank_details: 'Example Bank · Account 123456',
+  payment_qr_url: '/shared-qr.png'
+});
+for (const name of ['bKash', 'Nagad', 'Rocket', 'Bank transfer', 'Bangla QR']) {
+  if (!paymentMethods.some(method => method.name === name)) {
+    throw new Error(`Configured payment channel is missing from checkout options: ${name}`);
+  }
+}
+const genericPayment = getPaymentMethods({ payment_number: '01700000000' });
+if (genericPayment.length !== 1 || genericPayment[0].name !== 'Mobile banking') {
+  throw new Error('Generic mobile banking payment fallback is missing.');
+}
+const fridaySmmPrice = getSmmUnitPrice({ smm_service_code: 'FB-FOL-WW', smm_price_per_1000: 100 }, new Date('2026-11-27T00:00:00Z'));
+const regularSmmPrice = getSmmUnitPrice({ smm_service_code: 'FB-FOL-WW', smm_price_per_1000: 100 }, new Date('2026-11-26T00:00:00Z'));
+if (fridaySmmPrice !== 80 || regularSmmPrice !== 100) {
+  throw new Error(`Friday SMM pricing mismatch: Friday=${fridaySmmPrice}, regular=${regularSmmPrice}`);
+}
 
 try {
   const page = await browser.newPage();

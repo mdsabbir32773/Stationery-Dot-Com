@@ -417,7 +417,7 @@ export default {
           } catch {}
         }
       }
-      const privateRoute = route === "/admin" || route.startsWith("/admin/") ||
+      const privateRoute = routeExists === false || route === "/admin" || route.startsWith("/admin/") ||
         route === "/account" || route === "/cart" || route === "/order" || route === "/checkout" ||
         route === "/order-success" || route.startsWith("/order-success/") ||
         route === "/invoice" || route.startsWith("/invoice/") ||

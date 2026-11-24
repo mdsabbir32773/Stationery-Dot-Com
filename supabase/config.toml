@@ -1,0 +1,5 @@
+[functions.import-service-image]
+verify_jwt = true
+
+[functions.sdc-assistant]
+verify_jwt = false

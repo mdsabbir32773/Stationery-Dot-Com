@@ -4,6 +4,7 @@ import {ArrowRight,CheckCircle2,Loader2,WalletCards,Sparkles,Paperclip} from 'lu
 import {supabase,taka} from '../lib/supabase';
 import PaymentQR from './PaymentQR';
 import {getPaymentMethods} from '../lib/paymentMethods';
+import {getSmmUnitPrice} from '../lib/smmPricing';
 
 const PHONE=/^(880|0)?1[0-9]{9}$/;
 const proofTypes=['image/jpeg','image/png','image/webp'];
@@ -33,7 +34,7 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
  const pack=servicePackages.find(x=>x.id===packageId);
  const isSmm=Boolean(service?.smm_platform||service?.category==='SMM Panel Services');
  const total=pack?Number(pack.price||0):0;
- const smmTotal=service?Math.round((Number(service.smm_price_per_1000||0)*Number(quantity||0)/1000)*100)/100:0;
+ const smmTotal=service?Math.round((getSmmUnitPrice(service)*Number(quantity||0)/1000)*100)/100:0;
  const paymentMethods=getPaymentMethods(settings);
  const qrMethod=paymentMethods.find(x=>x.name===paymentMethod)||paymentMethods[0]||{name:'Payment method not configured'};
  const promptSets={

@@ -137,7 +137,13 @@ export default function SEO(){
       setMeta('meta[name="keywords"]',{name:'keywords',content:service?[`${clean(service.name)} Bangladesh`,`${clean(service.name)} online`,clean(service.category),'Stationery Dot Com','online services Bangladesh'].filter(Boolean).join(', '):KEYWORDS});
       setMeta('meta[name="robots"]',{name:'robots',content:page.noindex?'noindex,nofollow':'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1'});
       setMeta('meta[name="author"]',{name:'author',content:SITE});
-      setMeta('meta[property="og:type"]',{property:'og:type',content:'website'});
+      setMeta('meta[property="og:type"]',{property:'og:type',content:blogPost?'article':'website'});
+      document.head.querySelectorAll('meta[property^="article:"]').forEach(el=>el.remove());
+      if(blogPost){
+        setMeta('meta[property="article:published_time"]',{property:'article:published_time',content:blogPost.published_at});
+        setMeta('meta[property="article:author"]',{property:'article:author',content:clean(blogPost.author)||SITE});
+        if(blogPost.category)setMeta('meta[property="article:section"]',{property:'article:section',content:clean(blogPost.category)});
+      }
       setMeta('meta[property="og:locale"]',{property:'og:locale',content:'en_BD'});
       setMeta('meta[property="og:image:alt"]',{property:'og:image:alt',content:service?`${clean(service.name)} — Stationery Dot Com`:'Stationery Dot Com logo'});
       setMeta('meta[property="og:site_name"]',{property:'og:site_name',content:SITE});

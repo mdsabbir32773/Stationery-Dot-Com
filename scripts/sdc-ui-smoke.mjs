@@ -35,6 +35,14 @@ try {
       organization.logo !== `${baseURL}/stationery-dot-com-logo.webp`) {
     throw new Error('Organization structured data is missing the Google Business Profile link or brand logo.');
   }
+  const faviconHref = await page.locator('link[rel="icon"][type="image/png"]').getAttribute('href');
+  if (faviconHref !== '/favicon-192.png') {
+    throw new Error(`Google-compatible PNG favicon is missing or incorrect: ${faviconHref}`);
+  }
+  const faviconResponse = await page.request.get(new URL(faviconHref, baseURL).href);
+  if (faviconResponse.status() !== 200 || !(faviconResponse.headers()['content-type'] || '').includes('image/png')) {
+    throw new Error('PNG favicon did not return a successful image/png response.');
+  }
 
   const subscriptionResponse = await page.goto(`${baseURL}/digital-subscriptions`, { waitUntil: 'domcontentloaded', timeout: 30000 });
   if (!subscriptionResponse || subscriptionResponse.status() >= 400) {
@@ -170,7 +178,7 @@ try {
     throw new Error('Browser console/page errors:\n' + errors.slice(0, 8).join('\n'));
   }
 
-  console.log('PASS: branded homepage schema, digital subscriptions, document, Meta and creative services landing pages, private-route noindex, canonical host redirects, contextual service-to-category links, SMM page and WELCOME5 offer, chat launcher, Gemini service matching, package duration selection, payment QR/screenshot upload, and guest deposit sign-in gate.');
+  console.log('PASS: branded homepage schema and PNG favicon, digital subscriptions, document, Meta and creative services landing pages, private-route noindex, canonical host redirects, contextual service-to-category links, SMM page and WELCOME5 offer, chat launcher, Gemini service matching, package duration selection, payment QR/screenshot upload, and guest deposit sign-in gate.');
 } finally {
   await browser.close();
 }

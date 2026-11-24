@@ -82,6 +82,24 @@ try {
     throw new Error('Private invoice route is missing its noindex directive.');
   }
 
+  const accountResponse = await page.goto(`${baseURL}/account`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  if (!accountResponse || accountResponse.status() >= 400) {
+    throw new Error(`Account route returned HTTP ${accountResponse?.status() ?? 'no response'}`);
+  }
+  const accountRobots = await page.locator('meta[name="robots"]').getAttribute('content');
+  if (!accountRobots?.includes('noindex')) {
+    throw new Error('Private customer account route is missing its noindex directive.');
+  }
+
+  const secureTrackingResponse = await page.goto(`${baseURL}/track-order?token=SEO-SMOKE-TEST`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  if (!secureTrackingResponse || secureTrackingResponse.status() >= 400) {
+    throw new Error(`Secure tracking route returned HTTP ${secureTrackingResponse?.status() ?? 'no response'}`);
+  }
+  const secureTrackingRobots = await page.locator('meta[name="robots"]').getAttribute('content');
+  if (!secureTrackingRobots?.includes('noindex')) {
+    throw new Error('Token-based private tracking URL is missing its noindex directive.');
+  }
+
   const subscriptionResponse = await page.goto(`${baseURL}/digital-subscriptions`, { waitUntil: 'domcontentloaded', timeout: 30000 });
   if (!subscriptionResponse || subscriptionResponse.status() >= 400) {
     throw new Error(`Digital subscriptions page returned HTTP ${subscriptionResponse?.status() ?? 'no response'}`);
@@ -226,7 +244,7 @@ try {
     throw new Error('Browser console/page errors:\n' + errors.slice(0, 8).join('\n'));
   }
 
-  console.log('PASS: crawlable robots and sitemap endpoints, public Track Order indexing, private invoice noindex, homepage-only WebSite schema, branded homepage and PNG favicon, digital subscriptions, document, Meta and creative services landing pages, private-route noindex, canonical host redirects, contextual service-to-category links, SMM page and WELCOME5 offer, chat launcher, Gemini service matching, package duration selection, payment QR/screenshot upload, and guest deposit sign-in gate.');
+  console.log('PASS: crawlable robots and sitemap endpoints, public Track Order indexing, private invoice/account/token-tracking noindex, homepage-only WebSite schema, branded homepage and PNG favicon, digital subscriptions, document, Meta and creative services landing pages, private-route noindex, canonical host redirects, contextual service-to-category links, SMM page and WELCOME5 offer, chat launcher, Gemini service matching, package duration selection, payment QR/screenshot upload, and guest deposit sign-in gate.');
 } finally {
   await browser.close();
 }

@@ -3,8 +3,16 @@ const GRAPH_VERSION = "v27.0";
 const SUPABASE_URL = "https://efrqreeyuopdvmghfedx.supabase.co";
 const AI_MODEL = "@cf/meta/llama-3.1-8b-instruct-fast";
 
+function secureResponse(response) {
+  const headers = new Headers(response.headers);
+  headers.set("x-content-type-options", "nosniff");
+  headers.set("referrer-policy", "strict-origin-when-cross-origin");
+  headers.set("x-frame-options", "DENY");
+  headers.set("permissions-policy", "camera=(), microphone=(), geolocation=()");
+  return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+}
 function json(data, status = 200) {
-  return new Response(JSON.stringify(data), { status, headers: { "content-type": "application/json; charset=utf-8" } });
+  return secureResponse(new Response(JSON.stringify(data), { status, headers: { "content-type": "application/json; charset=utf-8" } }));
 }
 function safeEqual(a, b) {
   if (!a || !b || a.length !== b.length) return false;
@@ -313,27 +321,27 @@ export default {
     // The Meta webhook remains on workers.dev because its callback is registered there.
     if (url.hostname === "www.stationerydotcom.me" || (url.hostname === "stationerydotcom.stdc.workers.dev" && url.pathname !== META_WEBHOOK_PATH && url.pathname !== "/_internal/meta-webhook-setup")) {
       url.hostname = "stationerydotcom.me";
-      return Response.redirect(url.toString(), 308);
+      return secureResponse(Response.redirect(url.toString(), 308));
     }
     if (url.pathname === "/sitemap.xml" && request.method === "GET") {
       try {
-        return await dynamicSitemap(env);
+        return secureResponse(await dynamicSitemap(env));
       } catch (error) {
         console.error("Dynamic sitemap generation failed:", String(error));
-        return env.ASSETS.fetch(request);
+        return secureResponse(await env.ASSETS.fetch(request));
       }
     }
     if (url.pathname === "/_internal/meta-webhook-setup" && request.method === "GET") {
-      if (url.searchParams.get("key") !== env.META_VERIFY_TOKEN) return new Response("Forbidden", { status: 403 });
-      return setupMetaWebhooks(env);
+      if (url.searchParams.get("key") !== env.META_VERIFY_TOKEN) return secureResponse(new Response("Forbidden", { status: 403 }));
+      return secureResponse(await setupMetaWebhooks(env));
     }
     if (url.pathname === META_WEBHOOK_PATH) {
       if (request.method === "GET") {
         const mode = url.searchParams.get("hub.mode");
         const token = url.searchParams.get("hub.verify_token");
         const challenge = url.searchParams.get("hub.challenge");
-        if (mode === "subscribe" && token && token === env.META_VERIFY_TOKEN && challenge) return new Response(challenge, { status: 200, headers: { "content-type": "text/plain; charset=utf-8" } });
-        return new Response("Forbidden", { status: 403 });
+        if (mode === "subscribe" && token && token === env.META_VERIFY_TOKEN && challenge) return secureResponse(new Response(challenge, { status: 200, headers: { "content-type": "text/plain; charset=utf-8" } }));
+        return secureResponse(new Response("Forbidden", { status: 403 }));
       }
       if (request.method === "POST") {
         const rawBody = await request.text();
@@ -343,7 +351,7 @@ export default {
         ctx.waitUntil(processWebhook(env, payload).catch(error => console.error("Meta webhook processing failed", String(error))));
         return json({ received: true });
       }
-      return new Response("Method Not Allowed", { status: 405, headers: { allow: "GET, POST" } });
+      return secureResponse(new Response("Method Not Allowed", { status: 405, headers: { allow: "GET, POST" } }));
     }
     const assetResponse = await env.ASSETS.fetch(request);
     const acceptsHtml = request.method === "GET" && (request.headers.get("accept") || "").includes("text/html");
@@ -388,8 +396,8 @@ export default {
       headers.delete("content-length");
       headers.delete("content-encoding");
       headers.delete("etag");
-      return new Response(html, { status: assetResponse.status, statusText: assetResponse.statusText, headers });
+      return secureResponse(new Response(html, { status: assetResponse.status, statusText: assetResponse.statusText, headers }));
     }
-    return assetResponse;
+    return secureResponse(assetResponse);
   }
 };

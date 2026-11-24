@@ -42,7 +42,7 @@ export default function SEO(){
         '/blog':{title:'Stationery Dot Com Blog | Online Service Guides',description:'Practical Bangladesh-focused guides about digital subscriptions, Facebook marketing, SMM, online services, documents and creative work.'},
         '/privacy-policy':{title:'Privacy Policy | Stationery Dot Com',description:'Read the Stationery Dot Com privacy policy and learn how customer information is handled.'},
         '/terms-of-service':{title:'Terms of Service | Stationery Dot Com',description:'Read the Stationery Dot Com terms of service for online orders and digital services.'},
-        '/account':{title:'My Account | Stationery Dot Com',description:'Manage your Stationery Dot Com profile, orders and reviews.'},
+        '/account':{title:'My Account | Stationery Dot Com',description:'Manage your Stationery Dot Com profile, orders and reviews.',noindex:true},
         '/cart':{title:'Shopping Cart | Stationery Dot Com',description:'Review selected services and continue to checkout.',noindex:true},
         '/order':{title:'Place an Order | Stationery Dot Com',description:'Complete your Stationery Dot Com service order online.',noindex:true}
       };

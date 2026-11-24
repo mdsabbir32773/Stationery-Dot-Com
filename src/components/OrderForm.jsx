@@ -90,7 +90,7 @@ export default function OrderForm({service,pkg,settings}){
     }
     if(n===2&&service.requires_file&&files.length===0)return 'Please upload the required documents';
     if(n===3){
-      if(!methods.length)return 'The store has not configured the Bangla QR payment yet. Please contact support.';
+      if(!methods.length)return 'The store has not configured a payment method yet. Please contact support.';
       if(!proof)return 'Upload a screenshot of your successful payment';
       if(!paid)return 'Please confirm that you have completed the payment';
     }

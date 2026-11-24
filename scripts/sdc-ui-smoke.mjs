@@ -1,6 +1,7 @@
 import { chromium } from 'playwright';
 import { getPaymentMethods } from '../src/lib/paymentMethods.js';
 import { getSmmUnitPrice } from '../src/lib/smmPricing.js';
+import { getUploadMime, getPaymentProofMime } from '../src/lib/fileValidation.js';
 
 const baseURL = process.env.SDC_BASE_URL || 'https://stationerydotcom.me';
 const browser = await chromium.launch({ headless: true });
@@ -23,6 +24,12 @@ for (const name of ['bKash', 'Nagad', 'Rocket', 'Bank transfer', 'Bangla QR']) {
 const genericPayment = getPaymentMethods({ payment_number: '01700000000' });
 if (genericPayment.length !== 1 || genericPayment[0].name !== 'Mobile banking') {
   throw new Error('Generic mobile banking payment fallback is missing.');
+}
+if (getPaymentProofMime({ type: '', name: 'receipt.jpg' }) !== 'image/jpeg' ||
+    getPaymentProofMime({ type: 'application/octet-stream', name: 'receipt.png' }) !== 'image/png' ||
+    getUploadMime({ type: 'application/octet-stream', name: 'identity.pdf' }) !== 'application/pdf' ||
+    getPaymentProofMime({ type: 'application/pdf', name: 'receipt.pdf' }) !== '') {
+  throw new Error('Mobile-safe upload MIME detection is not enforcing the allowed file types correctly.');
 }
 const fridaySmmPrice = getSmmUnitPrice({ smm_service_code: 'FB-FOL-WW', smm_price_per_1000: 100 }, new Date('2026-11-27T00:00:00Z'));
 const regularSmmPrice = getSmmUnitPrice({ smm_service_code: 'FB-FOL-WW', smm_price_per_1000: 100 }, new Date('2026-11-26T00:00:00Z'));

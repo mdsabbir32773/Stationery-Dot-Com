@@ -81,6 +81,16 @@ try {
     throw new Error('Sitemap contains a private or transactional URL that should not be indexed.');
   }
 
+  // Unknown client-side routes must return a real HTTP 404 and remain non-indexable.
+  const missingPage = await page.goto(`${baseURL}/this-page-does-not-exist-sdc-smoke`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  if (!missingPage || missingPage.status() !== 404) {
+    throw new Error(`Unknown public route should return HTTP 404, got ${missingPage?.status() ?? 'no response'}`);
+  }
+  const missingRobots = await page.locator('meta[name="robots"]').getAttribute('content');
+  if (!missingRobots?.includes('noindex') || !(await page.title()).includes('Page Not Found')) {
+    throw new Error('Unknown public route must render the not-found page with noindex metadata.');
+  }
+
   const checkoutAlias = await page.request.get(`${baseURL}/checkout`, { maxRedirects: 0 });
   if (checkoutAlias.status() !== 308 || new URL(checkoutAlias.headers().location || '', baseURL).pathname !== '/cart') {
     throw new Error('Checkout alias must permanently redirect to the private cart route.');

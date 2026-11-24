@@ -81,6 +81,11 @@ try {
     throw new Error('Sitemap contains a private or transactional URL that should not be indexed.');
   }
 
+  const checkoutAlias = await page.request.get(`${baseURL}/checkout`, { maxRedirects: 0 });
+  if (checkoutAlias.status() !== 308 || new URL(checkoutAlias.headers().location || '', baseURL).pathname !== '/cart') {
+    throw new Error('Checkout alias must permanently redirect to the private cart route.');
+  }
+
   const trackingResponse = await page.goto(`${baseURL}/track-order`, { waitUntil: 'domcontentloaded', timeout: 30000 });
   if (!trackingResponse || trackingResponse.status() >= 400) {
     throw new Error(`Track Order page returned HTTP ${trackingResponse?.status() ?? 'no response'}`);
@@ -108,6 +113,18 @@ try {
   const invoiceRobots = await page.locator('meta[name="robots"]').getAttribute('content');
   if (!invoiceRobots?.includes('noindex')) {
     throw new Error('Private invoice route is missing its noindex directive.');
+  }
+
+  const invoiceRootResponse = await page.goto(`${baseURL}/invoice`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  if (!invoiceRootResponse || invoiceRootResponse.status() >= 400 ||
+      !(await page.locator('meta[name="robots"]').getAttribute('content'))?.includes('noindex')) {
+    throw new Error('Invoice root alias is missing its noindex directive.');
+  }
+
+  const orderSuccessRootResponse = await page.goto(`${baseURL}/order-success`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  if (!orderSuccessRootResponse || orderSuccessRootResponse.status() >= 400 ||
+      !(await page.locator('meta[name="robots"]').getAttribute('content'))?.includes('noindex')) {
+    throw new Error('Order-success root alias is missing its noindex directive.');
   }
 
   const accountResponse = await page.goto(`${baseURL}/account`, { waitUntil: 'domcontentloaded', timeout: 30000 });

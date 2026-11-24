@@ -103,6 +103,24 @@ try {
     throw new Error('Checkout alias must permanently redirect to the private cart route.');
   }
 
+  // Public assistant endpoint must reject oversized and malformed request bodies before model execution.
+  const assistantEndpoint = 'https://efrqreeyuopdvmghfedx.supabase.co/functions/v1/sdc-assistant';
+  const oversizedAssistantBody = JSON.stringify({ message: 'x'.repeat(25000), history: [] });
+  const oversizedAssistantResponse = await page.request.post(assistantEndpoint, {
+    data: oversizedAssistantBody,
+    headers: { 'content-type': 'application/json' }
+  });
+  if (oversizedAssistantResponse.status() !== 413) {
+    throw new Error(`SDC Assistant must reject request bodies above 24 KB, got ${oversizedAssistantResponse.status()}`);
+  }
+  const malformedAssistantResponse = await page.request.post(assistantEndpoint, {
+    data: '{',
+    headers: { 'content-type': 'application/json' }
+  });
+  if (malformedAssistantResponse.status() !== 400) {
+    throw new Error(`SDC Assistant must return 400 for malformed JSON, got ${malformedAssistantResponse.status()}`);
+  }
+
   const trackingResponse = await page.goto(`${baseURL}/track-order`, { waitUntil: 'domcontentloaded', timeout: 30000 });
   if (!trackingResponse || trackingResponse.status() >= 400) {
     throw new Error(`Track Order page returned HTTP ${trackingResponse?.status() ?? 'no response'}`);
@@ -179,6 +197,10 @@ try {
   const internalGraph = JSON.parse(await page.locator('#stationery-seo-jsonld').textContent())['@graph'] || [];
   if (internalGraph.some(node => node['@type'] === 'WebSite')) {
     throw new Error('WebSite site-name structured data should only be present on the homepage.');
+  }
+  const internalWebPage = internalGraph.find(node => node['@type'] === 'WebPage');
+  if (internalWebPage?.isPartOf) {
+    throw new Error('A non-homepage WebPage must not reference a WebSite node omitted from its structured-data graph.');
   }
 
   const blogArticleResponse = await page.goto(`${baseURL}/blog/personal-vs-shared-digital-subscription-guide`, { waitUntil: 'domcontentloaded', timeout: 30000 });

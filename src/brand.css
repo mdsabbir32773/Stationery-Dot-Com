@@ -439,3 +439,8 @@ footer .cols li a:hover{opacity:1;transform:translateX(2px)}
 .category-faqs details p{margin:0 2px 16px;line-height:1.7;color:var(--muted,#64748b)}
 .category-faqs>.btn{margin-top:20px}
 @media(max-width:760px){.category-guide{grid-template-columns:1fr}.category-guide>.card{padding:20px}}
+
+
+.service-category-return{display:flex;justify-content:flex-start;margin:18px 0 28px}
+.service-category-return a{display:inline-flex;align-items:center;gap:7px;font-weight:700;color:var(--brand,#315b9a);text-decoration:none}
+.service-category-return a:hover{text-decoration:underline}

@@ -126,15 +126,15 @@ try {
   }
 
   const invoiceRootResponse = await page.goto(`${baseURL}/invoice`, { waitUntil: 'domcontentloaded', timeout: 30000 });
-  if (!invoiceRootResponse || invoiceRootResponse.status() >= 400 ||
+  if (!invoiceRootResponse || invoiceRootResponse.status() !== 404 ||
       !(await page.locator('meta[name="robots"]').getAttribute('content'))?.includes('noindex')) {
-    throw new Error('Invoice root alias is missing its noindex directive.');
+    throw new Error('Invoice root without an invoice code must return 404 and noindex.');
   }
 
   const orderSuccessRootResponse = await page.goto(`${baseURL}/order-success`, { waitUntil: 'domcontentloaded', timeout: 30000 });
-  if (!orderSuccessRootResponse || orderSuccessRootResponse.status() >= 400 ||
+  if (!orderSuccessRootResponse || orderSuccessRootResponse.status() !== 404 ||
       !(await page.locator('meta[name="robots"]').getAttribute('content'))?.includes('noindex')) {
-    throw new Error('Order-success root alias is missing its noindex directive.');
+    throw new Error('Order-success root without an order code must return 404 and noindex.');
   }
 
   const accountResponse = await page.goto(`${baseURL}/account`, { waitUntil: 'domcontentloaded', timeout: 30000 });

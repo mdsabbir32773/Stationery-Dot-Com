@@ -9,7 +9,7 @@ const dateLabel=value=>value?new Date(value).toLocaleDateString('en-BD',{day:'nu
 
 function renderInline(text) {
  const parts=[];
- const pattern=/\\[([^\\]]+)\\]\\((\\/[a-zA-Z0-9/_-]+(?:\\?[^)\\s]*)?)\\)/g;
+ const pattern=/\[([^\]]+)\]\((\/[a-zA-Z0-9/_-]+(?:\?[^)\s]*)?)\)/g;
  let last=0,match;
  while((match=pattern.exec(text))){
   if(match.index>last)parts.push(text.slice(last,match.index));

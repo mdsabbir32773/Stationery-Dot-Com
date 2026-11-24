@@ -127,6 +127,7 @@ try {
   if (!blogGraph.some(node => node['@type'] === 'BlogPosting')) {
     throw new Error('Published blog article is missing BlogPosting structured data.');
   }
+  await page.locator('.blog-article-body a[href="/digital-subscriptions"]').waitFor({ state: 'visible', timeout: 10000 });
   const blogDescription = await page.locator('meta[name="description"]').getAttribute('content');
   if (!blogDescription || blogDescription.length > 165) {
     throw new Error('Blog article meta description is missing or exceeds the 165-character limit.');
@@ -265,7 +266,7 @@ try {
     throw new Error('Browser console/page errors:\n' + errors.slice(0, 8).join('\n'));
   }
 
-  console.log('PASS: crawlable robots and sitemap endpoints, public Track Order indexing, private invoice/account/token-tracking noindex, published blog title, excerpt and BlogPosting schema, homepage-only WebSite schema, branded homepage and PNG favicon, digital subscriptions, document, Meta and creative services landing pages, private-route noindex, canonical host redirects, contextual service-to-category links, Facebook reviews service SEO metadata, SMM page and WELCOME5 offer, chat launcher, Gemini service matching, package duration selection, payment QR/screenshot upload, and guest deposit sign-in gate.');
+  console.log('PASS: crawlable robots and sitemap endpoints, public Track Order indexing, private invoice/account/token-tracking noindex, published blog title, excerpt, BlogPosting schema and contextual internal link, homepage-only WebSite schema, branded homepage and PNG favicon, digital subscriptions, document, Meta and creative services landing pages, private-route noindex, canonical host redirects, contextual service-to-category links, Facebook reviews service SEO metadata, SMM page and WELCOME5 offer, chat launcher, Gemini service matching, package duration selection, payment QR/screenshot upload, and guest deposit sign-in gate.');
 } finally {
   await browser.close();
 }

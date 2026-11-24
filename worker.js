@@ -323,6 +323,10 @@ export default {
       url.hostname = "stationerydotcom.me";
       return secureResponse(Response.redirect(url.toString(), 308));
     }
+    if (url.pathname === "/checkout" && request.method === "GET") {
+      url.pathname = "/cart";
+      return secureResponse(Response.redirect(url.toString(), 308));
+    }
     if (url.pathname === "/sitemap.xml" && request.method === "GET") {
       try {
         return secureResponse(await dynamicSitemap(env));
@@ -378,8 +382,9 @@ export default {
         }
       }
       const privateRoute = route === "/admin" || route.startsWith("/admin/") ||
-        route === "/account" || route === "/cart" || route === "/order" ||
-        route.startsWith("/order-success/") || route.startsWith("/invoice/") ||
+        route === "/account" || route === "/cart" || route === "/order" || route === "/checkout" ||
+        route === "/order-success" || route.startsWith("/order-success/") ||
+        route === "/invoice" || route.startsWith("/invoice/") ||
         (route === "/track-order" && url.searchParams.has("token"));
       const robots = privateRoute ? "noindex,nofollow" : "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1";
       const canonical = xmlEscape(new URL(route, url.origin).href);

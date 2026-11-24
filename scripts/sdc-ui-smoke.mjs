@@ -43,6 +43,14 @@ try {
   await page.getByRole('heading', { name: 'Digital Subscriptions in Bangladesh' }).waitFor({ state: 'visible', timeout: 15000 });
   await page.waitForFunction(() => document.title.includes('Digital Subscriptions Bangladesh'));
 
+  const documentResponse = await page.goto(`${baseURL}/document-services`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  if (!documentResponse || documentResponse.status() >= 400) {
+    throw new Error(`Document services page returned HTTP ${documentResponse?.status() ?? 'no response'}`);
+  }
+  await page.getByRole('heading', { name: 'Online Document Services in Bangladesh' }).waitFor({ state: 'visible', timeout: 15000 });
+  await page.getByText(/No approval or completion time can be guaranteed/).waitFor({ state: 'visible', timeout: 10000 });
+  await page.waitForFunction(() => document.title.includes('Online Document Services Bangladesh'));
+
   const cartResponse = await page.goto(`${baseURL}/cart`, { waitUntil: 'domcontentloaded', timeout: 30000 });
   if (!cartResponse || cartResponse.status() >= 400) {
     throw new Error(`Cart page returned HTTP ${cartResponse?.status() ?? 'no response'}`);
@@ -141,7 +149,7 @@ try {
     throw new Error('Browser console/page errors:\n' + errors.slice(0, 8).join('\n'));
   }
 
-  console.log('PASS: branded homepage schema, digital subscriptions landing page, private-route noindex, canonical host redirects, SMM page and WELCOME5 offer, chat launcher, Gemini service matching, package duration selection, payment QR/screenshot upload, and guest deposit sign-in gate.');
+  console.log('PASS: branded homepage schema, digital subscriptions and document services landing pages, private-route noindex, canonical host redirects, SMM page and WELCOME5 offer, chat launcher, Gemini service matching, package duration selection, payment QR/screenshot upload, and guest deposit sign-in gate.');
 } finally {
   await browser.close();
 }

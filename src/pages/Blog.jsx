@@ -6,6 +6,19 @@ import './blog.css';
 
 const categories=['All','Document & Government','Meta & Social Media','SMM & Growth','Digital Subscriptions','Creative & Design','Travel Tips','Fun & Facts'];
 const dateLabel=value=>value?new Date(value).toLocaleDateString('en-BD',{day:'numeric',month:'long',year:'numeric'}):'';
+
+function renderInline(text) {
+ const parts=[];
+ const pattern=/\\[([^\\]]+)\\]\\((\\/[a-zA-Z0-9/_-]+(?:\\?[^)\\s]*)?)\\)/g;
+ let last=0,match;
+ while((match=pattern.exec(text))){
+  if(match.index>last)parts.push(text.slice(last,match.index));
+  parts.push(<Link key={match.index} to={match[2]}>{match[1]}</Link>);
+  last=pattern.lastIndex;
+ }
+ if(last<text.length)parts.push(text.slice(last));
+ return parts.length?parts:text;
+}
 function ArticleBody({content=''}) {
  const normalized = String(content)
   .replace(/\\\\n/g, '\n')
@@ -20,8 +33,8 @@ function ArticleBody({content=''}) {
   else if (s.startsWith('### ')) nodes.push(<h3 key={i}>{s.slice(4)}</h3>);
   else if (/^-\s/m.test(s)) {
    const items=s.split('\n').filter(line=>line.trim().startsWith('- '));
-   nodes.push(<ul key={i}>{items.map((line,j)=><li key={j}>{line.trim().slice(2)}</li>)}</ul>);
-  } else nodes.push(<p key={i}>{s}</p>);
+   nodes.push(<ul key={i}>{items.map((line,j)=><li key={j}>{renderInline(line.trim().slice(2))}</li>)}</ul>);
+  } else nodes.push(<p key={i}>{renderInline(s)}</p>);
  }
  return <div className="blog-article-body">{nodes}</div>;
 }

@@ -6,6 +6,15 @@ const SITE='Stationery Dot Com';
 const DEFAULT_DESCRIPTION='Stationery Dot Com is a Dhaka-based online service provider in Bangladesh for document and government services, Meta ads, social media growth, SMM services, digital subscriptions and creative design.';
 const KEYWORDS='Stationery Dot Com, online services Bangladesh, digital services Bangladesh, document services Bangladesh, government document service Bangladesh, NID service Bangladesh, passport service Bangladesh, birth certificate service Bangladesh, Meta ads Bangladesh, Facebook ads service Bangladesh, social media marketing Bangladesh, SMM panel Bangladesh, Instagram growth Bangladesh, digital subscriptions Bangladesh, Canva Pro Bangladesh, ChatGPT Plus Bangladesh, graphic design Bangladesh, web design Bangladesh, video editing Bangladesh';
 
+const BLOG_SEO_TITLES={
+  'personal-vs-shared-digital-subscription-guide':'Personal নাকি Shared Subscription? ৬টি বিষয় | SDC',
+  'smm-panel-bangladesh-order-checklist':'SMM Panel বাছাইয়ের আগে ৮টি বিষয় | SDC',
+  'nid-correction-preparation-checklist':'NID সংশোধনের আগে ৭টি প্রস্তুতি | SDC',
+  'design-video-editing-order-brief-checklist':'ডিজাইন বা Video Editing Brief: ৭টি তথ্য | SDC',
+  'online-service-checklist':'অনলাইন সার্ভিস নেওয়ার আগে ৫টি বিষয় | SDC',
+  'facebook-page-growth-quality':'ফেসবুক পেজের Growth: শুধু সংখ্যা নয় | SDC'
+};
+
 function clean(value){return String(value||'').replace(/\s+/g,' ').trim();}
 function setMeta(selector,attrs){
   let el=document.head.querySelector(selector);
@@ -59,7 +68,7 @@ export default function SEO(){
         const {data}=await supabase.from('blog_posts').select('id,title,slug,excerpt,category,cover_image_url,author,published_at,reading_minutes').eq('slug',slug).eq('status','published').not('published_at','is',null).lte('published_at',new Date().toISOString()).maybeSingle();
         if(cancelled)return;
         blogPost=data||null;
-        page=blogPost?{title:`${clean(blogPost.title)} | Stationery Dot Com Blog`,description:clean(blogPost.excerpt)||`Read ${clean(blogPost.title)} on the Stationery Dot Com blog.`,image:blogPost.cover_image_url}:{title:'Article Not Found | Stationery Dot Com Blog',description:'This article is unavailable.',noindex:true};
+        page=blogPost?{title:BLOG_SEO_TITLES[slug]||`${clean(blogPost.title)} | SDC Blog`,description:clean(blogPost.excerpt)||`Read ${clean(blogPost.title)} on the Stationery Dot Com blog.`,image:blogPost.cover_image_url}:{title:'Article Not Found | Stationery Dot Com Blog',description:'This article is unavailable.',noindex:true};
       }
       if(route.startsWith('/services/')){
         const slug=decodeURIComponent(route.slice('/services/'.length));

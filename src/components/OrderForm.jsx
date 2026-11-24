@@ -7,10 +7,8 @@ import {getPaymentMethods} from '../lib/paymentMethods';
 import {subscriptionDurationLabel} from '../lib/subscription';
 import CouponBox from './CouponBox';
 import {trackInitiateCheckout} from '../lib/metaPixel';
+import {getUploadMime,getPaymentProofMime} from '../lib/fileValidation';
 
-const OK=['image/jpeg','image/png','image/webp','application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-const MIME={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',pdf:'application/pdf',doc:'application/msword',docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'};
-const ct=x=>OK.includes(x.type)?x.type:MIME[x.name.split('.').pop().toLowerCase()];
 const Fld=({l,children})=><label className="fld"><span>{l}</span>{children}</label>;
 
 export default function OrderForm({service,pkg,settings}){
@@ -19,6 +17,7 @@ export default function OrderForm({service,pkg,settings}){
   const[f,setF]=useState({customer_name:'',phone:'',whatsapp:'',email:'',quantity:1,notes:'',method:'',transaction_id:''});
   const[files,setFiles]=useState([]);
   const[proof,setProof]=useState(null);
+  const[proofMime,setProofMime]=useState('');
   const[err,setErr]=useState('');
   const[coupon,setCoupon]=useState(null);
   const[busy,setBusy]=useState(false);
@@ -65,7 +64,7 @@ export default function OrderForm({service,pkg,settings}){
     const list=[...e.target.files];
     if(list.length>5){setFiles([]);return setErr('Max 5 files');}
     for(const x of list){
-      if(!ct(x)){setFiles([]);return setErr('Allowed: jpg, png, webp, pdf, doc, docx');}
+      if(!getUploadMime(x)){setFiles([]);return setErr('Allowed: jpg, png, webp, pdf, doc, docx');}
       if(x.size>10*1024*1024){setFiles([]);return setErr('Each file must be under 10MB');}
     }
     setErr('');
@@ -74,11 +73,12 @@ export default function OrderForm({service,pkg,settings}){
 
   function pickProof(e){
     const x=e.target.files?.[0];
-    if(!x){setProof(null);return;}
-    if(!['image/jpeg','image/png','image/webp'].includes(x.type))return setErr('Payment screenshot must be JPG, PNG or WEBP');
-    if(x.size>5*1024*1024)return setErr('Payment screenshot must be 5MB or smaller');
+    if(!x){setProof(null);setProofMime('');return;}
+    const mime=getPaymentProofMime(x);
+    if(!mime){setProof(null);setProofMime('');return setErr('Payment screenshot must be JPG, PNG or WEBP');}
+    if(x.size>5*1024*1024){setProof(null);setProofMime('');return setErr('Payment screenshot must be 5MB or smaller');}
     setErr('');
-    setProof(x);
+    setProof(x);setProofMime(mime);
   }
 
   function validateStep(n){
@@ -125,13 +125,13 @@ export default function OrderForm({service,pkg,settings}){
       const uploaded=[];
       for(const x of files){
         const path='uploads/'+Date.now()+'-'+Math.random().toString(36).slice(2)+'-'+x.name.replace(/[^\w.\-]/g,'_');
-        const{error}=await supabase.storage.from('order-files').upload(path,x,{contentType:ct(x)});
+        const{error}=await supabase.storage.from('order-files').upload(path,x,{contentType:getUploadMime(x)});
         if(error)throw error;
         createdPaths.push(path);uploaded.push({path,name:x.name});
       }
       const ext=proof.name.split('.').pop().toLowerCase();
       proofPath='uploads/payproof-'+Date.now()+'-'+Math.random().toString(36).slice(2)+'.'+ext;
-      const{error:proofError}=await supabase.storage.from('order-files').upload(proofPath,proof,{contentType:proof.type});
+      const{error:proofError}=await supabase.storage.from('order-files').upload(proofPath,proof,{contentType:proofMime});
       if(proofError)throw proofError;
       createdPaths.push(proofPath);
       const{data,error}=await supabase.rpc('create_order',{p:{...f,transaction_id:'PROOF:'+proofPath,payment_proof_path:proofPath,method:selectedMethod.name,quantity:q,package_id:pkg.id,files:uploaded,coupon_code:coupon?.code||'',loyalty_points:loyaltyPointsUsed}});

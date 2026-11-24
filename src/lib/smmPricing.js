@@ -6,7 +6,7 @@ const FRIDAY_OFFER=Object.freeze({
   'FB-FOL-BD-LIFE':400
 });
 export function isDhakaFriday(now=new Date()) {
-  return new Date(now.toLocaleString('en-US',{timeZone:'Asia/Dhaka'})).getDay()===5;
+  return new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Dhaka',weekday:'short'}).format(now)==='Fri';
 }
 export function hasFridayOffer(service) {
   return Object.hasOwn(FRIDAY_OFFER,service?.smm_service_code);

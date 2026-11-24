@@ -350,6 +350,7 @@ export default {
     const isPageRoute = !url.pathname.split("/").pop()?.includes(".");
     if (acceptsHtml && isPageRoute && assetResponse.headers.get("content-type")?.includes("text/html")) {
       let html = await assetResponse.text();
+      // Canonical SEO host and indexability rules are covered by the public browser smoke test.
       const route = url.pathname.replace(/\/+$/, "") || "/";
       const privateRoute = route === "/admin" || route.startsWith("/admin/") ||
         route === "/account" || route === "/cart" || route === "/order" ||

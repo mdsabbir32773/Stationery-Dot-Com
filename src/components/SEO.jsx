@@ -30,6 +30,7 @@ export default function SEO(){
         '/refund-policy':{title:'Refund & Cancellation Policy | Stationery Dot Com',description:'Understand how Stationery Dot Com reviews order cancellation and refund requests.'},
         '/delivery-policy':{title:'Service Delivery Policy | Stationery Dot Com',description:'Learn how Stationery Dot Com reviews orders and handles online service delivery.'},
         '/services':{title:'Online Services in Bangladesh | Stationery Dot Com',description:'Explore document and government services, Meta and social media marketing, SMM panel, digital subscriptions, graphic design, web design and video services.'},
+        '/digital-subscriptions':{title:'Digital Subscriptions Bangladesh | Stationery Dot Com',description:'Compare available digital subscription services in Bangladesh. Review package duration, access method, pricing and support terms before ordering.'},
         '/smm':{title:'SMM Panel Bangladesh | Stationery Dot Com',description:'Compare Facebook followers, reactions, views, comments, shares, Instagram and Telegram services with clear rates and refill terms at Stationery Dot Com.'},
         '/track-order':{title:'Track Order Online | Stationery Dot Com',description:'Track your Stationery Dot Com order using your Order ID and see the latest order status.'},
         '/invoice':{title:'Invoice | Stationery Dot Com',description:'View your Stationery Dot Com order invoice.',noindex:true},

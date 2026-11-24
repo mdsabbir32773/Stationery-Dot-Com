@@ -51,6 +51,20 @@ try {
   await page.getByText(/No approval or completion time can be guaranteed/).waitFor({ state: 'visible', timeout: 10000 });
   await page.waitForFunction(() => document.title.includes('Online Document Services Bangladesh'));
 
+  const metaResponse = await page.goto(`${baseURL}/meta-services`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  if (!metaResponse || metaResponse.status() >= 400) {
+    throw new Error(`Meta services page returned HTTP ${metaResponse?.status() ?? 'no response'}`);
+  }
+  await page.getByRole('heading', { name: 'Meta Ads & Social Media Services in Bangladesh' }).waitFor({ state: 'visible', timeout: 15000 });
+  await page.waitForFunction(() => document.title.includes('Meta Ads & Page Services Bangladesh'));
+
+  const creativeResponse = await page.goto(`${baseURL}/creative-services`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  if (!creativeResponse || creativeResponse.status() >= 400) {
+    throw new Error(`Creative services page returned HTTP ${creativeResponse?.status() ?? 'no response'}`);
+  }
+  await page.getByRole('heading', { name: 'Graphic Design, Video Editing & Web Design in Bangladesh' }).waitFor({ state: 'visible', timeout: 15000 });
+  await page.waitForFunction(() => document.title.includes('Graphic Design & Video Editing Bangladesh'));
+
   const cartResponse = await page.goto(`${baseURL}/cart`, { waitUntil: 'domcontentloaded', timeout: 30000 });
   if (!cartResponse || cartResponse.status() >= 400) {
     throw new Error(`Cart page returned HTTP ${cartResponse?.status() ?? 'no response'}`);
@@ -149,7 +163,7 @@ try {
     throw new Error('Browser console/page errors:\n' + errors.slice(0, 8).join('\n'));
   }
 
-  console.log('PASS: branded homepage schema, digital subscriptions and document services landing pages, private-route noindex, canonical host redirects, SMM page and WELCOME5 offer, chat launcher, Gemini service matching, package duration selection, payment QR/screenshot upload, and guest deposit sign-in gate.');
+  console.log('PASS: branded homepage schema, digital subscriptions, document, Meta and creative services landing pages, private-route noindex, canonical host redirects, SMM page and WELCOME5 offer, chat launcher, Gemini service matching, package duration selection, payment QR/screenshot upload, and guest deposit sign-in gate.');
 } finally {
   await browser.close();
 }

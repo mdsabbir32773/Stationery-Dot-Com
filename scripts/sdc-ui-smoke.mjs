@@ -75,6 +75,22 @@ try {
   await mobilePage.waitForFunction(() => window.scrollY <= 2, { timeout: 10000 });
   await mobilePage.close();
 
+  // Cart item removal must update the visible cart and persisted cart state.
+  await page.evaluate(() => localStorage.setItem('stationery_cart_v1', JSON.stringify([
+    { id: 'sdc-smoke-package', name: 'Smoke test package', service_name: 'Smoke test service', price: 100, quantity: 1 }
+  ])));
+  const cartPageResponse = await page.goto(`${baseURL}/cart`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  if (!cartPageResponse || cartPageResponse.status() >= 400) {
+    throw new Error(`Cart page returned HTTP ${cartPageResponse?.status() ?? 'no response'}`);
+  }
+  await page.locator('.cart-item').waitFor({ state: 'visible', timeout: 15000 });
+  await page.getByRole('button', { name: 'Remove' }).click();
+  await page.getByRole('heading', { name: 'Your cart is empty' }).waitFor({ state: 'visible', timeout: 10000 });
+  const remainingCartItems = await page.evaluate(() => JSON.parse(localStorage.getItem('stationery_cart_v1') || '[]'));
+  if (remainingCartItems.length !== 0) {
+    throw new Error('Removing the last cart item did not clear the persisted cart.');
+  }
+
   // Verify crawl configuration and sitemap coverage on the deployed domain.
   const [robotsResponse, sitemapResponse] = await Promise.all([
     page.request.get(`${baseURL}/robots.txt`),

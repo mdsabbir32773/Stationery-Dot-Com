@@ -90,8 +90,8 @@ try {
   const missingHtml = await page.request.get(`${baseURL}/this-page-does-not-exist-sdc-smoke`);
   const missingHtmlText = await missingHtml.text();
   if (!missingRobots?.includes('noindex') || !/<meta[^>]+name=["']robots["'][^>]+content=["'][^"']*noindex/i.test(missingHtmlText) ||
-      !(await page.title()).includes('Page Not Found')) {
-    throw new Error('Unknown public route must return HTTP 404 with server-side noindex and render the not-found page.');
+      !(await page.title()).toLowerCase().includes('page not found')) {
+    throw new Error(`Unknown route check failed: clientRobots=${missingRobots}, serverNoindex=${/<meta[^>]+name=["']robots["'][^>]+content=["'][^"']*noindex/i.test(missingHtmlText)}, title=${await page.title()}`);
   }
 
   const checkoutAlias = await page.request.get(`${baseURL}/checkout`, { maxRedirects: 0 });

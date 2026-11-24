@@ -87,8 +87,7 @@ try {
     throw new Error(`Unknown public route should return HTTP 404, got ${missingPage?.status() ?? 'no response'}`);
   }
   const missingRobots = await page.locator('meta[name="robots"]').getAttribute('content');
-  const missingHtml = await page.request.get(`${baseURL}/this-page-does-not-exist-sdc-smoke`);
-  const missingHtmlText = await missingHtml.text();
+  const missingHtmlText = await missingPage.text();
   if (!missingRobots?.includes('noindex') || !/<meta[^>]+name=["']robots["'][^>]+content=["'][^"']*noindex/i.test(missingHtmlText) ||
       !(await page.title()).toLowerCase().includes('page not found')) {
     throw new Error(`Unknown route check failed: clientRobots=${missingRobots}, serverNoindex=${/<meta[^>]+name=["']robots["'][^>]+content=["'][^"']*noindex/i.test(missingHtmlText)}, title=${await page.title()}`);

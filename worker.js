@@ -311,7 +311,7 @@ export default {
 
     // Keep the workers.dev hostname as a redirect-only alias for the public site.
     // The Meta webhook remains on workers.dev because its callback is registered there.
-    if (url.hostname === "stationerydotcom.stdc.workers.dev" && url.pathname !== META_WEBHOOK_PATH && url.pathname !== "/_internal/meta-webhook-setup") {
+    if (url.hostname === "www.stationerydotcom.me" || (url.hostname === "stationerydotcom.stdc.workers.dev" && url.pathname !== META_WEBHOOK_PATH && url.pathname !== "/_internal/meta-webhook-setup")) {
       url.hostname = "stationerydotcom.me";
       return Response.redirect(url.toString(), 308);
     }

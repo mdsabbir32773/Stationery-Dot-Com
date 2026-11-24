@@ -44,6 +44,44 @@ try {
     throw new Error('PNG favicon did not return a successful image/png response.');
   }
 
+  // Verify crawl configuration and sitemap coverage on the deployed domain.
+  const [robotsResponse, sitemapResponse] = await Promise.all([
+    page.request.get(`${baseURL}/robots.txt`),
+    page.request.get(`${baseURL}/sitemap.xml`)
+  ]);
+  if (robotsResponse.status() !== 200 || sitemapResponse.status() !== 200) {
+    throw new Error(`Robots/sitemap endpoint failed: robots=${robotsResponse.status()}, sitemap=${sitemapResponse.status()}`);
+  }
+  const robotsText = await robotsResponse.text();
+  const sitemapText = await sitemapResponse.text();
+  if (!robotsText.includes(`Sitemap: ${baseURL}/sitemap.xml`)) {
+    throw new Error('robots.txt does not reference the canonical sitemap URL.');
+  }
+  if (!sitemapText.includes(`${baseURL}/track-order`) || !sitemapText.includes(`${baseURL}/blog/`)) {
+    throw new Error('Sitemap is missing the public order-tracking page or published blog URLs.');
+  }
+  if (/\/(?:invoice|cart|order|account|admin)(?:\/|<)/i.test(sitemapText)) {
+    throw new Error('Sitemap contains a private or transactional URL that should not be indexed.');
+  }
+
+  const trackingResponse = await page.goto(`${baseURL}/track-order`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  if (!trackingResponse || trackingResponse.status() >= 400) {
+    throw new Error(`Track Order page returned HTTP ${trackingResponse?.status() ?? 'no response'}`);
+  }
+  const trackingRobots = await page.locator('meta[name="robots"]').getAttribute('content');
+  if (trackingRobots?.includes('noindex')) {
+    throw new Error('Public Track Order landing page is incorrectly marked noindex.');
+  }
+
+  const invoiceResponse = await page.goto(`${baseURL}/invoice/SEO-SMOKE-TEST`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  if (!invoiceResponse || invoiceResponse.status() >= 400) {
+    throw new Error(`Invoice route returned HTTP ${invoiceResponse?.status() ?? 'no response'}`);
+  }
+  const invoiceRobots = await page.locator('meta[name="robots"]').getAttribute('content');
+  if (!invoiceRobots?.includes('noindex')) {
+    throw new Error('Private invoice route is missing its noindex directive.');
+  }
+
   const subscriptionResponse = await page.goto(`${baseURL}/digital-subscriptions`, { waitUntil: 'domcontentloaded', timeout: 30000 });
   if (!subscriptionResponse || subscriptionResponse.status() >= 400) {
     throw new Error(`Digital subscriptions page returned HTTP ${subscriptionResponse?.status() ?? 'no response'}`);
@@ -188,7 +226,7 @@ try {
     throw new Error('Browser console/page errors:\n' + errors.slice(0, 8).join('\n'));
   }
 
-  console.log('PASS: homepage-only WebSite schema, branded homepage and PNG favicon, digital subscriptions, document, Meta and creative services landing pages, private-route noindex, canonical host redirects, contextual service-to-category links, SMM page and WELCOME5 offer, chat launcher, Gemini service matching, package duration selection, payment QR/screenshot upload, and guest deposit sign-in gate.');
+  console.log('PASS: crawlable robots and sitemap endpoints, public Track Order indexing, private invoice noindex, homepage-only WebSite schema, branded homepage and PNG favicon, digital subscriptions, document, Meta and creative services landing pages, private-route noindex, canonical host redirects, contextual service-to-category links, SMM page and WELCOME5 offer, chat launcher, Gemini service matching, package duration selection, payment QR/screenshot upload, and guest deposit sign-in gate.');
 } finally {
   await browser.close();
 }

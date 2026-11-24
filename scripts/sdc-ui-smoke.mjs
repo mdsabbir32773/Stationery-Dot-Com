@@ -92,9 +92,15 @@ try {
   await mobilePage.locator('.sdc-mobile-nav a[href="/services"]').click();
   await mobilePage.waitForURL('**/services');
   await mobilePage.waitForFunction(() => window.scrollY <= 2);
-  await mobilePage.locator('h1').first().waitFor({ state: 'visible', timeout: 15000 });
-  if (!(await mobilePage.locator('.sdc-mobile-nav a[href="/services"]').getAttribute('aria-current'))) {
-    throw new Error('Mobile quick navigation did not visibly mark Services as the active page.');
+  await mobilePage.locator('.catalog-head h1').waitFor({ state: 'visible', timeout: 15000 });
+  const servicesNavState = await mobilePage.locator('.sdc-mobile-nav a[href="/services"]').evaluate(el => ({
+    ariaCurrent: el.getAttribute('aria-current'),
+    className: el.className,
+    pathname: window.location.pathname,
+    html: el.outerHTML
+  }));
+  if (servicesNavState.ariaCurrent !== 'page' && !servicesNavState.className.split(/\\s+/).includes('active')) {
+    throw new Error('Mobile quick navigation did not visibly mark Services as active: ' + JSON.stringify(servicesNavState));
   }
   await mobilePage.evaluate(() => window.scrollTo(0, Math.max(500, document.body.scrollHeight - window.innerHeight)));
   await mobilePage.locator('.sdc-mobile-nav a[href="/services"]').click();

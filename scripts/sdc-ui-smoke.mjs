@@ -50,6 +50,16 @@ try {
   }
   await page.getByRole('heading', { name: 'Digital Subscriptions in Bangladesh' }).waitFor({ state: 'visible', timeout: 15000 });
   await page.waitForFunction(() => document.title.includes('Digital Subscriptions Bangladesh'));
+  await page.waitForFunction(() => {
+    try {
+      const graph = JSON.parse(document.querySelector('#stationery-seo-jsonld')?.textContent || '{}')['@graph'] || [];
+      return graph.some(node => node['@type'] === 'WebPage' && node.name?.includes('Digital Subscriptions Bangladesh'));
+    } catch { return false; }
+  });
+  const internalGraph = JSON.parse(await page.locator('#stationery-seo-jsonld').textContent())['@graph'] || [];
+  if (internalGraph.some(node => node['@type'] === 'WebSite')) {
+    throw new Error('WebSite site-name structured data should only be present on the homepage.');
+  }
 
   const documentResponse = await page.goto(`${baseURL}/document-services`, { waitUntil: 'domcontentloaded', timeout: 30000 });
   if (!documentResponse || documentResponse.status() >= 400) {
@@ -178,7 +188,7 @@ try {
     throw new Error('Browser console/page errors:\n' + errors.slice(0, 8).join('\n'));
   }
 
-  console.log('PASS: branded homepage schema and PNG favicon, digital subscriptions, document, Meta and creative services landing pages, private-route noindex, canonical host redirects, contextual service-to-category links, SMM page and WELCOME5 offer, chat launcher, Gemini service matching, package duration selection, payment QR/screenshot upload, and guest deposit sign-in gate.');
+  console.log('PASS: homepage-only WebSite schema, branded homepage and PNG favicon, digital subscriptions, document, Meta and creative services landing pages, private-route noindex, canonical host redirects, contextual service-to-category links, SMM page and WELCOME5 offer, chat launcher, Gemini service matching, package duration selection, payment QR/screenshot upload, and guest deposit sign-in gate.');
 } finally {
   await browser.close();
 }

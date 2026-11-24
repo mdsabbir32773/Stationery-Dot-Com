@@ -105,6 +105,18 @@ try {
   await mobilePage.evaluate(() => window.scrollTo(0, Math.max(500, document.body.scrollHeight - window.innerHeight)));
   await mobilePage.locator('.sdc-mobile-nav a[href="/services"]').click();
   await mobilePage.waitForFunction(() => window.scrollY <= 2, { timeout: 10000 });
+
+  const burger = mobilePage.locator('button.burger');
+  await burger.click();
+  if (await burger.getAttribute('aria-expanded') !== 'true') {
+    throw new Error('Mobile hamburger menu did not expose its expanded state.');
+  }
+  await mobilePage.locator('#site-navigation a[href="/contact"]').click();
+  await mobilePage.waitForURL('**/contact');
+  await mobilePage.waitForFunction(() => window.scrollY <= 2, { timeout: 10000 });
+  if (await burger.getAttribute('aria-expanded') !== 'false') {
+    throw new Error('Selecting a hamburger-menu destination did not close the mobile menu.');
+  }
   await mobilePage.close();
 
   // Cart item removal must update the visible cart and persisted cart state.
@@ -116,6 +128,19 @@ try {
     throw new Error(`Cart page returned HTTP ${cartPageResponse?.status() ?? 'no response'}`);
   }
   await page.locator('.cart-item').waitFor({ state: 'visible', timeout: 15000 });
+  const paymentSelector = page.getByLabel('Choose payment method *');
+  await paymentSelector.waitFor({ state: 'visible', timeout: 15000 });
+  const livePaymentOptions = await paymentSelector.locator('option').allTextContents();
+  for (const name of ['bKash', 'Nagad', 'Rocket', 'Bangla QR']) {
+    if (!livePaymentOptions.includes(name)) {
+      throw new Error(`Live cart checkout is missing configured payment method: ${name}`);
+    }
+  }
+  await paymentSelector.selectOption({ label: 'Nagad' });
+  if (await paymentSelector.inputValue() !== 'Nagad') {
+    throw new Error('Cart checkout did not switch to the selected Nagad payment channel.');
+  }
+  await paymentSelector.selectOption({ label: 'bKash' });
   await page.getByRole('button', { name: 'Remove' }).click();
   await page.getByRole('heading', { name: 'Your cart is empty' }).waitFor({ state: 'visible', timeout: 10000 });
   const remainingCartItems = await page.evaluate(() => JSON.parse(localStorage.getItem('stationery_cart_v1') || '[]'));

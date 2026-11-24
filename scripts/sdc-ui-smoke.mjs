@@ -151,6 +151,39 @@ try {
   }
   await mobilePage.close();
 
+  // Service data outages must be visible and recoverable on both homepage and catalog.
+  const recoveryPage = await browser.newPage();
+  let failedServiceRequests = 0;
+  await recoveryPage.route('**/rest/v1/services**', async route => {
+    failedServiceRequests += 1;
+    await route.fulfill({
+      status: 503,
+      contentType: 'application/json',
+      body: JSON.stringify({ message: 'Simulated service data outage' })
+    });
+  });
+  await recoveryPage.goto(baseURL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  const homeRecoveryAlert = recoveryPage.getByRole('alert');
+  await homeRecoveryAlert.waitFor({ state: 'visible', timeout: 15000 });
+  await homeRecoveryAlert.getByRole('button', { name: 'Try again' }).click();
+  await recoveryPage.waitForFunction(() => document.querySelector('[role="alert"]')?.textContent.includes('Browse services'), { timeout: 15000 });
+  if (failedServiceRequests < 4) {
+    throw new Error('Homepage retry did not re-request service data after a simulated outage.');
+  }
+
+  await recoveryPage.goto(`${baseURL}/services`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  const catalogRecoveryAlert = recoveryPage.getByRole('alert');
+  await catalogRecoveryAlert.waitFor({ state: 'visible', timeout: 15000 });
+  const beforeCatalogRetry = failedServiceRequests;
+  await catalogRecoveryAlert.getByRole('button', { name: 'Try again' }).click();
+  await recoveryPage.waitForFunction(previous => window.__sdcFailedRequests > previous, beforeCatalogRetry, { timeout: 15000 }).catch(async () => {
+    await recoveryPage.waitForTimeout(500);
+  });
+  if (failedServiceRequests <= beforeCatalogRetry) {
+    throw new Error('Services catalog retry did not re-request its service list.');
+  }
+  await recoveryPage.close();
+
   // Cart item removal must update the visible cart and persisted cart state.
   await page.evaluate(() => localStorage.setItem('stationery_cart_v1', JSON.stringify([
     { id: 'sdc-smoke-package', name: 'Smoke test package', service_name: 'Smoke test service', price: 100, quantity: 1 }

@@ -113,7 +113,9 @@ export default function SEO(){
       if(route==='/track-order'&&new URLSearchParams(search).has('token'))page={...page,noindex:true};
       const description=clean(page.description).slice(0,165);
       const canonical=new URL(route,window.location.origin).href;
-      const image=new URL(blogPost?.cover_image_url||service?.image_url||'/stationery-dot-com-logo.webp',window.location.origin).href;
+      const serviceImage=service?.image_url||'';
+      const usableServiceImage=/google\.com\/s2\/favicons/i.test(serviceImage)?'':serviceImage;
+      const image=new URL(blogPost?.cover_image_url||usableServiceImage||'/stationery-dot-com-logo.webp',window.location.origin).href;
       document.documentElement.lang='en';
       document.title=page.title;
       setLink('canonical',canonical);

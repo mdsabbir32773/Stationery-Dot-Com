@@ -351,6 +351,7 @@ export default {
     if (acceptsHtml && isPageRoute && assetResponse.headers.get("content-type")?.includes("text/html")) {
       let html = await assetResponse.text();
       // Canonical SEO host and indexability rules are covered by the public browser smoke test.
+      // Public category landing pages are also covered by the SEO smoke suite.
       const route = url.pathname.replace(/\/+$/, "") || "/";
       const privateRoute = route === "/admin" || route.startsWith("/admin/") ||
         route === "/account" || route === "/cart" || route === "/order" ||

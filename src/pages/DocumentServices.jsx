@@ -42,7 +42,7 @@ export default function DocumentServices(){
       <div className="wrap">
         <span className="section-overline">STATIONERY DOT COM · BANGLADESH</span>
         <h1>Online Document Services in Bangladesh</h1>
-        <p className="muted catalog-intro">Explore online assistance for selected birth certificate, NID, passport and trade licence requests. Review the service details and application requirements before ordering.</p>
+        <p className="muted catalog-intro">Explore online assistance for selected birth certificate, NID, passport and trade license requests. Review the service details and application requirements before ordering.</p>
         <Link className="btn sm" to="/services?category=Document%20%26%20Government%20Services">Browse all services <ArrowRight size={15}/></Link>
       </div>
     </section>

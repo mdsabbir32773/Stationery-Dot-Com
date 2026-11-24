@@ -403,3 +403,21 @@ footer .cols li a:hover{opacity:1;transform:translateX(2px)}
 .subscription-faqs details p{margin:0 2px 16px;line-height:1.7;color:var(--muted,#64748b)}
 .subscription-faqs>.btn{margin-top:20px}
 @media(max-width:760px){.subscription-guide{grid-template-columns:1fr}.subscription-guide>.card{padding:20px}}
+
+
+.document-guide{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(250px,.65fr);gap:18px;align-items:start}
+.document-guide>.card{padding:24px}
+.document-guide h2{margin:8px 0 14px}
+.document-guide ul{padding-left:20px;display:grid;gap:10px;line-height:1.65}
+.document-guide li::marker{color:var(--brand,#315b9a)}
+.document-trust{display:flex;gap:14px;align-items:flex-start}
+.document-trust>svg{flex:0 0 auto;margin-top:3px}
+.document-trust p{line-height:1.65}
+.document-trust a{display:inline-flex;align-items:center;gap:6px;font-weight:700}
+.document-faqs{max-width:960px}
+.document-faqs h2{margin:8px 0 18px}
+.document-faqs details{border-bottom:1px solid rgba(100,116,139,.22)}
+.document-faqs summary{cursor:pointer;padding:16px 2px;font-weight:700}
+.document-faqs details p{margin:0 2px 16px;line-height:1.7;color:var(--muted,#64748b)}
+.document-faqs>.btn{margin-top:20px}
+@media(max-width:760px){.document-guide{grid-template-columns:1fr}.document-guide>.card{padding:20px}}

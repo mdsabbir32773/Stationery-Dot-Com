@@ -164,6 +164,12 @@ try {
   }
   await page.getByRole('link', { name: /Browse all document services/ }).waitFor({ state: 'visible', timeout: 15000 });
 
+  const reviewServiceResponse = await page.goto(`${baseURL}/services/smm-fb-reviews-genuine`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  if (!reviewServiceResponse || reviewServiceResponse.status() >= 400) {
+    throw new Error(`Facebook reviews service page returned HTTP ${reviewServiceResponse?.status() ?? 'no response'}`);
+  }
+  await page.waitForFunction(() => document.title.includes('Facebook Reviews Service Bangladesh'));
+
   const smmResponse = await page.goto(`${baseURL}/smm`, { waitUntil: 'domcontentloaded', timeout: 30000 });
   if (!smmResponse || smmResponse.status() >= 400) {
     throw new Error(`SMM page returned HTTP ${smmResponse?.status() ?? 'no response'}`);
@@ -244,7 +250,7 @@ try {
     throw new Error('Browser console/page errors:\n' + errors.slice(0, 8).join('\n'));
   }
 
-  console.log('PASS: crawlable robots and sitemap endpoints, public Track Order indexing, private invoice/account/token-tracking noindex, homepage-only WebSite schema, branded homepage and PNG favicon, digital subscriptions, document, Meta and creative services landing pages, private-route noindex, canonical host redirects, contextual service-to-category links, SMM page and WELCOME5 offer, chat launcher, Gemini service matching, package duration selection, payment QR/screenshot upload, and guest deposit sign-in gate.');
+  console.log('PASS: crawlable robots and sitemap endpoints, public Track Order indexing, private invoice/account/token-tracking noindex, homepage-only WebSite schema, branded homepage and PNG favicon, digital subscriptions, document, Meta and creative services landing pages, private-route noindex, canonical host redirects, contextual service-to-category links, Facebook reviews service SEO metadata, SMM page and WELCOME5 offer, chat launcher, Gemini service matching, package duration selection, payment QR/screenshot upload, and guest deposit sign-in gate.');
 } finally {
   await browser.close();
 }

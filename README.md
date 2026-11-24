@@ -1,5 +1,8 @@
 # Stationery Dot Com — Setup Guide (for beginners)
 
+> **Current production setup (24 Nov 2026):** The live website is already hosted at **https://stationerydotcom.me** on **Cloudflare Workers**, deployed automatically from the `main` branch through GitHub Actions. The `workers.dev` hostname is a redirect-only alias for the public website (the Meta webhook remains on its registered callback path). The live sitemap is **https://stationerydotcom.me/sitemap.xml** and `robots.txt` points to that canonical sitemap. Do not create a second Cloudflare Pages project for the existing production site.
+
+
 You will need: a free Supabase account, a free GitHub account, a free Cloudflare account, and Node.js (https://nodejs.org → download "LTS" → install).
 
 ## 1. Create the Supabase project
@@ -71,16 +74,14 @@ npm run dev
 Open the address shown (http://localhost:5173). Admin is at `/admin`.
 
 ## 9. Update your existing GitHub website
-This is an updated copy of your current site. Extract this ZIP, then copy the files inside `Stationery-Dot-Com-Updated` into your existing local GitHub project folder and choose **Replace files** if Windows asks. Keep the existing `.git` folder and `.env` file. In GitHub Desktop, review the changed files, write a short summary such as `Refresh website design and admin`, then click **Commit** and **Push origin**. Cloudflare Pages will publish the new version from that same GitHub repository.
-## 10. Deploy to Cloudflare Pages
-1. dash.cloudflare.com → **Workers & Pages** → **Create** → **Pages** → **Connect to Git** → pick your repo.
-2. Build command: `npm run build`. Output directory: `dist`.
-3. (Optional) add `NODE_VERSION` = `20`.
-4. No Supabase environment variable is required for the current production build; the browser-safe project URL and publishable key are built in, while `.env` values still override them for custom/local builds.
-5. Supabase → **Authentication → URL Configuration** → set Site URL to your `.pages.dev` address.
+This is an updated copy of your current site. Extract this ZIP, then copy the files inside `Stationery-Dot-Com-Updated` into your existing local GitHub project folder and choose **Replace files** if Windows asks. Keep the existing `.git` folder and `.env` file. In GitHub Desktop, review the changed files, write a short summary such as `Refresh website design and admin`, then click **Commit** and **Push origin**. GitHub Actions deploys the new version to Cloudflare Workers.
+## 10. Existing production deployment (Cloudflare Workers)
+The live project is deployed by `.github/workflows/deploy-cloudflare.yml` whenever changes reach the `main` branch. The workflow builds the Vite app and deploys the Worker and static assets. For the existing production site, do not create a separate Pages project or change the build output manually.
 
-## 11. Custom domain later
-Cloudflare Pages → your project → **Custom domains** → **Set up a domain** and follow the steps. Then replace `YOUR-DOMAIN.com` in `public/robots.txt` and `public/sitemap.xml`.
+No Supabase environment variable is required for the current production browser build; the browser-safe project URL and publishable key are built in, while `.env` values still override them for local/custom builds.
+
+## 11. Canonical domain and authentication URLs
+The canonical production domain is `https://stationerydotcom.me`. Keep the Supabase Authentication **Site URL** set to this domain and allow only the production account/auth callback URLs actually used by the application. The old `workers.dev` hostname redirects to the canonical domain for normal website routes.
 
 ## First-launch checklist
 - [ ] Schema ran · [ ] Admin created and in admin_profiles · [ ] Payment name/number/QR saved
@@ -120,7 +121,7 @@ Customers see an image QR as a picture, and a PDF QR as a "View Payment QR" butt
 
 ### Growth, SEO and Meta Pixel
 - The site includes route-specific page titles, descriptions, canonical URLs, Open Graph/Twitter metadata, Organization/Service structured data, robots.txt and a sitemap containing the current active service pages.
-- After deploying, submit https://stationerydotcom.stdc.workers.dev/sitemap.xml in Google Search Console. Regenerate the sitemap when new service slugs are published.
+- The production sitemap is generated dynamically at https://stationerydotcom.me/sitemap.xml and is already referenced in robots.txt. Submit this canonical URL in Google Search Console when owner access is available; the site code cannot submit or request indexing without that account permission.
 - Meta Pixel is configured in src/lib/metaPixel.js (default Pixel ID is already set; VITE_META_PIXEL_ID can override it at build time). Events include PageView, ViewContent, AddToCart, InitiateCheckout and Lead. A manual-payment order is tracked as a Lead until an admin verifies payment; wallet-funded SMM purchases are tracked as Purchase.
-- Cloudflare Pages response headers are defined in public/_headers. Hashed /assets/* files receive long-lived immutable caching.
+- Cloudflare Workers static-asset response headers are defined in public/_headers. Worker-generated responses also receive security headers in worker.js. Hashed /assets/* files receive long-lived immutable caching.
 - For stronger account security, enable Supabase Auth leaked-password protection in the project’s Authentication password-security settings.

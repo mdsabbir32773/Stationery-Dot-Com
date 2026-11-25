@@ -29,10 +29,14 @@ jobs:
         run: npm ci
       - name: Build website
         run: npm run build
+        env:
+          VITE_GA4_ID: ${{ vars.VITE_GA4_ID }}
       - name: Enforce production bundle budgets
         run: npm run check:bundle
       - name: Validate sitemap fallback
         run: npm run check:sitemap
+      - name: Validate analytics integration
+        run: npm run check:analytics
       - name: Deploy to Cloudflare Workers
         run: npx wrangler@latest deploy
         env:

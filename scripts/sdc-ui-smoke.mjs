@@ -193,6 +193,26 @@ try {
   if (failedServiceRequests <= beforeCatalogRetry) {
     throw new Error('Services catalog retry did not re-request its service list.');
   }
+    await recoveryPage.goto(`${baseURL}/digital-subscriptions`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  const categoryRecoveryAlert = recoveryPage.getByRole('alert');
+  await categoryRecoveryAlert.waitFor({ state: 'visible', timeout: 15000 });
+  const beforeCategoryRetry = failedServiceRequests;
+  await categoryRecoveryAlert.getByRole('button', { name: 'Try again' }).click();
+  await recoveryPage.waitForTimeout(1000);
+  if (failedServiceRequests <= beforeCategoryRetry) {
+    throw new Error('Service category retry did not re-request its service list.');
+  }
+
+  await recoveryPage.goto(`${baseURL}/services/canva`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  const detailRecoveryAlert = recoveryPage.getByRole('alert');
+  await detailRecoveryAlert.waitFor({ state: 'visible', timeout: 15000 });
+  const beforeDetailRetry = failedServiceRequests;
+  await detailRecoveryAlert.getByRole('button', { name: 'Try again' }).click();
+  await recoveryPage.waitForTimeout(1000);
+  if (failedServiceRequests <= beforeDetailRetry) {
+    throw new Error('Service detail retry did not re-request its service record.');
+  }
+
   await recoveryPage.close();
 
   // Cart item removal must update the visible cart and persisted cart state.

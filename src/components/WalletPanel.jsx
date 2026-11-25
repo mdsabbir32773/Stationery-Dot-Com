@@ -2,7 +2,7 @@ import {useEffect,useState} from 'react';
 import {ArrowDownLeft,ArrowUpRight,RefreshCw,WalletCards} from 'lucide-react';
 import {supabase,taka,getSettings} from '../lib/supabase';
 import PaymentQR from './PaymentQR';
-import {getPaymentMethods} from '../lib/paymentMethods';
+import {getWalletPaymentMethods} from '../lib/paymentMethods';
 import {getPaymentProofMime} from '../lib/fileValidation';
 import '../wallet.css';
 
@@ -16,7 +16,7 @@ export default function WalletPanel({session}){
   }
   useEffect(()=>{if(session)load();},[session?.user?.id]);
   async function loadMore(kind){const isTx=kind==='tx';const current=isTx?transactions:requests;setLoadingMore(kind);const table=isTx?'wallet_transactions':'deposit_requests';const{data,error}=await supabase.from(table).select('*').eq('user_id',session.user.id).order('created_at',{ascending:false}).range(current.length,current.length+11);if(!error){if(isTx){setTransactions(v=>[...v,...(data||[])]);setHasMoreTx((data||[]).length===12);}else{setRequests(v=>[...v,...(data||[])]);setHasMoreRequests((data||[]).length===12);}}setLoadingMore('');}
-  const channels=getPaymentMethods(settings).filter(x=>['bKash','Nagad','Rocket','Bank transfer'].includes(x.name));
+  const channels=getWalletPaymentMethods(settings);
   const selected=channels.find(x=>x.name===method);
   function pick(e){const f=e.target.files?.[0];if(!f){setProof(null);return;}if(!getPaymentProofMime(f)){setProof(null);setMessage('Screenshot must be JPG, PNG or WEBP.');return;}if(f.size>5*1024*1024){setProof(null);setMessage('Screenshot must be 5MB or smaller.');return;}setMessage('');setProof(f);}
   async function submit(e){

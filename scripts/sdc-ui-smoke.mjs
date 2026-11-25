@@ -77,6 +77,10 @@ try {
   if (!(await page.title()).includes('Stationery Dot Com')) {
     throw new Error('Homepage title does not identify Stationery Dot Com.');
   }
+  const zeroPriceServiceCards = await page.locator('.scard').evaluateAll(cards => cards.filter(card => /Starting from\\s*৳\\s*0(?:\\D|$)/.test(card.innerText)).map(card => card.innerText.slice(0,160)));
+  if (zeroPriceServiceCards.length) {
+    throw new Error('Service cards must label zero-price quote packages as Price on request, not ৳0: ' + zeroPriceServiceCards.join(' | '));
+  }
   const missingHomepageAlt = await page.locator('img').evaluateAll(images => images.filter(image => !image.hasAttribute('alt')).map(image => image.currentSrc || image.src));
   if (missingHomepageAlt.length) throw new Error('Homepage images missing alt attributes: ' + missingHomepageAlt.join(', '));
   if (await page.locator('h1').count() !== 1) throw new Error('Homepage should have exactly one primary h1 heading.');

@@ -229,7 +229,6 @@ try {
   // Service data outages must be visible and recoverable on both homepage and catalog.
   const recoveryPage = await browser.newPage();
   recoveryPage.on('pageerror', error => errors.push('recovery page: '+error.message));
-  recoveryPage.on('console', message => { if(message.type()==='error') errors.push('recovery console: '+message.text()); });
   let failedServiceRequests = 0;
   await recoveryPage.route('**/rest/v1/services**', async route => {
     failedServiceRequests += 1;

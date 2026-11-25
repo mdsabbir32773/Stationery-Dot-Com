@@ -125,3 +125,16 @@ Customers see an image QR as a picture, and a PDF QR as a "View Payment QR" butt
 - Meta Pixel is configured in src/lib/metaPixel.js (default Pixel ID is already set; VITE_META_PIXEL_ID can override it at build time). Events include PageView, ViewContent, AddToCart, InitiateCheckout and Lead. A manual-payment order is tracked as a Lead until an admin verifies payment; wallet-funded SMM purchases are tracked as Purchase.
 - Cloudflare Workers static-asset response headers are defined in public/_headers. Worker-generated responses also receive security headers in worker.js. Hashed /assets/* files receive long-lived immutable caching.
 - For stronger account security, enable Supabase Auth leaked-password protection in the project’s Authentication password-security settings.
+
+
+## GA4 analytics (optional)
+
+The website includes privacy-conscious Google Analytics 4 page-view and conversion-event tracking. It does not load Google Analytics unless a valid Measurement ID is configured.
+
+1. Create or open a GA4 property for `https://stationerydotcom.me` in Google Analytics.
+2. Copy the Web stream Measurement ID (`G-XXXXXXXXXX`). This ID is public; do not use a service-role key or other secret here.
+3. In GitHub, open **Settings → Secrets and variables → Actions → Variables → New repository variable**.
+4. Set the variable name to `VITE_GA4_ID` and its value to the GA4 Measurement ID.
+5. Run the **Build and deploy Stationery Dot Com to Cloudflare Workers** workflow. The site will then begin sending sanitized page views, add-to-cart, checkout, lead and contact-click events. Invoice/order-success codes and URL query parameters are excluded from analytics page paths.
+
+Until the repository variable is set, GA4 remains disabled and the site continues to work normally.

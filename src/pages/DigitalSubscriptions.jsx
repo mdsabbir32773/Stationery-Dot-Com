@@ -38,7 +38,7 @@ export default function DigitalSubscriptions(){
         <span className="section-overline">STATIONERY DOT COM · BANGLADESH</span>
         <h1>Digital Subscriptions in Bangladesh</h1>
         <p className="muted catalog-intro">Explore currently listed digital subscription services. Compare available durations, package prices, access details and support terms before you order.</p>
-        <Link className="btn sm" to="/services?category=Digital%20Subscriptions">Browse all services <ArrowRight size={15}/></Link>
+        <Link className="btn sm" to="/services?category=Digital%20Subscriptions">Browse all digital subscriptions <ArrowRight size={15}/></Link>
       </div>
     </section>
 

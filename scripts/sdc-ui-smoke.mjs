@@ -265,6 +265,21 @@ try {
 
   await recoveryPage.close();
 
+  // Quote-only cart items must offer a working next step instead of a disabled checkout.
+  await page.evaluate(() => localStorage.setItem('stationery_cart_v1', JSON.stringify([
+    { id: 'sdc-smoke-quote', name: 'Quote-only package', service_name: 'Quote-only service', price: 0, quantity: 1 }
+  ])));
+  await page.goto(`${baseURL}/cart`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  const quoteContact = page.getByRole('link', { name: 'Discuss these items on WhatsApp' });
+  await quoteContact.waitFor({ state: 'visible', timeout: 10000 });
+  if (!(await quoteContact.getAttribute('href'))?.includes('wa.me')) {
+    throw new Error('Quote-only cart item does not have a valid WhatsApp discussion link.');
+  }
+  const quoteCheckoutButton = page.getByRole('button', { name: /Place 0 orders together/ });
+  if (await quoteCheckoutButton.count()) {
+    throw new Error('Quote-only cart must not expose an unusable paid checkout action.');
+  }
+
   // Cart item removal must update the visible cart and persisted cart state.
   await page.evaluate(() => localStorage.setItem('stationery_cart_v1', JSON.stringify([
     { id: 'sdc-smoke-package', name: 'Smoke test package', service_name: 'Smoke test service', price: 100, quantity: 1 }

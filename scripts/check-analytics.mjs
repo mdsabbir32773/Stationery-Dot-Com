@@ -12,7 +12,7 @@ const floating = read('../src/components/WhatsAppButton.jsx');
 const checks = [
   ['GA4 is opt-in through a Measurement ID', /VITE_GA4_ID/.test(ga) && /if\(typeof window==='undefined'\|\|!validId\(\)\)return false/.test(ga)],
   ['Sensitive order routes are normalized', /\/invoice\/:code/.test(ga) && /\/order-success\/:code/.test(ga)],
-  ['Page views omit query strings and admin routes', /split\(\/[\?\#]/.test(ga) && /safePath==='\/admin'/.test(ga)],
+  ['Page views omit query strings and admin routes', ga.includes('split(/[?#]/,1)') && ga.includes("safePath==='/admin'")],
   ['SPA page views use pathname only', /trackGooglePageView\(location\.pathname,document\.title\)/.test(app) && !/trackGooglePageView\([^\n]*location\.search/.test(app)],
   ['Add-to-cart event is wired', /trackGoogleEvent\('add_to_cart'/.test(pkg)],
   ['Checkout event is wired', /trackGoogleEvent\('begin_checkout'/.test(cart)],

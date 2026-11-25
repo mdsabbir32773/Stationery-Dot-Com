@@ -38,6 +38,8 @@ jobs:
         run: npm run check:live-site-script
       - name: Validate deployment and mobile-nav configuration
         run: npm run check:release-config
+      - name: Validate Cloudflare Worker syntax
+        run: node --check worker.js
       - name: Build production bundle
         run: npm run build
         env:

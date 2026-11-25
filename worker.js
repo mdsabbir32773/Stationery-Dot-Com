@@ -76,6 +76,33 @@ async function dynamicSitemap(env) {
     }
   });
 }
+async function cachedPageRouteExists(path, env, ctx) {
+  // Only service/blog slugs need a database lookup. Cache the boolean result
+  // per Cloudflare colo for five minutes to reduce repeat Supabase round trips.
+  if (!/^\/(?:services|blog)\/[a-z0-9-]+$/.test(path) || typeof caches === "undefined") {
+    return isKnownPageRoute(path, env);
+  }
+  const cache = caches.default;
+  const cacheKey = new Request("https://stationerydotcom.me/__route-check" + path);
+  try {
+    const cached = await cache.match(cacheKey);
+    if (cached) {
+      const value = await cached.json();
+      if (typeof value.exists === "boolean") return value.exists;
+    }
+  } catch {}
+  const exists = await isKnownPageRoute(path, env);
+  if (typeof exists === "boolean") {
+    const response = new Response(JSON.stringify({ exists }), {
+      headers: { "content-type": "application/json; charset=utf-8", "cache-control": "public, max-age=300" }
+    });
+    try {
+      ctx.waitUntil(cache.put(cacheKey, response).catch(() => {}));
+    } catch {}
+  }
+  return exists;
+}
+
 async function isKnownPageRoute(path, env) {
   const staticRoutes = new Set([
     "/", "/about", "/refund-policy", "/delivery-policy", "/services",
@@ -558,7 +585,7 @@ export default {
     const acceptsHtml = request.method === "GET" && (request.headers.get("accept") || "").includes("text/html");
     const isPageRoute = !url.pathname.split("/").pop()?.includes(".");
     const route = url.pathname.replace(/\/+$/, "") || "/";
-    const routeExists = acceptsHtml && isPageRoute ? await isKnownPageRoute(route, env) : null;
+    const routeExists = acceptsHtml && isPageRoute ? await cachedPageRouteExists(route, env, ctx) : null;
     const assetResponse = await env.ASSETS.fetch(request);
     if (acceptsHtml && isPageRoute && assetResponse.headers.get("content-type")?.includes("text/html")) {
       let html = await assetResponse.text();

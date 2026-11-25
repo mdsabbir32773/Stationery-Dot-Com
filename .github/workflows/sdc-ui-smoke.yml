@@ -1,29 +1,29 @@
 name: SDC UI smoke test
 
 on:
-  workflow_run:
-    workflows:
-      - Build and deploy Stationery Dot Com to Cloudflare Workers
-    types:
-      - completed
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: Commit to verify after deployment
+        required: false
+        type: string
 
 permissions:
   contents: read
 
 concurrency:
   group: sdc-ui-smoke
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 6
+    timeout-minutes: 10
     steps:
-      - name: Report deployment workflow result
-        run: echo "Triggered by deployment workflow conclusion: ${{ github.event.workflow_run.conclusion || 'not yet available' }}"
-      - uses: actions/checkout@v4
+      - name: Check out deployed commit
+        uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: ${{ inputs.commit_sha || github.sha }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22

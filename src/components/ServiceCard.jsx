@@ -3,7 +3,7 @@ import {ArrowRight,Globe2,Star} from 'lucide-react';
 import {taka} from '../lib/supabase';
 import ServiceCover from './ServiceCover';
 
-export default function ServiceCard({s}){
+export default function ServiceCard({s,priority=false}){
   const activePackages=(s.packages||[]).filter(p=>p.is_active);
   const ps=activePackages.map(p=>Number(p.price)).filter(price=>Number.isFinite(price)&&price>0);
   const min=ps.length?Math.min(...ps):null;
@@ -12,7 +12,7 @@ export default function ServiceCard({s}){
   const isCustomReview=s.smm_service_code==='FB-REV-GEN';
   const orderPath=isSmm?'/smm?service='+encodeURIComponent(s.id):'/services/'+s.slug;
   return <article className={'scard'+(isSmm?' scard-smm':'')}>
-    <Link to={'/services/'+s.slug}><ServiceCover s={s}/></Link>
+    <Link to={'/services/'+s.slug}><ServiceCover s={s} priority={priority}/></Link>
     <div className="sbody">
       <div className="service-card-meta"><div className="service-card-kicker">{isSmm?s.smm_platform:s.category}</div>{s.is_popular&&<span className="service-popular-badge"><Star size={11} fill="currentColor"/>Popular</span>}</div>
       {Number(s.order_count||0)>0&&<div className="service-order-count">{Number(s.order_count).toLocaleString()} orders</div>}

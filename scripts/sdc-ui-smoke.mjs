@@ -505,7 +505,9 @@ try {
   if (!blogPublishedTime) {
     throw new Error('Published blog article is missing article:published_time metadata.');
   }
-  await page.locator('.blog-article-body a[href="/digital-subscriptions"]').waitFor({ state: 'visible', timeout: 10000 });
+  const subscriptionLinks = page.locator('.blog-article-body a[href="/digital-subscriptions"]');
+  if (await subscriptionLinks.count() < 1) throw new Error('Blog article is missing its internal digital-subscriptions link.');
+  await subscriptionLinks.first().waitFor({ state: 'visible', timeout: 10000 });
   const missingArticleAlt = await page.locator('img').evaluateAll(images => images.filter(image => !image.hasAttribute('alt')).map(image => image.currentSrc || image.src));
   if (missingArticleAlt.length) throw new Error('Blog article images missing alt attributes: ' + missingArticleAlt.join(', '));
   const blogDescription = await page.locator('meta[name="description"]').getAttribute('content');

@@ -1,0 +1,66 @@
+name: Free Lighthouse SEO and performance audit
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: free-lighthouse-audit
+  cancel-in-progress: false
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Install Lighthouse and bundled Chromium
+        run: npm install --no-save --package-lock=false lighthouse puppeteer
+      - name: Run Lighthouse for mobile and desktop on key pages
+        env:
+          CHROME_PATH: ${{ runner.temp }}/chrome-path
+        run: |
+          mkdir -p lighthouse-results
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import { execFileSync } from 'node:child_process';
+          import puppeteer from 'puppeteer';
+          fs.writeFileSync(process.env.CHROME_PATH, puppeteer.executablePath());
+          NODE
+          chmod +x scripts/run-free-lighthouse.sh
+          scripts/run-free-lighthouse.sh
+      - name: Create score summary
+        if: always()
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const dir='lighthouse-results';
+          const rows=[];
+          if(fs.existsSync(dir)) for(const file of fs.readdirSync(dir).filter(x=>x.endsWith('.json'))) {
+            try {
+              const r=JSON.parse(fs.readFileSync(dir+'/'+file,'utf8'));
+              const c=r.categories||{};
+              rows.push({page:r.requestedUrl||r.finalDisplayedUrl||file,device:file.includes('desktop')?'Desktop':'Mobile',performance:Math.round((c.performance?.score??0)*100),accessibility:Math.round((c.accessibility?.score??0)*100),bestPractices:Math.round((c['best-practices']?.score??0)*100),seo:Math.round((c.seo?.score??0)*100),lcp:r.audits?.['largest-contentful-paint']?.displayValue||'',cls:r.audits?.['cumulative-layout-shift']?.displayValue||'',inp:r.audits?.['interaction-to-next-paint']?.displayValue||r.audits?.['total-blocking-time']?.displayValue||''});
+            } catch {}
+          }
+          const header='| Page | Device | Performance | Accessibility | Best Practices | SEO | LCP | CLS | INP/TBT |\n|---|---|---:|---:|---:|---:|---|---|---|';
+          const table=rows.map(x=>'| '+x.page+' | '+x.device+' | '+x.performance+' | '+x.accessibility+' | '+x.bestPractices+' | '+x.seo+' | '+x.lcp+' | '+x.cls+' | '+x.inp+' |').join('\n');
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'\n## Lighthouse scores\n\n'+header+'\n'+table+'\n\n');
+          NODE
+      - name: Upload detailed Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stationery-dot-com-lighthouse
+          path: lighthouse-results/
+          if-no-files-found: warn
+          retention-days: 14

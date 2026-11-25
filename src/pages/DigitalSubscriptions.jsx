@@ -8,9 +8,11 @@ import '../catalog.css';
 export default function DigitalSubscriptions(){
   const [services,setServices]=useState(null);
   const [error,setError]=useState(false);
+  const [retry,setRetry]=useState(0);
 
   useEffect(()=>{
     let live=true;
+    setError(false);setServices(null);
     (async()=>{
       const {data,error:serviceError}=await supabase
         .from('services')
@@ -32,9 +34,9 @@ export default function DigitalSubscriptions(){
       const byService={};
       for(const p of packages)(byService[p.service_id]||(byService[p.service_id]=[])).push(p);
       setServices(rows.map(x=>({...x,order_count:0,packages:byService[x.id]||[]})));
-    })();
+    })().catch(()=>{if(live){setError(true);setServices([]);}});
     return()=>{live=false;};
-  },[]);
+  },[retry]);
 
   return <main className="digital-subscriptions-page">
     <section className="pagehead catalog-head">
@@ -54,7 +56,7 @@ export default function DigitalSubscriptions(){
         </div>
         <span className="catalog-results-count">{services===null?'Loading…':services.length+' services'}</span>
       </div>
-      {error?<div className="card empty" role="alert">Subscription services could not be loaded. Please refresh or contact our team.</div>
+      {error?<div className="card empty" role="alert"><h2>Subscription services could not be loaded</h2><p>Please check your connection and try again.</p><button type="button" className="btn" onClick={()=>setRetry(v=>v+1)}>Try again</button><Link className="text-link" to="/contact">Contact our team</Link></div>
       :services===null?<div className="grid">{[1,2,3].map(n=><div className="sk" style={{height:300}} key={n}/>)}</div>
       :services.length?<div className="grid catalog-service-grid">{services.map(s=><ServiceCard key={s.id} s={s}/>)}</div>
       :<div className="card empty"><h2>No subscription packages are currently listed</h2><p>Check the main services catalogue or contact our team for current availability.</p><Link className="btn" to="/services">View services <ArrowRight size={16}/></Link></div>}

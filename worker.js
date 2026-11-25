@@ -436,7 +436,51 @@ function routeSeo(route) {
       "graphic-design": "Graphic design orders should include the intended platform or print size, copy, brand assets, reference style and deadline. Confirm deliverables and revision terms before the work begins.",
       "smm-fb-reviews-genuine": "For review-related services, use only honest feedback from real customers and follow Meta's review policies. Do not purchase or post fabricated reviews or misrepresent customer experience."
     };
-    const name = service[1].split("-").map((word, index) => {
+    const friendlyNames = {
+      "birth-certificate": "Birth Certificate",
+      "canva": "Canva",
+      "capcut-pro": "CapCut Pro",
+      "chatgpt-go-plus": "ChatGPT Go & Plus",
+      "claude": "Claude AI",
+      "facebook": "Facebook Page Setup",
+      "gemini-ai-google-ai": "Gemini AI / Google AI",
+      "graphic-design": "Graphic Design",
+      "nid": "NID Application & Correction",
+      "passport": "Passport Application Support",
+      "trade-license": "Trade License",
+      "social-media-boosting-ads-run": "Facebook & Instagram Ads Management",
+      "social-media-page-management": "Social Media Page Management",
+      "video-editing-creation": "Video Editing",
+      "web-design-development": "Web Design & Development",
+      "spotify-premium": "Spotify Premium",
+      "youtube-premium": "YouTube Premium",
+      "smm-fb-com-cus": "Facebook Comments — Custom",
+      "smm-fb-com-pcus": "Facebook Comments — Premium Custom",
+      "smm-fb-com-rnd": "Facebook Comments — Random",
+      "smm-fb-fol-bd-life": "Facebook Followers — BD Premium Lifetime Refill",
+      "smm-fb-fol-bd-n": "Facebook Followers — BD Normal",
+      "smm-fb-fol-bd-p": "Facebook Followers — BD Premium",
+      "smm-fb-fol-mix": "Facebook Followers — Bangladesh & Worldwide Mixed",
+      "smm-fb-fol-ww": "Facebook Followers — Worldwide",
+      "smm-fb-rea-bd": "Facebook Reactions — Bangladesh",
+      "smm-fb-rea-ww": "Facebook Reactions — Worldwide",
+      "smm-fb-reviews-genuine": "Facebook Reviews — Genuine Customer Reviews",
+      "smm-fb-shr-life": "Facebook Shares — Lifetime Refill",
+      "smm-fb-shr-nr": "Facebook Shares — No Refill",
+      "smm-fb-shr-r1": "Facebook Shares — One Refill",
+      "smm-fb-views-nr": "Facebook Video & Reels Views — No Refill",
+      "smm-fb-views-r1": "Facebook Video & Reels Views — One Refill",
+      "smm-ig-fol-old-post": "Instagram Followers — Aged Accounts with Posts",
+      "smm-ig-fol-old-post-r30": "Instagram Followers — Aged Accounts with 30-Day Refill",
+      "smm-ig-fol-real-bot": "Instagram Followers — Real & Bot",
+      "smm-ig-fol-real-hq": "Instagram Followers — Real High Quality",
+      "smm-tg-mem-bot": "Telegram Members — Bot",
+      "smm-tg-mem-high": "Telegram Members — High Quality",
+      "smm-tg-mem-low": "Telegram Members — Low Quality",
+      "smm-tg-mem-med": "Telegram Members — Medium Quality",
+      "smm-tg-mem-ultra-life": "Telegram Members — Ultra Lifetime Refill"
+    };
+    const name = friendlyNames[slug] || service[1].split("-").map((word, index) => {
       const lower = word.toLowerCase();
       const acronyms = { nid: "NID", smm: "SMM", fb: "Facebook", bd: "Bangladesh", ai: "AI", google: "Google", meta: "Meta", tiktok: "TikTok", youtube: "YouTube", chatgpt: "ChatGPT", capcut: "CapCut", canva: "Canva", pro: "Pro" };
       return acronyms[lower] || (index === 0 ? word.charAt(0).toUpperCase() + word.slice(1) : word.charAt(0).toUpperCase() + word.slice(1));

@@ -9,13 +9,14 @@ export default function AdminNotifications(){
  const[list,setList]=useState([]);
  const[open,setOpen]=useState(false);
  const[permission,setPermission]=useState(typeof Notification==='undefined'?'unsupported':Notification.permission);
+ const[error,setError]=useState('');
  const navigate=useNavigate();
 
  useEffect(()=>{
   let alive=true;
   const load=async()=>{
-   const{data}=await supabase.from('admin_notifications').select('id,order_id,deposit_request_id,type,title,message,read_at,created_at').order('created_at',{ascending:false}).limit(30);
-   if(alive)setList(data||[]);
+   const{data,error}=await supabase.from('admin_notifications').select('id,order_id,deposit_request_id,type,title,message,read_at,created_at').order('created_at',{ascending:false}).limit(30);
+   if(alive){if(error)setError('Could not load admin notifications.');else{setList(data||[]);setError('');}}
   };
   load();
   const ch=supabase.channel('admin-order-notifications')
@@ -37,13 +38,14 @@ export default function AdminNotifications(){
  };
  const markRead=async id=>{
   const at=new Date().toISOString();
-  await supabase.from('admin_notifications').update({read_at:at}).eq('id',id);
-  setList(v=>v.map(x=>x.id===id?{...x,read_at:at}:x));
+  const{error}=await supabase.from('admin_notifications').update({read_at:at}).eq('id',id);
+  if(error){setError('Could not mark this notification as read.');return;}
+  setError('');setList(v=>v.map(x=>x.id===id?{...x,read_at:at}:x));
  };
  const markAll=async()=>{
   const ids=list.filter(x=>!x.read_at).map(x=>x.id);
-  if(ids.length)await supabase.from('admin_notifications').update({read_at:new Date().toISOString()}).in('id',ids);
-  setList(v=>v.map(x=>({...x,read_at:x.read_at||new Date().toISOString()})));
+  if(ids.length){const{error}=await supabase.from('admin_notifications').update({read_at:new Date().toISOString()}).in('id',ids);if(error){setError('Could not mark notifications as read.');return;}}
+  const at=new Date().toISOString();setError('');setList(v=>v.map(x=>({...x,read_at:x.read_at||at})));
  };
  const openNotification=n=>{
   if(!n.read_at)markRead(n.id);
@@ -59,6 +61,7 @@ export default function AdminNotifications(){
    <div style={{padding:'12px 14px',display:'flex',alignItems:'center',gap:8,borderBottom:'1px solid var(--border,#eee)'}}><b style={{flex:1}}>Notifications</b>{unread>0&&<button onClick={markAll} title="Mark all as read" style={{border:0,background:'none',cursor:'pointer'}}><CheckCheck size={18}/></button>}<button onClick={()=>setOpen(false)} style={{border:0,background:'none',cursor:'pointer'}}><X size={18}/></button></div>
    {permission!=='granted'&&permission!=='unsupported'&&<button onClick={requestPush} style={{width:'100%',padding:10,border:0,borderBottom:'1px solid var(--border,#eee)',background:'transparent',cursor:'pointer',textAlign:'left'}}>🔔 Enable browser notifications</button>}
    {permission==='unsupported'&&<div style={{padding:10,fontSize:13,opacity:.7}}>Browser notifications are not supported here.</div>}
+   {error&&<div role="alert" style={{padding:'8px 14px',fontSize:12,color:'#b91c1c'}}>{error}</div>}
    <div style={{maxHeight:360,overflowY:'auto'}}>
     {!list.length?<div style={{padding:22,textAlign:'center',opacity:.65}}>No notifications yet.</div>:list.map(n=><button key={n.id} onClick={()=>openNotification(n)} style={{width:'100%',textAlign:'left',padding:'12px 14px',border:0,borderBottom:'1px solid var(--border,#eee)',background:n.read_at?'transparent':'rgba(220,38,38,.06)',cursor:'pointer'}}>
      <b style={{display:'block'}}>{n.title}</b><span style={{display:'block',fontSize:13,marginTop:3}}>{n.message}</span><small style={{display:'block',marginTop:5,opacity:.55}}>{dhakaTime(n.created_at)}</small>

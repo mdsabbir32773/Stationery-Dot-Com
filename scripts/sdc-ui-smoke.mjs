@@ -83,7 +83,8 @@ try {
   }
   const missingHomepageAlt = await page.locator('img').evaluateAll(images => images.filter(image => !image.hasAttribute('alt')).map(image => image.currentSrc || image.src));
   if (missingHomepageAlt.length) throw new Error('Homepage images missing alt attributes: ' + missingHomepageAlt.join(', '));
-  if (await page.locator('h1').count() !== 1) throw new Error('Homepage should have exactly one primary h1 heading.');
+  const visibleH1 = page.locator('h1:visible');
+  if (await visibleH1.count() !== 1) throw new Error('Homepage should have exactly one visible primary h1 heading; found ' + await visibleH1.count() + ': ' + JSON.stringify(await visibleH1.allTextContents()));
   const canonical = await page.locator('link[rel="canonical"]').getAttribute('href');
   if (canonical !== `${baseURL}/`) {
     throw new Error(`Homepage canonical is incorrect: ${canonical}`);

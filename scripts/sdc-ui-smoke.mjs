@@ -483,6 +483,17 @@ try {
     throw new Error('Blog article meta description is missing or exceeds the 165-character limit.');
   }
 
+  const videoGuideResponse = await page.goto(`${baseURL}/blog/video-editing-footage-preparation-checklist`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  if (!videoGuideResponse || videoGuideResponse.status() >= 400) {
+    throw new Error(`New video-editing guide returned HTTP ${videoGuideResponse?.status() ?? 'no response'}`);
+  }
+  await page.locator('.blog-detail h1').waitFor({ state: 'visible', timeout: 15000 });
+  await page.waitForFunction(() => document.title.includes('ভিডিও এডিটিংয়ের ফুটেজ প্রস্তুতি: চেকলিস্ট'));
+  const videoGuideGraph = JSON.parse(await page.locator('#stationery-seo-jsonld').textContent())['@graph'] || [];
+  if (!videoGuideGraph.some(node => node['@type'] === 'BlogPosting')) {
+    throw new Error('New video-editing guide is missing BlogPosting structured data.');
+  }
+
   const documentResponse = await page.goto(`${baseURL}/document-services`, { waitUntil: 'domcontentloaded', timeout: 30000 });
   if (!documentResponse || documentResponse.status() >= 400) {
     throw new Error(`Document services page returned HTTP ${documentResponse?.status() ?? 'no response'}`);

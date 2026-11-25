@@ -76,6 +76,30 @@ async function dynamicSitemap(env) {
     }
   });
 }
+async function publicSettings(env) {
+  const allowed = new Set([
+    "site_name", "logo_url", "site_tagline", "footer_description",
+    "contact_phone", "contact_phone_2", "contact_whatsapp", "contact_hours",
+    "contact_heading", "contact_intro"
+  ]);
+  try {
+    const rows = await db(env, "site_settings?select=key,value");
+    const settings = Object.fromEntries((rows || [])
+      .filter(row => allowed.has(row.key))
+      .map(row => [row.key, row.value]));
+    return secureResponse(new Response(JSON.stringify(settings), {
+      status: 200,
+      headers: {
+        "content-type": "application/json; charset=utf-8",
+        "cache-control": "public, max-age=300, s-maxage=600"
+      }
+    }));
+  } catch (error) {
+    console.error("Public settings endpoint failed:", String(error));
+    return json({ error: "Public settings temporarily unavailable" }, 503);
+  }
+}
+
 async function cachedPageRouteExists(path, env, ctx) {
   // Only service/blog slugs need a database lookup. Cache the boolean result
   // per Cloudflare colo for five minutes to reduce repeat Supabase round trips.
@@ -552,6 +576,7 @@ export default {
       url.pathname = "/cart";
       return secureResponse(Response.redirect(url.toString(), 308));
     }
+    if (url.pathname === "/api/public-settings" && request.method === "GET") return publicSettings(env);
     if (url.pathname === "/sitemap.xml" && request.method === "GET") {
       try {
         return secureResponse(await dynamicSitemap(env));

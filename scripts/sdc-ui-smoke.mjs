@@ -543,7 +543,11 @@ try {
   for (const [slug, links] of internalLinkChecks) {
     const response = await page.goto(`${baseURL}/blog/${slug}`, { waitUntil: 'domcontentloaded', timeout: 30000 });
     if (!response || response.status() >= 400) throw new Error(`Internal-link article ${slug} returned HTTP ${response?.status() ?? 'no response'}`);
-    for (const href of links) await page.locator(`.blog-article-body a[href="${href}"]`).waitFor({ state: 'visible', timeout: 10000 });
+    for (const href of links) {
+    const articleLink = page.locator(`.blog-article-body a[href="${href}"]`);
+    if (await articleLink.count() < 1) throw new Error('Blog article is missing internal link: ' + href);
+    await articleLink.first().waitFor({ state: 'visible', timeout: 10000 });
+  }
   }
 
   const nidSourceResponse = await page.goto(`${baseURL}/blog/nid-correction-preparation-checklist`, { waitUntil: 'domcontentloaded', timeout: 30000 });

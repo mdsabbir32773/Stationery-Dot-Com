@@ -10,7 +10,9 @@
     "check:bundle": "node scripts/check-bundle-size.mjs",
     "check:sitemap": "node scripts/check-sitemap.mjs",
     "check:analytics": "node scripts/check-analytics.mjs",
-    "check:smoke-script": "node --check scripts/sdc-ui-smoke.mjs"
+    "check:smoke-script": "node --check scripts/sdc-ui-smoke.mjs",
+    "check:live-site": "node scripts/check-live-site.mjs",
+    "check:live-site-script": "node --check scripts/check-live-site.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",

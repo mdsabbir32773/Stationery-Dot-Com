@@ -5,6 +5,8 @@ const xml = readFileSync(sitemapPath, 'utf8');
 const origin = 'https://stationerydotcom.me';
 
 const robotsPath = new URL('../public/robots.txt', import.meta.url);
+const workerPath = new URL('../worker.js', import.meta.url);
+const worker = readFileSync(workerPath, 'utf8');
 const robots = readFileSync(robotsPath, 'utf8');
 const robotsLines = robots.split(/\r?\n/).map(line => line.trim());
 if (!robotsLines.includes('User-agent: *') || !robotsLines.includes('Allow: /')) {
@@ -54,6 +56,9 @@ for (const [index, entry] of entries.entries()) {
 }
 
 if (new Set(urls).size !== urls.length) throw new Error('Sitemap contains duplicate URLs.');
+if (!worker.includes('select=slug,published_at,updated_at') || !worker.includes('post.updated_at || post.published_at')) {
+  throw new Error('Dynamic sitemap must use blog updated_at as lastmod, falling back to published_at.');
+}
 
 const requiredPaths = [
   '/', '/about', '/services', '/digital-subscriptions', '/document-services',

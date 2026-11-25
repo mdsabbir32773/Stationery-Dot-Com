@@ -193,7 +193,7 @@ try {
   if (failedServiceRequests <= beforeCatalogRetry) {
     throw new Error('Services catalog retry did not re-request its service list.');
   }
-    await recoveryPage.goto(`${baseURL}/digital-subscriptions`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await recoveryPage.goto(`${baseURL}/meta-services`, { waitUntil: 'domcontentloaded', timeout: 30000 });
   const categoryRecoveryAlert = recoveryPage.getByRole('alert');
   await categoryRecoveryAlert.waitFor({ state: 'visible', timeout: 15000 });
   const beforeCategoryRetry = failedServiceRequests;
@@ -201,6 +201,26 @@ try {
   await recoveryPage.waitForTimeout(1000);
   if (failedServiceRequests <= beforeCategoryRetry) {
     throw new Error('Service category retry did not re-request its service list.');
+  }
+
+  await recoveryPage.goto(`${baseURL}/digital-subscriptions`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  const subscriptionRecoveryAlert = recoveryPage.getByRole('alert');
+  await subscriptionRecoveryAlert.waitFor({ state: 'visible', timeout: 15000 });
+  const beforeSubscriptionRetry = failedServiceRequests;
+  await subscriptionRecoveryAlert.getByRole('button', { name: 'Try again' }).click();
+  await recoveryPage.waitForTimeout(1000);
+  if (failedServiceRequests <= beforeSubscriptionRetry) {
+    throw new Error('Digital subscription retry did not re-request its service list.');
+  }
+
+  await recoveryPage.goto(`${baseURL}/document-services`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  const documentRecoveryAlert = recoveryPage.getByRole('alert');
+  await documentRecoveryAlert.waitFor({ state: 'visible', timeout: 15000 });
+  const beforeDocumentRetry = failedServiceRequests;
+  await documentRecoveryAlert.getByRole('button', { name: 'Try again' }).click();
+  await recoveryPage.waitForTimeout(1000);
+  if (failedServiceRequests <= beforeDocumentRetry) {
+    throw new Error('Document service retry did not re-request its service list.');
   }
 
   await recoveryPage.goto(`${baseURL}/services/canva`, { waitUntil: 'domcontentloaded', timeout: 30000 });

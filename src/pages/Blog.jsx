@@ -9,11 +9,14 @@ const dateLabel=value=>value?new Intl.DateTimeFormat('en-BD',{timeZone:'Asia/Dha
 
 function renderInline(text) {
  const parts=[];
- const pattern=/\[([^\]]+)\]\((\/[a-zA-Z0-9/_-]+(?:\?[^)\s]*)?)\)/g;
+ const pattern=/\[([^\]]+)\]\(((?:\/[a-zA-Z0-9/_-]+(?:\?[^)\s]*)?|https:\/\/[^)\s]+))\)/g;
  let last=0,match;
  while((match=pattern.exec(text))){
   if(match.index>last)parts.push(text.slice(last,match.index));
-  parts.push(<Link key={match.index} to={match[2]}>{match[1]}</Link>);
+  const href=match[2];
+  parts.push(/^https:\/\//i.test(href)
+    ? <a key={match.index} href={href} target="_blank" rel="noopener noreferrer nofollow">{match[1]}</a>
+    : <Link key={match.index} to={href}>{match[1]}</Link>);
   last=pattern.lastIndex;
  }
  if(last<text.length)parts.push(text.slice(last));

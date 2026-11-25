@@ -32,6 +32,8 @@ jobs:
           npm ci
       - name: Report remaining dependency vulnerabilities
         run: npm audit --json > npm-audit-report.json || true
+      - name: Validate live smoke test script syntax
+        run: npm run check:smoke-script
       - name: Build production bundle
         run: npm run build
         env:

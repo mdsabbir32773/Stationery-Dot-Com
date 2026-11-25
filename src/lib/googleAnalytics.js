@@ -52,7 +52,7 @@ export function trackGoogleEvent(name,params={}){
         const cleanItem={};
         for(const field of ['item_id','item_name','item_category']){
           const raw=item[field];
-          if(typeof raw==='string'&&raw.trim())cleanItem[field]=raw.replace(/[\\r\\n]/g,' ').slice(0,100);
+          if(typeof raw==='string'&&raw.trim())cleanItem[field]=raw.replace(/[\r\n]/g,' ').slice(0,100);
         }
         for(const field of ['price','quantity']){
           const raw=Number(item[field]);

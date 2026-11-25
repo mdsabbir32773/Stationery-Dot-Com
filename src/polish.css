@@ -17,3 +17,15 @@ footer{background:#25382e}footer .wrap{max-width:1200px}
 .account-reviews{grid-column:1/-1}.account-review-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.account-review-row{min-width:0;padding:15px;border:1px solid #e8ede8;border-radius:13px}.account-review-title{display:flex;justify-content:space-between;gap:12px}.account-review-title b{font-size:14px}.account-review-title span{color:var(--mut);font-size:11px}.admin-review-list{display:grid;gap:14px}.admin-review{padding:20px}.admin-review-header{display:flex;justify-content:space-between;gap:15px;align-items:flex-start}.admin-review-header>div{display:grid}.admin-review-header>div span{color:var(--mut);font-size:12px}.review-status{display:inline-flex;align-items:center;gap:5px;padding:5px 9px;border-radius:99px;background:#fff5e3;color:#92671e;font-size:11px;text-transform:capitalize}.review-status.approved{background:#eaf5ec;color:#347449}.review-status.rejected{background:#fcedeb;color:#a94b45}.admin-review .review-stars{margin-top:12px}.admin-review-text{margin:9px 0 14px;white-space:pre-wrap;color:#46564b}.admin-review .review-hide{margin-left:8px}.admin-review-filter{width:auto;min-width:180px}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 @media(max-width:760px){.reviews-heading{align-items:flex-start}.review-compose{padding:14px}.account-review-list{grid-template-columns:1fr}.service-reviews{margin-top:44px}.admin-review-filter{width:100%}}
+
+
+/* Lighthouse contrast fixes: improve muted text and action-button readability. */
+.home-proof,.home-proof span,.home-section .section-heading p,
+.reviews-heading p,.reviews-score>span,.review-signin,.reviews-empty,
+.review-thanks,.crumbs,.service-reviews .muted,
+.home-trust,.home-hero-copy>p,.home-kicker,.hero-intents>span,
+.hero-intents button{color:#526057!important}
+.reviews-heading .eyebrow,.service-reviews .eyebrow,
+section#reviews .eyebrow{color:#315f46!important}
+.btn.wa,.btn.wa:hover,.service-card .btn.wa,
+main.wrap .btn.wa{background:#166534!important;border-color:#166534!important;color:#fff!important}

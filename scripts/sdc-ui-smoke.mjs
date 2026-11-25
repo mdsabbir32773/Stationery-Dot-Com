@@ -123,10 +123,14 @@ try {
 
   // Mobile quick-nav must navigate, reset the viewport, and show the active destination.
   const mobilePage = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
-  mobilePage.on('pageerror', error => errors.push(error.message));
-  mobilePage.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
-  await mobilePage.goto(baseURL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  const mobileErrors = [];
+  const mobileRequestFailures = [];
+  mobilePage.on('pageerror', error => { mobileErrors.push(error.message); errors.push(error.message); });
+  mobilePage.on('console', message => { if (message.type() === 'error') { mobileErrors.push(message.text()); errors.push(message.text()); } });
+  mobilePage.on('requestfailed', request => mobileRequestFailures.push({ url: request.url(), error: request.failure()?.errorText }));
+  const mobileResponse = await mobilePage.goto(baseURL, { waitUntil: 'domcontentloaded', timeout: 30000 });
   try {
+    await mobilePage.waitForFunction(() => document.querySelector('#root')?.childElementCount > 0, { timeout: 15000 });
     await mobilePage.waitForFunction(() => {
       const nav = document.querySelector('.sdc-mobile-nav');
       if (!nav) return false;
@@ -140,9 +144,14 @@ try {
       const style = nav ? getComputedStyle(nav) : null;
       const rect = nav?.getBoundingClientRect();
       return {
+        url: location.href,
+        title: document.title,
         innerWidth: window.innerWidth,
         clientWidth: document.documentElement.clientWidth,
         viewportMeta: document.querySelector('meta[name="viewport"]')?.content,
+        rootChildren: document.querySelector('#root')?.childElementCount || 0,
+        bodyText: document.body.innerText.slice(0, 500),
+        scriptSources: [...document.scripts].map(script => script.src).filter(Boolean),
         navExists: Boolean(nav),
         display: style?.display,
         visibility: style?.visibility,
@@ -150,6 +159,9 @@ try {
         stylesheets: [...document.styleSheets].map(sheet => sheet.href).filter(Boolean)
       };
     });
+    mobileNavDiagnostics.responseStatus = mobileResponse?.status() ?? null;
+    mobileNavDiagnostics.pageErrors = mobileErrors.slice(-10);
+    mobileNavDiagnostics.requestFailures = mobileRequestFailures.slice(-10);
     throw new Error('Mobile quick navigation is not visible: ' + JSON.stringify(mobileNavDiagnostics));
   }
   await mobilePage.evaluate(() => window.scrollTo(0, Math.max(500, document.body.scrollHeight - window.innerHeight)));

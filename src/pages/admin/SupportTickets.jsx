@@ -45,8 +45,8 @@ export default function SupportTickets(){
     updated_at:new Date().toISOString()
    }).eq('id',t.id);
    if(error)throw error;
-   setMessage('Ticket updated.');
    await load();
+   setMessage('Ticket updated.');
   }catch(error){
    setMessage(error?.message||'Ticket could not be updated. Please try again.');
   }finally{

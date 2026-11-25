@@ -302,7 +302,14 @@ try {
     throw new Error('Cart checkout did not switch to the selected Nagad payment channel.');
   }
   await paymentSelector.selectOption({ label: 'bKash' });
-  await page.getByRole('button', { name: 'Remove' }).click();
+  const quantityField = page.getByRole('textbox', { name: 'Quantity of Smoke test package' });
+  await quantityField.waitFor({ state: 'visible', timeout: 10000 });
+  await page.getByRole('button', { name: 'Increase quantity of Smoke test package' }).waitFor({ state: 'visible' });
+  const decreaseQuantity = page.getByRole('button', { name: 'Decrease quantity of Smoke test package' });
+  if (!(await decreaseQuantity.isDisabled())) {
+    throw new Error('Cart quantity decrement should be disabled at the minimum quantity of one.');
+  }
+  await page.getByRole('button', { name: 'Remove Smoke test package from cart' }).click();
   await page.getByRole('heading', { name: 'Your cart is empty' }).waitFor({ state: 'visible', timeout: 10000 });
   const remainingCartItems = await page.evaluate(() => JSON.parse(localStorage.getItem('stationery_cart_v1') || '[]'));
   if (remainingCartItems.length !== 0) {

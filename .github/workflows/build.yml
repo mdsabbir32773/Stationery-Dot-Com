@@ -34,10 +34,14 @@ jobs:
         run: npm audit --json > npm-audit-report.json || true
       - name: Build production bundle
         run: npm run build
+        env:
+          VITE_GA4_ID: ${{ vars.VITE_GA4_ID }}
       - name: Enforce production bundle budgets
         run: npm run check:bundle
       - name: Validate sitemap fallback
         run: npm run check:sitemap
+      - name: Validate analytics integration
+        run: npm run check:analytics
       - name: Commit updated lockfile
         if: github.event_name != 'pull_request'
         run: |

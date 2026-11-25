@@ -1,6 +1,5 @@
 import {useEffect} from 'react';
 import {useLocation} from 'react-router-dom';
-import {supabase} from '../lib/supabase';
 
 const SITE='Stationery Dot Com';
 const DEFAULT_DESCRIPTION='Stationery Dot Com is a Dhaka-based online service provider in Bangladesh for document and government services, Meta ads, social media growth, SMM services, digital subscriptions and creative design.';
@@ -67,6 +66,7 @@ export default function SEO(){
       let service=null;
       let blogPost=null;
       if(route.startsWith('/blog/')){
+        const {supabase}=await import('../lib/supabase');
         const slug=decodeURIComponent(route.slice('/blog/'.length));
         const {data}=await supabase.from('blog_posts').select('id,title,slug,excerpt,category,cover_image_url,author,published_at,reading_minutes').eq('slug',slug).eq('status','published').not('published_at','is',null).lte('published_at',new Date().toISOString()).maybeSingle();
         if(cancelled)return;
@@ -74,6 +74,7 @@ export default function SEO(){
         page=blogPost?{title:BLOG_SEO_TITLES[slug]||`${clean(blogPost.title)} | SDC Blog`,description:clean(blogPost.excerpt)||`Read ${clean(blogPost.title)} on the Stationery Dot Com blog.`,image:blogPost.cover_image_url}:{title:'Article Not Found | Stationery Dot Com Blog',description:'This article is unavailable.',noindex:true};
       }
       if(route.startsWith('/services/')){
+        const {supabase}=await import('../lib/supabase');
         const slug=decodeURIComponent(route.slice('/services/'.length));
         const {data}=await supabase.from('services').select('id,name,slug,category,description,image_url,is_active').eq('slug',slug).eq('is_active',true).maybeSingle();
         if(cancelled)return;

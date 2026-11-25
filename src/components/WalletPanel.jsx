@@ -38,7 +38,7 @@ export default function WalletPanel({session}){
         <label>Payment method<select required value={method} onChange={e=>setMethod(e.target.value)}><option value="">Choose method…</option>{channels.map(x=><option key={x.name}>{x.name}</option>)}</select></label>
         <label>Amount (minimum ৳50)<input type="number" min="50" max="1000000" step="0.01" required value={amount} onChange={e=>setAmount(e.target.value)}/></label>
         {selected&&<PaymentQR settings={settings} total={Number(amount||0)} method={selected}/>}
-        <label>Payment screenshot *<input type="file" accept="image/jpeg,image/png,image/webp" required onChange={pick}/><small className="muted">JPG, PNG or WEBP · max 5MB{proof?` · Selected: ${proof.name}`:''}</small></label>
+        <label>Payment screenshot *<input type="file" accept="image/*,.jpg,.jpeg,.png,.webp" required onChange={pick}/><small className="muted">JPG, PNG or WEBP · max 5MB{proof?` · Selected: ${proof.name}`:''}</small></label>
         <button className="btn sm" disabled={busy||!channels.length}>{busy?'Submitting…':'Request deposit'}</button>
       </form>:<div className="callout warn">Mobile banking or bank transfer payment is not configured yet. Please contact support.</div>}
       {message&&<p role="status" className={message.startsWith('Deposit submitted')?'ok':'err'}>{message}</p>}

@@ -1,7 +1,7 @@
 import {useEffect,useState} from 'react';
 import {Link} from 'react-router-dom';
 import {ArrowRight,ShieldCheck} from 'lucide-react';
-import {supabase} from '../lib/supabase';
+
 import ServiceCard from '../components/ServiceCard';
 import '../catalog.css';
 
@@ -14,6 +14,7 @@ export default function DigitalSubscriptions(){
     let live=true;
     setError(false);setServices(null);
     (async()=>{
+      const {supabase}=await import('../lib/supabase');
       const {data,error:serviceError}=await supabase
         .from('services')
         .select('id,category,name,slug,description,requires_file,is_popular,is_active,sort_order,image_url')

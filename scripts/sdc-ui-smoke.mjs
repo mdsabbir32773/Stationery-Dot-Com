@@ -542,6 +542,16 @@ try {
     for (const href of links) await page.locator(`.blog-article-body a[href="${href}"]`).waitFor({ state: 'visible', timeout: 10000 });
   }
 
+  const nidSourceResponse = await page.goto(`${baseURL}/blog/nid-correction-preparation-checklist`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  if (!nidSourceResponse || nidSourceResponse.status() >= 400) throw new Error('NID guide with official sources did not load.');
+  const officialNidLink = page.locator('.blog-article-body a[href^="https://services.nidw.gov.bd/"]').first();
+  await officialNidLink.waitFor({ state: 'visible', timeout: 10000 });
+  if (await officialNidLink.getAttribute('target') !== '_blank') throw new Error('External official-source link must open in a new tab.');
+  const externalRel = await officialNidLink.getAttribute('rel') || '';
+  if (!externalRel.includes('noopener') || !externalRel.includes('noreferrer') || !externalRel.includes('nofollow')) {
+    throw new Error('External source links must use safe rel attributes.');
+  }
+
   const documentResponse = await page.goto(`${baseURL}/document-services`, { waitUntil: 'domcontentloaded', timeout: 30000 });
   if (!documentResponse || documentResponse.status() >= 400) {
     throw new Error(`Document services page returned HTTP ${documentResponse?.status() ?? 'no response'}`);

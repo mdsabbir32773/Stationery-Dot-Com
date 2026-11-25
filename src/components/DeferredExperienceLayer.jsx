@@ -1,5 +1,6 @@
-import {useEffect,useState,Suspense,lazy} from 'react';
-const ExperienceLayer=lazy(()=>import('./ExperienceLayer.jsx'));
+import {useEffect,useState} from 'react';
+import ExperienceLayer from './ExperienceLayer.jsx';
+
 export default function DeferredExperienceLayer(){
   const [ready,setReady]=useState(false);
   useEffect(()=>{
@@ -13,5 +14,5 @@ export default function DeferredExperienceLayer(){
       window.removeEventListener('scroll',activate);
     };
   },[]);
-  return ready?<Suspense fallback={null}><ExperienceLayer/></Suspense>:null;
+  return ready?<ExperienceLayer/>:null;
 }

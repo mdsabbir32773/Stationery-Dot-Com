@@ -119,8 +119,10 @@ try {
   }
   const nidSeoResponse = await page.request.get(baseURL + '/services/nid?seo-smoke=nid');
   const nidSeoHtml = await nidSeoResponse.text();
+  const nidTitleSource = nidSeoHtml.match(/<title>([\\s\\S]*?)<\\/title>/i)?.[1] || '';
+  const nidTitleText = nidTitleSource.replace(/&amp;/gi, '&').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>');
   if (nidSeoResponse.status() !== 200 ||
-      !nidSeoHtml.includes('<title>NID Application &amp; Correction BD | Stationery Dot Com</title>') ||
+      nidTitleText !== 'NID Application & Correction BD | Stationery Dot Com' ||
       !nidSeoHtml.includes('Bangladesh National Identity Card application or correction assistance')) {
     throw new Error('NID service fallback does not have a distinct, readable SEO title and useful content.');
   }

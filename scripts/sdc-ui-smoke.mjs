@@ -117,7 +117,7 @@ try {
       !crawlableHomeHtml.includes('/blog/nid-correction-preparation-checklist')) {
     throw new Error('Homepage fallback is missing crawlable links to published helpful guides.');
   }
-  const nidSeoResponse = await page.request.get(baseURL + '/services/nid?seo-smoke=nid');
+  const nidSeoResponse = await page.request.get(baseURL + '/services/nid?seo-smoke=nid', { headers: { accept: 'text/html' } });
   const nidSeoHtml = await nidSeoResponse.text();
   const titleStart = nidSeoHtml.indexOf('<title>');
   const titleEnd = nidSeoHtml.indexOf('</title>', titleStart);

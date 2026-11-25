@@ -8,7 +8,6 @@ const cart = read('../src/pages/Cart.jsx');
 const success = read('../src/pages/OrderSuccess.jsx');
 const contact = read('../src/pages/Contact.jsx');
 const floating = read('../src/components/WhatsAppButton.jsx');
-const gaModule = ga;
 
 const checks = [
   ['GA4 is opt-in through a Measurement ID', /VITE_GA4_ID/.test(ga) && /if\(typeof window==='undefined'\|\|!validId\(\)\)return false/.test(ga)],

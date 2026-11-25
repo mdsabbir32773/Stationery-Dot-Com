@@ -6,7 +6,7 @@ const origin = 'https://stationerydotcom.me';
 
 const robotsPath = new URL('../public/robots.txt', import.meta.url);
 const robots = readFileSync(robotsPath, 'utf8');
-const robotsLines = robots.split(/\\r?\\n/).map(line => line.trim());
+const robotsLines = robots.split(/\r?\n/).map(line => line.trim());
 if (!robotsLines.includes('User-agent: *') || !robotsLines.includes('Allow: /')) {
   throw new Error('robots.txt must include a wildcard crawler group and allow public pages.');
 }

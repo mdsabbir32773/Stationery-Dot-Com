@@ -1,7 +1,7 @@
 import {useEffect,useState} from 'react';
 import {Link} from 'react-router-dom';
 import {ArrowRight,ShieldCheck} from 'lucide-react';
-import {supabase} from '../lib/supabase';
+import {publicRows} from '../lib/publicData';
 import ServiceCard from '../components/ServiceCard';
 import '../catalog.css';
 
@@ -14,21 +14,14 @@ export default function ServiceCategoryLanding({category,title,intro,guideTitle,
     let live=true;
     setError(false);setServices(null);
     (async()=>{
-      const {data,error:serviceError}=await supabase
-        .from('services')
-        .select('id,category,name,slug,description,requires_file,is_popular,is_active,sort_order,image_url')
-        .eq('is_active',true)
-        .eq('category',category)
-        .order('sort_order');
+      const {data,error:serviceError}=await publicRows('services',{select:'id,category,name,slug,description,requires_file,is_popular,is_active,sort_order,image_url',is_active:'eq.true',category:'eq.'+category,order:'sort_order.asc'});
       if(!live)return;
       if(serviceError){setError(true);setServices([]);return;}
       const rows=data||[];
       const ids=rows.map(x=>x.id);
       let packages=[];
       if(ids.length){
-        const result=await supabase.from('packages')
-          .select('id,service_id,name,price,is_active,sort_order')
-          .in('service_id',ids).eq('is_active',true).order('sort_order');
+        const result=await publicRows('packages',{select:'id,service_id,name,price,is_active,sort_order',service_id:'in.('+ids.join(',')+')',is_active:'eq.true',order:'sort_order.asc'});
         if(!result.error)packages=result.data||[];
       }
       if(!live)return;

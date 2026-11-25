@@ -6,7 +6,7 @@ import {categoriesFromServices} from '../data/services';
 import {catStyle} from '../components/ServiceCover';
 import ServiceCard from '../components/ServiceCard';
 import useTitle from '../lib/useTitle';
-import {waLink} from '../lib/whatsapp';
+import {waLink} from '../lib/whatsapp';import {publicRows,publicRpc} from '../lib/publicData';
 import '../catalog.css';
 
 const PAGE_SIZE=9;
@@ -24,8 +24,8 @@ export default function Services(){
   const[list,setList]=useState(null),[err,setErr]=useState(false),[s,setS]=useState({}),[visibleCount,setVisibleCount]=useState(PAGE_SIZE),[reloadList,setReloadList]=useState(0);
   useTitle(s.catalog_title||'Services',s.catalog_intro||'Browse our services and packages.');
   useEffect(()=>{let cancelled=false;setErr(false);setList(null);
-    import('../lib/supabase').then(({getSettings})=>getSettings()).then(data=>{if(!cancelled)setS(data)}).catch(()=>{});
-    (async()=>{const {supabase}=await import('../lib/supabase');const sr=await supabase.from('services').select('id,category,name,slug,description,requires_file,is_popular,is_active,sort_order,created_at,image_url,smm_platform,smm_category,smm_country,smm_service_code,smm_min_quantity,smm_max_quantity,smm_price_per_1000,smm_start_time,smm_delivery_time,smm_refill,smm_cancel,smm_instructions').eq('is_active',true).order('sort_order');if(cancelled)return;if(sr.error){setErr(true);setList([]);return;}const ids=(sr.data||[]).map(x=>x.id);let orderCounts={},packages=[];if(ids.length){const [oc,pr]=await Promise.all([supabase.rpc('get_service_order_counts',{p_service_ids:ids}),supabase.from('packages').select('id,service_id,name,price,is_active,sort_order').in('service_id',ids).eq('is_active',true).order('sort_order')]);if(!oc.error)for(const row of oc.data||[])orderCounts[row.service_id]=Number(row.order_count||0);if(!pr.error)packages=pr.data||[];}if(cancelled)return;const byService={};for(const p of packages)(byService[p.service_id]||(byService[p.service_id]=[])).push(p);setList((sr.data||[]).map(x=>({...x,order_count:orderCounts[x.id]||0,packages:byService[x.id]||[]})));})().catch(()=>{if(!cancelled){setErr(true);setList([]);}});return()=>{cancelled=true};
+    fetch('/api/public-settings',{headers:{accept:'application/json'}}).then(r=>r.ok?r.json():{}).then(data=>{if(!cancelled)setS(data||{})}).catch(()=>{});
+    (async()=>{const sr=await publicRows('services',{select:'id,category,name,slug,description,requires_file,is_popular,is_active,sort_order,created_at,image_url,smm_platform,smm_category,smm_country,smm_service_code,smm_min_quantity,smm_max_quantity,smm_price_per_1000,smm_start_time,smm_delivery_time,smm_refill,smm_cancel,smm_instructions',is_active:'eq.true',order:'sort_order.asc'});if(cancelled)return;if(sr.error){setErr(true);setList([]);return;}const ids=(sr.data||[]).map(x=>x.id);let orderCounts={},packages=[];if(ids.length){const [oc,pr]=await Promise.all([publicRpc('get_service_order_counts',{p_service_ids:ids}),publicRows('packages',{select:'id,service_id,name,price,is_active,sort_order',service_id:'in.('+ids.join(',')+')',is_active:'eq.true',order:'sort_order.asc'})]);if(!oc.error)for(const row of oc.data||[])orderCounts[row.service_id]=Number(row.order_count||0);if(!pr.error)packages=pr.data||[];}if(cancelled)return;const byService={};for(const p of packages)(byService[p.service_id]||(byService[p.service_id]=[])).push(p);setList((sr.data||[]).map(x=>({...x,order_count:orderCounts[x.id]||0,packages:byService[x.id]||[]})));})().catch(()=>{if(!cancelled){setErr(true);setList([]);}});return()=>{cancelled=true};
   },[reloadList]);
   useEffect(()=>setVisibleCount(PAGE_SIZE),[cat,q]);
   const categoryList=list?categoriesFromServices(list):[];

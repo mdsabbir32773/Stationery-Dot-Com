@@ -3,7 +3,7 @@ import {Link} from 'react-router-dom';
 import {ArrowRight,ShieldCheck} from 'lucide-react';
 
 import ServiceCard from '../components/ServiceCard';
-import '../catalog.css';
+import '../catalog.css';import {publicRows} from '../lib/publicData';
 
 export default function DocumentServices(){
   const [services,setServices]=useState(null);
@@ -14,22 +14,15 @@ export default function DocumentServices(){
     let live=true;
     setError(false);setServices(null);
     (async()=>{
-      const {supabase}=await import('../lib/supabase');
-      const {data,error:serviceError}=await supabase
-        .from('services')
-        .select('id,category,name,slug,description,requires_file,is_popular,is_active,sort_order,image_url')
-        .eq('is_active',true)
-        .eq('category','Document & Government Services')
-        .order('sort_order');
+      
+      const {data,error:serviceError}=await publicRows('services',{select:'id,category,name,slug,description,requires_file,is_popular,is_active,sort_order,image_url',is_active:'eq.true',category:'eq.Document & Government Services',order:'sort_order.asc'});
       if(!live)return;
       if(serviceError){setError(true);setServices([]);return;}
       const rows=data||[];
       const ids=rows.map(x=>x.id);
       let packages=[];
       if(ids.length){
-        const result=await supabase.from('packages')
-          .select('id,service_id,name,price,is_active,sort_order')
-          .in('service_id',ids).eq('is_active',true).order('sort_order');
+        const result=await publicRows('packages',{select:'id,service_id,name,price,is_active,sort_order',service_id:'in.('+ids.join(',')+')',is_active:'eq.true',order:'sort_order.asc'});
         if(!result.error)packages=result.data||[];
       }
       if(!live)return;

@@ -1,6 +1,6 @@
 import {Link} from 'react-router-dom';
 import {ArrowRight,Globe2,Star} from 'lucide-react';
-import {taka} from '../lib/supabase';
+import {taka} from '../lib/currency';
 import ServiceCover from './ServiceCover';
 
 export default function ServiceCard({s,priority=false}){

@@ -48,7 +48,7 @@ async function dynamicSitemap(env) {
   const now = new Date().toISOString();
   const [services, posts] = await Promise.all([
     db(env, "services?select=slug&is_active=eq.true&order=slug.asc"),
-    db(env, "blog_posts?select=slug,published_at&status=eq.published&published_at=not.is.null&published_at=lte." + encodeURIComponent(now) + "&order=published_at.desc")
+    db(env, "blog_posts?select=slug,published_at,updated_at&status=eq.published&published_at=not.is.null&published_at=lte." + encodeURIComponent(now) + "&order=published_at.desc")
   ]);
   const origin = "https://stationerydotcom.me";
   const urls = new Map();
@@ -61,7 +61,7 @@ async function dynamicSitemap(env) {
     if (service?.slug && /^[a-z0-9-]+$/.test(service.slug)) add("/services/" + service.slug);
   }
   for (const post of posts || []) {
-    if (post?.slug && /^[a-z0-9-]+$/.test(post.slug)) add("/blog/" + post.slug, post.published_at);
+    if (post?.slug && /^[a-z0-9-]+$/.test(post.slug)) add("/blog/" + post.slug, post.updated_at || post.published_at);
   }
   const entries = Array.from(urls, ([loc, lastmod]) =>
     "<url><loc>" + xmlEscape(loc) + "</loc>" + (lastmod ? "<lastmod>" + xmlEscape(lastmod) + "</lastmod>" : "") + "</url>"

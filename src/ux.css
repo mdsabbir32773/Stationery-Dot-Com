@@ -25,7 +25,7 @@ body{background:var(--bg);color:var(--ink)}
 .burger:hover{background:#f0f0ff;border-color:#bfc1f1}
 .home-hero{background:linear-gradient(125deg,#151d3a 0%,#272e68 58%,#4d54b9 100%);color:#fff;padding:78px 0 72px}
 .home-hero:before{background:radial-gradient(ellipse at 83% 34%,#9397ff55 0,transparent 38%),radial-gradient(ellipse at 7% 100%,#ff9a6233 0,transparent 30%)}
-.home-hero h1{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:clamp(42px,6vw,76px);font-weight:780;letter-spacing:-.065em;line-height:1.02}
+.home-hero h1{font-family:system-ui,-apple-system,"Segoe UI","Noto Sans Bengali",sans-serif;font-size:clamp(42px,6vw,76px);font-weight:780;letter-spacing:-.065em;line-height:1.02}
 .home-hero h1 em{color:#ffc27b;font-weight:750}
 .home-kicker{color:#d9dcff;letter-spacing:.15em}
 .kicker-dot{background:#ffb36f;box-shadow:0 0 0 5px #ffc27b24}
@@ -45,7 +45,7 @@ body{background:var(--bg);color:var(--ink)}
 .home-proof{background:#fff;border-color:#e8ebf3}
 .proof-inner span:first-child{color:#414c6c}
 .home-main{max-width:1220px}
-.section-heading h2,.home-cta h2{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;font-weight:760;letter-spacing:-.045em}
+.section-heading h2,.home-cta h2{font-family:system-ui,-apple-system,"Segoe UI","Noto Sans Bengali",sans-serif;font-weight:760;letter-spacing:-.045em}
 .section-heading h2{color:#1f2948}
 .section-overline{color:#5a5dd1}
 .home-category{background:#fff;border-color:#e5e8f1;border-radius:20px;box-shadow:0 7px 22px #25315008}

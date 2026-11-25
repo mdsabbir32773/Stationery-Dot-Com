@@ -223,6 +223,26 @@ try {
     throw new Error('SMM catalogue retry did not re-request its service list.');
   }
 
+  await recoveryPage.unroute('**/rest/v1/services**');
+  let failedBlogRequests = 0;
+  await recoveryPage.route('**/rest/v1/blog_posts**', async route => {
+    failedBlogRequests += 1;
+    await route.fulfill({
+      status: 503,
+      contentType: 'application/json',
+      body: JSON.stringify({ message: 'Simulated blog data outage' })
+    });
+  });
+  await recoveryPage.goto(`${baseURL}/blog`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  const blogRecoveryAlert = recoveryPage.getByRole('alert');
+  await blogRecoveryAlert.waitFor({ state: 'visible', timeout: 15000 });
+  const beforeBlogRetry = failedBlogRequests;
+  await blogRecoveryAlert.getByRole('button', { name: 'Try again' }).click();
+  await recoveryPage.waitForTimeout(1000);
+  if (failedBlogRequests <= beforeBlogRetry) {
+    throw new Error('Blog retry did not re-request published article data.');
+  }
+
   await recoveryPage.close();
 
   // Cart item removal must update the visible cart and persisted cart state.

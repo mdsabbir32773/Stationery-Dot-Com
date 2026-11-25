@@ -28,11 +28,11 @@ const walletMethods = getWalletPaymentMethods({
   payment_bank_details: 'Example Bank · Account 123456',
   payment_qr_url: '/shared-qr.png'
 });
-if (walletMethods.map(method => method.name).join(',') !== 'bKash,Nagad,Rocket,Bank transfer') {
+if (walletMethods.map(method => method.name).join(',') !== 'bKash,Nagad,Rocket,Bank transfer,Bangla QR') {
   throw new Error('Wallet deposit must offer only RPC-supported mobile banking and bank transfer methods.');
 }
-if (getWalletPaymentMethods({ payment_qr_url: '/shared-qr.png' }).length !== 0) {
-  throw new Error('Generic Bangla QR must not be offered for SMM wallet deposits.');
+if (getWalletPaymentMethods({ payment_qr_url: '/shared-qr.png' }).map(method => method.name).join(',') !== 'Bangla QR') {
+  throw new Error('Bangla QR must be available when it is configured for SMM wallet deposits.');
 }
 const genericPayment = getPaymentMethods({ payment_number: '01700000000' });
 if (genericPayment.length !== 1 || genericPayment[0].name !== 'Mobile banking') {

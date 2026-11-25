@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Facebook, Globe2, Instagram, Phone } from 'lucide-react';
 import { categoriesFromServices } from '../data/services';
-import { getSettings, supabase } from '../lib/supabase';
 import BrandLogo from './BrandLogo';
 
 const socialLinks = [
@@ -36,12 +35,14 @@ export default function Footer() {
   const [cats, setCats] = useState([]);
 
   useEffect(() => {
-    getSettings().then(setS).catch(() => {});
-    supabase
-      .from('services')
-      .select('category,name')
-      .eq('is_active', true)
-      .then((r) => setCats(categoriesFromServices(r.data || [])));
+    let live=true,idleId=null,timerId=null;
+    const load=()=>import('../lib/supabase').then(({getSettings,supabase})=>{
+      if(!live)return;
+      getSettings().then(v=>{if(live)setS(v);}).catch(()=>{});
+      supabase.from('services').select('category,name').eq('is_active',true).then(r=>{if(live)setCats(categoriesFromServices(r.data||[]));}).catch(()=>{});
+    }).catch(()=>{});
+    if(window.requestIdleCallback)idleId=window.requestIdleCallback(load,{timeout:3000});else timerId=window.setTimeout(load,2200);
+    return()=>{live=false;if(idleId!==null&&window.cancelIdleCallback)window.cancelIdleCallback(idleId);if(timerId!==null)window.clearTimeout(timerId);};
   }, []);
 
   const p = s.contact_phone || '01827-680520';

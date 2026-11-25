@@ -1,4 +1,4 @@
-import {useEffect,useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import {Link,useNavigate} from 'react-router-dom';
 import {Lock,Minus,Plus,Loader2,AlertCircle,UserRound} from 'lucide-react';
 import {supabase,taka} from '../lib/supabase';
@@ -20,7 +20,7 @@ export default function OrderForm({service,pkg,settings}){
   const[proofMime,setProofMime]=useState('');
   const[err,setErr]=useState('');
   const[coupon,setCoupon]=useState(null);
-  const[busy,setBusy]=useState(false);
+  const[busy,setBusy]=useState(false);const submitLock=useRef(false);
   const[step,setStep]=useState(1);
   const[paid,setPaid]=useState(false);
   const[customer,setCustomer]=useState(null);
@@ -119,6 +119,8 @@ export default function OrderForm({service,pkg,settings}){
       if(problem){setStep(n);return setErr(problem);}
     }
     if(!Number.isInteger(q)||q<1||q>100000)return setErr('Quantity must be a whole number, 1 or more');
+    if(submitLock.current)return;
+    submitLock.current=true;
     setBusy(true);
     let proofPath='';const createdPaths=[];
     try{
@@ -141,6 +143,7 @@ export default function OrderForm({service,pkg,settings}){
       if(createdPaths.length)await supabase.storage.from('order-files').remove(createdPaths);
       setErr(x.message||'Something went wrong. Please try again.');
     }
+    submitLock.current=false;
     setBusy(false);
   }
 

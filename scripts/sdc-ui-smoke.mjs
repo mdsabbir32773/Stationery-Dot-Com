@@ -1,5 +1,5 @@
 import { chromium } from 'playwright';
-import { getPaymentMethods } from '../src/lib/paymentMethods.js';
+import { getPaymentMethods, getWalletPaymentMethods } from '../src/lib/paymentMethods.js';
 import { getSmmUnitPrice } from '../src/lib/smmPricing.js';
 import { getUploadMime, getPaymentProofMime } from '../src/lib/fileValidation.js';
 
@@ -20,6 +20,19 @@ for (const name of ['bKash', 'Nagad', 'Rocket', 'Bank transfer', 'Bangla QR']) {
   if (!paymentMethods.some(method => method.name === name)) {
     throw new Error(`Configured payment channel is missing from checkout options: ${name}`);
   }
+}
+const walletMethods = getWalletPaymentMethods({
+  payment_bkash_number: '01700000000',
+  payment_nagad_qr_url: '/nagad-qr.png',
+  payment_rocket_number: '01900000000',
+  payment_bank_details: 'Example Bank · Account 123456',
+  payment_qr_url: '/shared-qr.png'
+});
+if (walletMethods.map(method => method.name).join(',') !== 'bKash,Nagad,Rocket,Bank transfer') {
+  throw new Error('Wallet deposit must offer only RPC-supported mobile banking and bank transfer methods.');
+}
+if (getWalletPaymentMethods({ payment_qr_url: '/shared-qr.png' }).length !== 0) {
+  throw new Error('Generic Bangla QR must not be offered for SMM wallet deposits.');
 }
 const genericPayment = getPaymentMethods({ payment_number: '01700000000' });
 if (genericPayment.length !== 1 || genericPayment[0].name !== 'Mobile banking') {

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Facebook, Globe2, Instagram, Phone } from 'lucide-react';
-import { categoriesFromServices } from '../data/services';
+import { CATEGORIES } from '../data/services';
 import BrandLogo from './BrandLogo';
 
 const socialLinks = [
@@ -32,17 +32,12 @@ function TikTokIcon() {
 
 export default function Footer() {
   const [s, setS] = useState({});
-  const [cats, setCats] = useState([]);
+  const cats = CATEGORIES;
 
   useEffect(() => {
-    let live=true,idleId=null,timerId=null;
-    const load=()=>import('../lib/supabase').then(({getSettings,supabase})=>{
-      if(!live)return;
-      getSettings().then(v=>{if(live)setS(v);}).catch(()=>{});
-      supabase.from('services').select('category,name').eq('is_active',true).then(r=>{if(live)setCats(categoriesFromServices(r.data||[]));}).catch(()=>{});
-    }).catch(()=>{});
-    if(window.requestIdleCallback)idleId=window.requestIdleCallback(load,{timeout:3000});else timerId=window.setTimeout(load,2200);
-    return()=>{live=false;if(idleId!==null&&window.cancelIdleCallback)window.cancelIdleCallback(idleId);if(timerId!==null)window.clearTimeout(timerId);};
+    let live=true;
+    fetch('/api/public-settings',{headers:{accept:'application/json'}}).then(r=>r.ok?r.json():{}).then(v=>{if(live)setS(v||{});}).catch(()=>{});
+    return()=>{live=false;};
   }, []);
 
   const p = s.contact_phone || '01827-680520';

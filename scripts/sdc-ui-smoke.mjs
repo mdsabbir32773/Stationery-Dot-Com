@@ -77,6 +77,8 @@ try {
   if (!(await page.title()).includes('Stationery Dot Com')) {
     throw new Error('Homepage title does not identify Stationery Dot Com.');
   }
+  await page.locator('.home-hero h1').waitFor({ state: 'visible', timeout: 20000 });
+  await page.locator('.scard').first().waitFor({ state: 'visible', timeout: 20000 });
   const zeroPriceServiceCards = await page.locator('.scard').evaluateAll(cards => cards.filter(card => card.innerText.includes('Starting from') && card.innerText.includes('৳0')).map(card => card.innerText.slice(0,160)));
   if (zeroPriceServiceCards.length) {
     throw new Error('Service cards must label zero-price quote packages as Price on request, not ৳0: ' + zeroPriceServiceCards.join(' | '));

@@ -335,6 +335,44 @@ async function setupMetaWebhooks(env) {
   });
   return json({ success: true, app_subscription: appData, page_subscription: pageSubscriptionData, page_id: pageId, fields: ["messages", "feed"] });
 }
+
+function escapeHtml(value) {
+  return String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+function routeSeo(route) {
+  const pages = {
+    "/": ["Stationery Dot Com | Online Services Bangladesh", "Stationery Dot Com in Dhaka offers digital subscriptions, Meta ads support, SMM, document assistance and creative services across Bangladesh.", "Stationery Dot Com — Your Digital, Travel & Meta Solution Hub", "Explore our online services", "Stationery Dot Com helps customers in Bangladesh compare digital subscriptions, Meta and social media services, document assistance and creative work. Browse packages, review service terms and order online."],
+    "/about": ["About Stationery Dot Com | Dhaka", "Learn about Stationery Dot Com, a Dhaka-based digital, travel and Meta solution hub serving customers across Bangladesh.", "About Stationery Dot Com", "Our business", "Stationery Dot Com is a Dhaka-based online service provider offering digital subscriptions, Meta support, document assistance and creative services. Our team helps customers understand service options and place online orders."],
+    "/services": ["Online Services in Bangladesh | Stationery Dot Com", "Browse digital subscriptions, Meta and SMM services, document assistance and creative services at Stationery Dot Com.", "Online Services in Bangladesh", "Browse service categories", "Explore the services available from Stationery Dot Com. Compare package details, service scope and delivery terms before placing an order."],
+    "/digital-subscriptions": ["Digital Subscriptions Bangladesh | Stationery Dot Com", "Compare available digital subscriptions in Bangladesh, including plan duration, access method and package terms.", "Digital Subscriptions in Bangladesh", "Digital tools and subscriptions", "Browse available digital subscription plans. Review duration, storage, access method, device limits and support terms on each package before ordering."],
+    "/document-services": ["Document Assistance Bangladesh | Stationery Dot Com", "Explore document and government application assistance for birth certificates, NID, passports and trade licences in Bangladesh.", "Document & Application Assistance", "Document assistance services", "Stationery Dot Com provides assistance with online document applications and preparation. Requirements and government decisions depend on the relevant authority; review each service's scope before ordering."],
+    "/meta-services": ["Meta Ads & Page Services Bangladesh | SDC", "Explore Facebook and Instagram page setup, Meta ads support and social media management services in Bangladesh.", "Meta Ads & Page Services", "Meta and social media support", "Review available Facebook and Instagram page setup, optimization, campaign support and management services. Advertising results depend on the campaign, audience and platform."],
+    "/creative-services": ["Graphic Design & Video Editing | Stationery Dot Com", "Explore graphic design, video editing and web development services in Bangladesh with clear deliverables and package scope.", "Graphic Design, Video Editing & Web", "Creative and web services", "Stationery Dot Com offers graphic design, video editing and web development. Review deliverables, timelines and revision terms for each available package."],
+    "/smm": ["SMM Panel Bangladesh | Stationery Dot Com", "Browse social media marketing services and review package details, delivery estimates and refill terms before ordering.", "Social Media Marketing Services", "Social media marketing services", "Compare available social media services by platform, quantity and package terms. Delivery and retention can vary by provider and platform."],
+    "/contact": ["Contact Stationery Dot Com | Dhaka", "Contact Stationery Dot Com in Dhaka for digital subscriptions, Meta support, document assistance and creative services.", "Contact Stationery Dot Com", "Contact our team", "Contact Stationery Dot Com for service information and order support. Our Dhaka team can help clarify available packages and requirements."],
+    "/blog": ["Stationery Dot Com Blog | Bangladesh Guides", "Read practical Bangladesh-focused guides about online services, digital subscriptions, social media marketing and creative work.", "Stationery Dot Com Blog", "Helpful guides and updates", "Explore practical guides from Stationery Dot Com about online services, digital subscriptions, social media marketing, documents and creative work."],
+    "/help": ["Help Center | Stationery Dot Com", "Find help with orders, payments, service delivery, documents and customer support at Stationery Dot Com.", "Stationery Dot Com Help Center", "Help with orders and services", "Find answers about placing orders, payments, delivery, document requirements and customer support. Contact our team if you need help with a specific order."],
+    "/track-order": ["Track Your Order | Stationery Dot Com", "Track a Stationery Dot Com order using your order ID and phone number.", "Track Your Stationery Dot Com Order", "Order tracking", "Use your order details to check the latest status and updates for a Stationery Dot Com order."]
+  };
+  const generic = ["Stationery Dot Com | Online Services Bangladesh", "Explore online services from Stationery Dot Com in Bangladesh. Review service details and package terms before ordering.", "Stationery Dot Com Online Services", "Service information", "Review the service details, package scope and terms provided by Stationery Dot Com before placing an order."];
+  if (pages[route]) return pages[route];
+  const service = route.match(/^\/services\/([a-z0-9-]+)$/);
+  if (service) {
+    const name = service[1].split("-").map((word, index) => {
+      const lower = word.toLowerCase();
+      const acronyms = { nid: "NID", smm: "SMM", fb: "Facebook", bd: "Bangladesh", ai: "AI", google: "Google", meta: "Meta", tiktok: "TikTok", youtube: "YouTube", chatgpt: "ChatGPT", capcut: "CapCut", canva: "Canva", pro: "Pro" };
+      return acronyms[lower] || (index === 0 ? word.charAt(0).toUpperCase() + word.slice(1) : word.charAt(0).toUpperCase() + word.slice(1));
+    }).join(" ");
+    return [name + " Service | Stationery Dot Com", "Explore " + name + " service options at Stationery Dot Com in Bangladesh. Check package details, access or application requirements and terms before ordering.", name + " Service in Bangladesh", name + " service details", "Review the available " + name + " packages, service scope and requirements. Availability, access and processing depend on the selected package and relevant provider or authority."];
+  }
+  const blog = route.match(/^\/blog\/([a-z0-9-]+)$/);
+  if (blog) {
+    const name = blog[1].split("-").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
+    return [name + " | Stationery Dot Com", "Read this practical online service guide from Stationery Dot Com, with Bangladesh-focused information and useful next steps.", name, "Read this guide", "This Stationery Dot Com article provides practical information and steps related to " + name + ". Check official sources for current requirements and policy updates."];
+  }
+  return generic;
+}
+
 export default {
   async scheduled(controller, env) {
     if (controller.cron !== "* * * * *") return;
@@ -417,6 +455,33 @@ export default {
           } catch {}
         }
       }
+      const seo = routeSeo(route);
+      const titleTag = "<title>" + escapeHtml(seo[0]) + "</title>";
+      if (/<title>[\\s\\S]*?<\\/title>/i.test(html)) html = html.replace(/<title>[\\s\\S]*?<\\/title>/i, titleTag);
+      else html = html.replace("</head>", titleTag + "</head>");
+      const descriptionTag = '<meta name="description" content="' + escapeHtml(seo[1]) + '"/>';
+      if (/<meta[^>]*name=["']description["'][^>]*>/i.test(html)) html = html.replace(/<meta[^>]*name=["']description["'][^>]*>/i, descriptionTag);
+      else html = html.replace("</head>", descriptionTag + "</head>");
+      const ogTitle = '<meta property="og:title" content="' + escapeHtml(seo[0]) + '"/>';
+      const ogDescription = '<meta property="og:description" content="' + escapeHtml(seo[1]) + '"/>';
+      const twitterTitle = '<meta name="twitter:title" content="' + escapeHtml(seo[0]) + '"/>';
+      const twitterDescription = '<meta name="twitter:description" content="' + escapeHtml(seo[1]) + '"/>';
+      for (const [pattern, tag] of [
+        [/<meta[^>]*property=["']og:title["'][^>]*>/i, ogTitle],
+        [/<meta[^>]*property=["']og:description["'][^>]*>/i, ogDescription],
+        [/<meta[^>]*name=["']twitter:title["'][^>]*>/i, twitterTitle],
+        [/<meta[^>]*name=["']twitter:description["'][^>]*>/i, twitterDescription]
+      ]) {
+        if (pattern.test(html)) html = html.replace(pattern, tag);
+        else html = html.replace("</head>", tag + "</head>");
+      }
+      const escapedH1 = escapeHtml(seo[2]);
+      const escapedH2 = escapeHtml(seo[3]);
+      const escapedIntro = escapeHtml(seo[4]);
+      const pageSection = '<section><h1>' + escapedH1 + '</h1><p>' + escapedIntro + '</p><p>Browse the service pages below to compare options and contact Stationery Dot Com for assistance.</p></section>';
+      html = html.replace(/<section>\\s*<h1>[\\s\\S]*?<\\/section>/i, pageSection);
+      const secondSection = '<section><h2>' + escapedH2 + '</h2><p>' + escapedIntro + '</p><p><a href="/services">Browse all services</a> · <a href="/contact">Contact Stationery Dot Com</a> · <a href="/track-order">Track an order</a></p></section>';
+      html = html.replace(/<section>\\s*<h2>Online services with clear package details[\\s\\S]*?<\\/section>/i, secondSection);
       const privateRoute = routeExists === false || route === "/admin" || route.startsWith("/admin/") ||
         route === "/account" || route === "/cart" || route === "/order" || route === "/checkout" ||
         route === "/order-success" || route.startsWith("/order-success/") ||

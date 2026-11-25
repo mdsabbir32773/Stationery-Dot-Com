@@ -12,7 +12,8 @@ const BLOG_SEO_TITLES={
   'nid-correction-preparation-checklist':'NID সংশোধনের আগে ৭টি প্রস্তুতি | SDC',
   'design-video-editing-order-brief-checklist':'ডিজাইন বা Video Editing Brief: ৭টি তথ্য | SDC',
   'online-service-checklist':'অনলাইন সার্ভিস নেওয়ার আগে ৫টি বিষয় | SDC',
-  'facebook-page-growth-quality':'ফেসবুক পেজের Growth: শুধু সংখ্যা নয় | SDC'
+  'facebook-page-growth-quality':'ফেসবুক পেজের Growth: শুধু সংখ্যা নয় | SDC',
+  'video-editing-footage-preparation-checklist':'ভিডিও এডিটিংয়ের ফুটেজ প্রস্তুতি: চেকলিস্ট | SDC'
 };
 
 function clean(value){return String(value||'').replace(/\s+/g,' ').trim();}

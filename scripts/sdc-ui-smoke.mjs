@@ -105,6 +105,15 @@ try {
     throw new Error('PNG favicon did not return a successful image/png response.');
   }
 
+  // Privacy notice must disclose the optional GA4 event collection introduced in the analytics rollout.
+  await page.goto(new URL('/privacy-policy', baseURL).href, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  await page.getByRole('heading', { name: 'Privacy Policy' }).waitFor({ state: 'visible', timeout: 15000 });
+  const privacyText = await page.locator('main').innerText();
+  if (!/Google Analytics 4/i.test(privacyText) || !/Measurement ID/i.test(privacyText) || !/query strings and order or invoice identifiers/i.test(privacyText)) {
+    throw new Error('Privacy policy does not clearly disclose optional GA4 measurement and sanitized page paths.');
+  }
+  await page.goto(baseURL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+
   // Mobile quick-nav must navigate, reset the viewport, and show the active destination.
   const mobilePage = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   mobilePage.on('pageerror', error => errors.push(error.message));

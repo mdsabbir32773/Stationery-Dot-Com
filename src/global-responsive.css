@@ -577,7 +577,7 @@ main.wrap > .checkout:not(.premium-checkout) .fld textarea { width:100%; min-wid
     font-size:14px!important;
     white-space:normal!important;
   }
-  header .nav .sdc-mobile-nav { display:none!important; }
+  header .nav .sdc-mobile-nav { display:grid!important; }
 
   .premium-checkout {
     display:flex!important;

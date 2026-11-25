@@ -659,7 +659,7 @@ export default {
       headers.delete("content-length");
       headers.delete("content-encoding");
       headers.delete("etag");
-      headers.set("cache-control", "no-cache, no-store, must-revalidate");
+      headers.set("cache-control", privateRoute ? "no-store" : "no-cache, must-revalidate");
       return secureResponse(new Response(html, { status: routeExists === false ? 404 : assetResponse.status, statusText: routeExists === false ? "Not Found" : assetResponse.statusText, headers }));
     }
     return secureResponse(assetResponse);

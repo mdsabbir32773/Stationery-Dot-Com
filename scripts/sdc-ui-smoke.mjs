@@ -119,7 +119,7 @@ try {
   }
   const nidSeoResponse = await page.request.get(baseURL + '/services/nid?seo-smoke=nid');
   const nidSeoHtml = await nidSeoResponse.text();
-  const nidTitleSource = nidSeoHtml.match(/<title>([\\s\\S]*?)<\\/title>/i)?.[1] || '';
+  const nidTitleSource = nidSeoHtml.match(/<title>([\s\S]*?)<\/title>/i)?.[1] || '';
   const nidTitleText = nidTitleSource.replace(/&amp;/gi, '&').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>');
   if (nidSeoResponse.status() !== 200 ||
       nidTitleText !== 'NID Application & Correction BD | Stationery Dot Com' ||

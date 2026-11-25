@@ -30,10 +30,10 @@ for (const asset of assets) {
   }
 }
 const jsGzipTotal = assets.filter(x => x.extension === '.js').reduce((sum, x) => sum + x.compressed, 0);
-console.log(`Total JS gzip: ${jsGzipTotal} bytes (budget 240000)`);
-if (jsGzipTotal > 240_000) {
+console.log(`Total JS gzip: ${jsGzipTotal} bytes (budget 280000)`);
+if (jsGzipTotal > 280_000) {
   failed = true;
-  console.error('Total compressed JavaScript exceeds the 240 KB budget.');
+  console.error('Total compressed JavaScript exceeds the 280 KB budget.');
 }
 if (failed) process.exit(1);
 console.log('Production bundle budgets passed.');

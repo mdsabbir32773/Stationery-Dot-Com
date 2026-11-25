@@ -12,7 +12,7 @@ export default function ServiceCard({s}){
   const isCustomReview=s.smm_service_code==='FB-REV-GEN';
   const orderPath=isSmm?'/smm?service='+encodeURIComponent(s.id):'/services/'+s.slug;
   return <article className={'scard'+(isSmm?' scard-smm':'')}>
-    <Link to={'/services/'+s.slug} aria-label={s.name}><ServiceCover s={s}/></Link>
+    <Link to={'/services/'+s.slug}><ServiceCover s={s}/></Link>
     <div className="sbody">
       <div className="service-card-meta"><div className="service-card-kicker">{isSmm?s.smm_platform:s.category}</div>{s.is_popular&&<span className="service-popular-badge"><Star size={11} fill="currentColor"/>Popular</span>}</div>
       {Number(s.order_count||0)>0&&<div className="service-order-count">{Number(s.order_count).toLocaleString()} orders</div>}

@@ -29,6 +29,8 @@ jobs:
         run: npm ci
       - name: Build website
         run: npm run build
+      - name: Enforce production bundle budgets
+        run: npm run check:bundle
       - name: Deploy to Cloudflare Workers
         run: npx wrangler@latest deploy
         env:

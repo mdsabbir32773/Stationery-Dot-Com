@@ -93,7 +93,8 @@ export default function Footer() {
             <li><Link to="/about">About us</Link></li>
             <li><Link to="/services">All services</Link></li>
             <li><Link to="/track-order">Track order</Link></li>
-            <li><Link to="/contact">Contact</Link></li>\n            <li><Link to="/help">Help Center</Link></li>
+            <li><Link to="/contact">Contact</Link></li>
+            <li><Link to="/help">Help Center</Link></li>
             <li><Link to="/delivery-policy">Delivery Policy</Link></li>
             <li><Link to="/refund-policy">Refund & Cancellation</Link></li>
             <li><Link to="/privacy-policy">Privacy Policy</Link></li>

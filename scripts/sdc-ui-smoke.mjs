@@ -213,6 +213,16 @@ try {
     throw new Error('Service detail retry did not re-request its service record.');
   }
 
+  await recoveryPage.goto(`${baseURL}/smm`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  const smmRecoveryAlert = recoveryPage.getByRole('alert');
+  await smmRecoveryAlert.waitFor({ state: 'visible', timeout: 15000 });
+  const beforeSmmRetry = failedServiceRequests;
+  await smmRecoveryAlert.getByRole('button', { name: 'Try again' }).click();
+  await recoveryPage.waitForTimeout(1000);
+  if (failedServiceRequests <= beforeSmmRetry) {
+    throw new Error('SMM catalogue retry did not re-request its service list.');
+  }
+
   await recoveryPage.close();
 
   // Cart item removal must update the visible cart and persisted cart state.

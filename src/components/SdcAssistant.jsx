@@ -23,7 +23,7 @@ export default function SdcAssistant() {
   async function sendMessage(value = input) {
     const text = value.trim();
     if (!text || busy || action) return;
-    const invoiceRequestIntent=/\\b(invoice|bill)\\b.{0,45}\\b(request|email|send|mail|download|get|need|want|please|chai|lagbe|daw|den|pathao|pathan)\\b|\\b(request|email|send|mail|download|get|need|want)\\b.{0,40}\\b(invoice|bill)\\b|invoice request|invoice chai|invoice lagbe|ইনভয়েস.*(চাই|পাঠ|ডাউনলোড|রিকোয়েস্ট)|বিল.*(চাই|পাঠ)/i.test(text);
+    const invoiceRequestIntent=/\b(invoice|bill)\b.{0,45}\b(request|email|send|mail|download|get|need|want|please|chai|lagbe|daw|den|pathao|pathan)\b|\b(request|email|send|mail|download|get|need|want)\b.{0,40}\b(invoice|bill)\b|invoice request|invoice chai|invoice lagbe|ইনভয়েস.*(চাই|পাঠ|ডাউনলোড|রিকোয়েস্ট)|বিল.*(চাই|পাঠ)/i.test(text);
     if(invoiceRequestIntent){setMessages(prev=>[...prev,{role:'user',text}]);setInput('');setActionMessage(text);setAction('invoice-request');return;}
     const statusIntent = /\b(order|deposit|request|wallet)\b.{0,24}\b(status|track|tracking|update|check)\b|\b(where is|track)\s+(?:my\s+)?order\b|স্ট্যাটাস|ট্র্যাক|অবস্থা/i.test(text);
     const asksForInformation = /\b(how|what|which|where|when|why|process|procedure|requirements?|details?|information|explain|price|cost|charge|fee|know| জানতে)\b|কীভাবে|কিভাবে|কি লাগে|কী লাগে|প্রক্রিয়া|নিয়ম|তথ্য|দাম|কত টাকা|চার্জ|ফি|জানতে চাই/i.test(text);

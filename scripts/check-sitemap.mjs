@@ -11,12 +11,12 @@ if (!xml.includes('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
   throw new Error('Sitemap does not contain a valid sitemap.org urlset root.');
 }
 
-const entries = [...xml.matchAll(/<url>([\\s\\S]*?)<\\/url>/g)].map(match => match[1]);
+const entries = [...xml.matchAll(/<url>([\s\S]*?)<\/url>/g)].map(match => match[1]);
 if (!entries.length) throw new Error('Sitemap contains no URL entries.');
 
 const urls = [];
 for (const [index, entry] of entries.entries()) {
-  const locations = [...entry.matchAll(/<loc>([\\s\\S]*?)<\\/loc>/g)];
+  const locations = [...entry.matchAll(/<loc>([\s\S]*?)<\/loc>/g)];
   if (locations.length !== 1) throw new Error(`Sitemap entry ${index + 1} must contain exactly one loc element.`);
   const raw = locations[0][1].trim();
   if (!raw || /[<>"']/.test(raw)) throw new Error(`Sitemap entry ${index + 1} has an invalid loc value.`);
@@ -27,11 +27,11 @@ for (const [index, entry] of entries.entries()) {
     throw new Error(`Sitemap URL must use the canonical HTTPS origin ${origin}: ${raw}`);
   }
   if (parsed.search || parsed.hash) throw new Error(`Sitemap URL must not contain query strings or fragments: ${raw}`);
-  if (/^\\/(?:admin|account|cart|order|invoice|order-success)(?:\\/|$)/i.test(parsed.pathname)) {
+  if (/^\/(?:admin|account|cart|order|invoice|order-success)(?:\/|$)/i.test(parsed.pathname)) {
     throw new Error(`Private or transactional URL must not appear in the sitemap: ${raw}`);
   }
-  for (const lastmod of entry.matchAll(/<lastmod>(.*?)<\\/lastmod>/g)) {
-    if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(lastmod[1])) {
+  for (const lastmod of entry.matchAll(/<lastmod>(.*?)<\/lastmod>/g)) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(lastmod[1])) {
       throw new Error(`Invalid lastmod date for ${raw}: ${lastmod[1]}`);
     }
   }

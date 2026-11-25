@@ -69,7 +69,7 @@ export default function SdcAssistant() {
             <div className="sdc-chat-bubble">{m.text.split('\n').map((line, n) => <span key={n}>{line.split(/(\*\*[^*]+\*\*)/g).map((part, j) => part.startsWith('**') && part.endsWith('**') ? <strong key={j}>{part.slice(2, -2)}</strong> : part)}{n < m.text.split('\n').length - 1 && <br/>}</span>)}</div>
           </div>)}
 
-          {action && <SdcChatActions mode={action} initialMessage={actionMessage} onCancel={() => setAction('')} onComplete={message => { setMessages(prev => [...prev, { role: 'assistant', text: message }]); if (message.startsWith('Your wallet balance is insufficient.')) setAction('deposit'); else if (/\bOrder ID:/i.test(message) && /\b(order has been submitted|order has been placed|smm order has been placed)/i.test(message)) { /* Keep the success card mounted so its View invoice link remains available. */ } else setAction(''); }} />}
+          {action && <SdcChatActions mode={action} initialMessage={actionMessage} onCancel={() => setAction('')} onComplete={message => { setMessages(prev => [...prev, { role: 'assistant', text: message }]); if (message.startsWith('Your wallet balance is insufficient.')) setAction('deposit'); else if (/\bOrder ID:/i.test(message)) { /* Keep the success card mounted so the customer can open the invoice. */ } else setAction(''); }} />}
           {busy && <div className="sdc-chat-row is-assistant"><div className="sdc-chat-mini-avatar"><Sparkles size={13}/></div><div className="sdc-chat-bubble sdc-chat-typing"><i/><i/><i/></div></div>}
           <div ref={endRef}/>
         </div>

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-CHROME_BIN="$(cat "${CHROME_PATH}")"
+CHROME_BIN="$(cat "${CHROME_PATH_FILE}")"
 pages=(
   "https://stationerydotcom.me/"
   "https://stationerydotcom.me/services"

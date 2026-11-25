@@ -2,7 +2,7 @@ import {useEffect,useState} from 'react';
 import {Link,useLocation} from 'react-router-dom';
 import {ShoppingCart,ArrowUpRight} from 'lucide-react';
 import {cartCount} from '../lib/cartState';
-import '../experience.css';
+
 
 function MotionReveal(){
   useEffect(()=>{

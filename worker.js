@@ -660,9 +660,13 @@ export default {
       html = html.replace(/<section>\s*<h1>[\s\S]*?<\/section>/i, pageSection);
       const secondSection = '<section><h2>' + escapedH2 + '</h2><p>' + escapedSupport + '</p><p>For accurate availability, pricing and fulfilment, use the live package information on the website. If a service requires additional information, submit only what is requested for that order.</p><p><a href="/services">Browse all services</a> · <a href="/contact">Contact Stationery Dot Com</a> · <a href="/track-order">Track an order</a></p></section>';
       html = html.replace(/<section>\s*<h2>Online services with clear package details[\s\S]*?<\/section>/i, secondSection);
+      const guideSectionPattern = /<section>\s*<h2>Helpful guides from Stationery Dot Com[\s\S]*?<\/section>/i;
+      const guideLinks = '<section><h2>Helpful guides from Stationery Dot Com</h2><p>Practical Bangladesh-focused guides for customers:</p><ul><li><a href="/blog/personal-vs-shared-digital-subscription-guide">Personal vs Shared Digital Subscription Guide</a></li><li><a href="/blog/smm-panel-bangladesh-order-checklist">SMM Panel Bangladesh: Order Checklist</a></li><li><a href="/blog/nid-correction-preparation-checklist">NID Correction Preparation Checklist</a></li><li><a href="/blog/video-editing-footage-preparation-checklist">Video Editing Footage Preparation Checklist</a></li></ul><p><a href="/blog">Read all guides and articles</a></p></section>';
       if (route === "/") {
-        const guideLinks = '<section><h2>Helpful guides from Stationery Dot Com</h2><p>Practical Bangladesh-focused guides for customers:</p><ul><li><a href="/blog/personal-vs-shared-digital-subscription-guide">Personal vs Shared Digital Subscription Guide</a></li><li><a href="/blog/smm-panel-bangladesh-order-checklist">SMM Panel Bangladesh: Order Checklist</a></li><li><a href="/blog/nid-correction-preparation-checklist">NID Correction Preparation Checklist</a></li><li><a href="/blog/video-editing-footage-preparation-checklist">Video Editing Footage Preparation Checklist</a></li></ul><p><a href="/blog">Read all guides and articles</a></p></section>';
-        html = html.replace("</main>", guideLinks + "</main>");
+        if (guideSectionPattern.test(html)) html = html.replace(guideSectionPattern, guideLinks);
+        else html = html.replace("</main>", guideLinks + "</main>");
+      } else {
+        html = html.replace(guideSectionPattern, "");
       }
       const privateRoute = routeExists === false || route === "/admin" || route.startsWith("/admin/") ||
         route === "/account" || route === "/cart" || route === "/order" || route === "/checkout" ||

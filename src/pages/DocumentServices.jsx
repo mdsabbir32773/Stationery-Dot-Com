@@ -60,7 +60,7 @@ export default function DocumentServices(){
       </div>
       {error?<div className="card empty" role="alert"><h2>Document services could not be loaded</h2><p>Please check your connection and try again.</p><button type="button" className="btn" onClick={()=>setRetry(v=>v+1)}>Try again</button><Link className="text-link" to="/contact">Contact our team</Link></div>
       :services===null?<div className="grid">{[1,2,3,4].map(n=><div className="sk" style={{height:300}} key={n}/>)}</div>
-      :services.length?<div className="grid catalog-service-grid">{services.map(s=><ServiceCard key={s.id} s={s}/>)}</div>
+      :services.length?<div className="grid catalog-service-grid">{services.map((s,i)=><ServiceCard key={s.id} s={s} priority={i===0}/>)}</div>
       :<div className="card empty"><h2>No document services are currently listed</h2><p>Check the main services catalogue or contact our team for current availability.</p><Link className="btn" to="/services">View services <ArrowRight size={16}/></Link></div>}
     </section>
 

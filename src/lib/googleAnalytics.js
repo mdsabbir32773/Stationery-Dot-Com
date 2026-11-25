@@ -39,7 +39,7 @@ export function trackGooglePageView(path,title){
   });
   return true;
 }
-const ALLOWED_PARAMS=new Set(['contact_method','placement','page_path','cta_name','item_name','item_category','item_count','quantity','value','currency','lead_type','items']);
+const ALLOWED_PARAMS=new Set(['contact_method','placement','page_path','cta_name','item_name','item_category','item_count','quantity','value','currency','lead_type','items','transaction_id']);
 export function trackGoogleEvent(name,params={}){
   if(!initGoogleAnalytics()||! /^[a-z][a-z0-9_]{0,39}$/.test(String(name||'')))return false;
   const safe={};

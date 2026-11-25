@@ -39,13 +39,29 @@ export function trackGooglePageView(path,title){
   });
   return true;
 }
-const ALLOWED_PARAMS=new Set(['contact_method','placement','page_path','cta_name','item_name','item_category','item_count','quantity','value','currency','lead_type']);
+const ALLOWED_PARAMS=new Set(['contact_method','placement','page_path','cta_name','item_name','item_category','item_count','quantity','value','currency','lead_type','items']);
 export function trackGoogleEvent(name,params={}){
   if(!initGoogleAnalytics()||! /^[a-z][a-z0-9_]{0,39}$/.test(String(name||'')))return false;
   const safe={};
   for(const [key,value] of Object.entries(params||{})){
     if(!ALLOWED_PARAMS.has(key)||value===undefined||value===null)continue;
     if(key==='page_path'){safe[key]=sanitizeAnalyticsPath(value);continue;}
+    if(key==='items'&&Array.isArray(value)){
+      safe[key]=value.slice(0,20).map(item=>{
+        if(!item||typeof item!=='object')return null;
+        const cleanItem={};
+        for(const field of ['item_id','item_name','item_category']){
+          const raw=item[field];
+          if(typeof raw==='string'&&raw.trim())cleanItem[field]=raw.replace(/[\\r\\n]/g,' ').slice(0,100);
+        }
+        for(const field of ['price','quantity']){
+          const raw=Number(item[field]);
+          if(Number.isFinite(raw)&&raw>=0)cleanItem[field]=raw;
+        }
+        return cleanItem;
+      }).filter(Boolean);
+      continue;
+    }
     if(typeof value==='number'&&Number.isFinite(value)){safe[key]=value;continue;}
     if(typeof value==='string'){safe[key]=value.replace(/[\r\n]/g,' ').slice(0,100);}
   }

@@ -121,7 +121,7 @@ Customers see an image QR as a picture, and a PDF QR as a "View Payment QR" butt
 
 ### Growth, SEO and Meta Pixel
 - The site includes route-specific page titles, descriptions, canonical URLs, Open Graph/Twitter metadata, Organization/Service structured data, robots.txt and a sitemap containing the current active service pages.
-- The production sitemap is generated dynamically at https://stationerydotcom.me/sitemap.xml and is already referenced in robots.txt. Submit this canonical URL in Google Search Console when owner access is available; the site code cannot submit or request indexing without that account permission.
+- The production sitemap is generated dynamically at https://stationerydotcom.me/sitemap.xml and is referenced in robots.txt. The owner has submitted the canonical sitemap in Google Search Console; continue monitoring indexing and use the Search Console account for any manual indexing requests.
 - Meta Pixel is configured in src/lib/metaPixel.js (default Pixel ID is already set; VITE_META_PIXEL_ID can override it at build time). Events include PageView, ViewContent, AddToCart, InitiateCheckout and Lead. A manual-payment order is tracked as a Lead until an admin verifies payment; wallet-funded SMM purchases are tracked as Purchase.
 - Cloudflare Workers static-asset response headers are defined in public/_headers. Worker-generated responses also receive security headers in worker.js. Hashed /assets/* files receive long-lived immutable caching.
 - For stronger account security, enable Supabase Auth leaked-password protection in the project’s Authentication password-security settings.

@@ -20,3 +20,7 @@ export function getPaymentMethods(settings={}) {
   }
   return methods;
 }
+
+export function getWalletPaymentMethods(settings={}) {
+  return getPaymentMethods(settings).filter(method => ['bKash','Nagad','Rocket','Bank transfer'].includes(method.name));
+}

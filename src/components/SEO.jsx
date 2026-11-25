@@ -66,19 +66,19 @@ export default function SEO(){
       let service=null;
       let blogPost=null;
       if(route.startsWith('/blog/')){
-        const {supabase}=await import('../lib/supabase');
+        const {publicRows}=await import('../lib/publicData');
         const slug=decodeURIComponent(route.slice('/blog/'.length));
-        const {data}=await supabase.from('blog_posts').select('id,title,slug,excerpt,category,cover_image_url,author,published_at,reading_minutes').eq('slug',slug).eq('status','published').not('published_at','is',null).lte('published_at',new Date().toISOString()).maybeSingle();
+        const {data}=await publicRows('blog_posts',{select:'id,title,slug,excerpt,category,cover_image_url,author,published_at,reading_minutes',slug:'eq.'+slug,status:'eq.published',and:'(published_at.not.is.null,published_at.lte.'+new Date().toISOString()+')',limit:'1'});
         if(cancelled)return;
-        blogPost=data||null;
+        blogPost=data?.[0]||null;
         page=blogPost?{title:BLOG_SEO_TITLES[slug]||`${clean(blogPost.title)} | SDC Blog`,description:clean(blogPost.excerpt)||`Read ${clean(blogPost.title)} on the Stationery Dot Com blog.`,image:blogPost.cover_image_url}:{title:'Article Not Found | Stationery Dot Com Blog',description:'This article is unavailable.',noindex:true};
       }
       if(route.startsWith('/services/')){
-        const {supabase}=await import('../lib/supabase');
+        const {publicRows}=await import('../lib/publicData');
         const slug=decodeURIComponent(route.slice('/services/'.length));
-        const {data}=await supabase.from('services').select('id,name,slug,category,description,image_url,is_active').eq('slug',slug).eq('is_active',true).maybeSingle();
+        const {data}=await publicRows('services',{select:'id,name,slug,category,description,image_url,is_active',slug:'eq.'+slug,is_active:'eq.true',limit:'1'});
         if(cancelled)return;
-        service=data||null;
+        service=data?.[0]||null;
         if(service){
           const serviceSeo={
             'canva':{title:'Canva Pro Subscription Bangladesh | Stationery Dot Com',description:'Explore Canva subscription options in Bangladesh. Compare available plans, review package details and order online from Stationery Dot Com.'},

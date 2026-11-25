@@ -1,7 +1,7 @@
 import {useEffect,useMemo,useState} from 'react';
 import {Link,useParams} from 'react-router-dom';
 import {ArrowLeft,ArrowRight,BookOpen,Search,Sparkles} from 'lucide-react';
-import {supabase} from '../lib/supabase';
+import {publicRows} from '../lib/publicData';
 import './blog.css';
 
 const categories=['All','Document & Government','Meta & Social Media','SMM & Growth','Digital Subscriptions','Creative & Design','Travel Tips','Fun & Facts'];
@@ -46,12 +46,12 @@ export default function Blog(){
  useEffect(()=>{let live=true;setLoading(true);setError('');setDetail(null);setPosts([]);
   (async()=>{
    if(slug){
-    const {data,error}=await supabase.from('blog_posts').select('id,title,slug,excerpt,content,category,tags,cover_image_url,author,reading_minutes,published_at').eq('slug',slug).eq('status','published').not('published_at','is',null).lte('published_at',new Date().toISOString()).maybeSingle();
+    const {data,error}=await publicRows('blog_posts',{select:'id,title,slug,excerpt,content,category,tags,cover_image_url,author,reading_minutes,published_at',slug:'eq.'+slug,status:'eq.published',and:'(published_at.not.is.null,published_at.lte.'+new Date().toISOString()+')',limit:'1'});
     if(!live)return;
     if(error){setError('পোস্টটি এখন লোড করা যাচ্ছে না। কিছুক্ষণ পর আবার চেষ্টা করুন।');setLoading(false);return;}
-    setDetail(data||null);setLoading(false);return;
+    setDetail(data?.[0]||null);setLoading(false);return;
    }
-   const {data,error}=await supabase.from('blog_posts').select('id,title,slug,excerpt,category,tags,cover_image_url,author,reading_minutes,published_at').eq('status','published').not('published_at','is',null).lte('published_at',new Date().toISOString()).order('published_at',{ascending:false});
+   const {data,error}=await publicRows('blog_posts',{select:'id,title,slug,excerpt,category,tags,cover_image_url,author,reading_minutes,published_at',status:'eq.published',and:'(published_at.not.is.null,published_at.lte.'+new Date().toISOString()+')',order:'published_at.desc'});
    if(!live)return;
    if(error){setError('পোস্টগুলো এখন লোড করা যাচ্ছে না। কিছুক্ষণ পর আবার চেষ্টা করুন।');setPosts([]);}
    else setPosts(data||[]);

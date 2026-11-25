@@ -8,6 +8,7 @@ const cart = read('../src/pages/Cart.jsx');
 const success = read('../src/pages/OrderSuccess.jsx');
 const contact = read('../src/pages/Contact.jsx');
 const floating = read('../src/components/WhatsAppButton.jsx');
+const privacy = read('../src/pages/Privacy.jsx');
 
 const checks = [
   ['GA4 is opt-in through a Measurement ID', /VITE_GA4_ID/.test(ga) && /if\(typeof window==='undefined'\|\|!validId\(\)\)return false/.test(ga)],
@@ -16,6 +17,8 @@ const checks = [
   ['SPA page views use pathname only', /trackGooglePageView\(location\.pathname,document\.title\)/.test(app) && !/trackGooglePageView\([^\n]*location\.search/.test(app)],
   ['Add-to-cart event is wired', /trackGoogleEvent\('add_to_cart'/.test(pkg)],
   ['Ecommerce item arrays are included and sanitized', /items:\[\{item_id:String\(p\.id\)/.test(pkg) && /items:fixed\.map/.test(cart) && /key==='items'&&Array\.isArray\(value\)/.test(ga)],
+  ['Ecommerce items are capped and whitelist fields', /value\.slice\(0,20\)/.test(ga) && /item_id','item_name','item_category/.test(ga) && /price','quantity/.test(ga)],
+  ['Privacy policy discloses optional GA4 collection', /Google Analytics 4 may be enabled/.test(privacy) && /Measurement ID is configured/.test(privacy)],
   ['Direct buy and quote CTAs are tracked', /trackGoogleEvent\('begin_checkout'/.test(pkg) && /placement:'package_quote'/.test(pkg)],
   ['Checkout event is wired', /trackGoogleEvent\('begin_checkout'/.test(cart)],
   ['Lead event is deduplicated', /sdc_ga_lead_/.test(success) && /trackGoogleEvent\('generate_lead'/.test(success)],

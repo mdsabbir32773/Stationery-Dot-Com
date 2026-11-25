@@ -103,6 +103,27 @@ try {
       organization.logo !== `${baseURL}/stationery-dot-com-logo.webp`) {
     throw new Error('Organization structured data is missing the Google Business Profile link or brand logo.');
   }
+  const localBusiness = nodes.find(node => node['@type'] === 'LocalBusiness');
+  if (localBusiness?.name !== 'Stationery Dot Com' ||
+      localBusiness?.address?.addressLocality !== 'Dhaka' ||
+      localBusiness?.address?.addressCountry !== 'BD' ||
+      !localBusiness?.sameAs?.includes('https://www.facebook.com/StationeryDotCom2')) {
+    throw new Error('LocalBusiness structured data is missing the verified brand name, Dhaka address or official social identity.');
+  }
+  const crawlableHome = await page.request.get(baseURL + '/?seo-smoke=home');
+  const crawlableHomeHtml = await crawlableHome.text();
+  if (crawlableHome.status() !== 200 ||
+      !crawlableHomeHtml.includes('Helpful guides from Stationery Dot Com') ||
+      !crawlableHomeHtml.includes('/blog/nid-correction-preparation-checklist')) {
+    throw new Error('Homepage fallback is missing crawlable links to published helpful guides.');
+  }
+  const nidSeoResponse = await page.request.get(baseURL + '/services/nid?seo-smoke=nid');
+  const nidSeoHtml = await nidSeoResponse.text();
+  if (nidSeoResponse.status() !== 200 ||
+      !nidSeoHtml.includes('<title>NID Application &amp; Correction BD | Stationery Dot Com</title>') ||
+      !nidSeoHtml.includes('Bangladesh National Identity Card application or correction assistance')) {
+    throw new Error('NID service fallback does not have a distinct, readable SEO title and useful content.');
+  }
   const faviconHref = await page.locator('link[rel="icon"][type="image/png"]').getAttribute('href');
   if (faviconHref !== '/favicon-192.png') {
     throw new Error(`Google-compatible PNG favicon is missing or incorrect: ${faviconHref}`);

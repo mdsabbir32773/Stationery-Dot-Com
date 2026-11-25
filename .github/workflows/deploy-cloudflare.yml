@@ -44,11 +44,11 @@ jobs:
         run: npm run check:analytics
       - name: Deploy to Cloudflare Workers
         run: npx wrangler@latest deploy
-      - name: Verify production HTTP health
-        run: npm run check:live-site
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: 5048da0aa184b4fbb033f13a83d1cac6
+      - name: Verify production HTTP health
+        run: npm run check:live-site
       - name: Trigger live UI smoke test
         env:
           GH_TOKEN: ${{ github.token }}

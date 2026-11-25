@@ -77,7 +77,12 @@ try {
   if (!(await page.title()).includes('Stationery Dot Com')) {
     throw new Error('Homepage title does not identify Stationery Dot Com.');
   }
-  await page.locator('.home-hero h1').waitFor({ state: 'visible', timeout: 20000 });
+  try {
+    await page.locator('.home-hero h1').waitFor({ state: 'visible', timeout: 20000 });
+  } catch (error) {
+    const bodyText = await page.locator('body').innerText().catch(() => '(body text unavailable)');
+    throw new Error('Homepage React content did not render. Browser errors: ' + errors.slice(0,8).join(' | ') + ' Body text: ' + bodyText.slice(0,1200) + ' Original: ' + error.message);
+  }
   await page.locator('.scard').first().waitFor({ state: 'visible', timeout: 20000 });
   const zeroPriceServiceCards = await page.locator('.scard').evaluateAll(cards => cards.filter(card => card.innerText.includes('Starting from') && card.innerText.includes('৳0')).map(card => card.innerText.slice(0,160)));
   if (zeroPriceServiceCards.length) {

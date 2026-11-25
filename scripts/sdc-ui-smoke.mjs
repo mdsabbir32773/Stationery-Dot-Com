@@ -77,6 +77,9 @@ try {
   if (!(await page.title()).includes('Stationery Dot Com')) {
     throw new Error('Homepage title does not identify Stationery Dot Com.');
   }
+  const missingHomepageAlt = await page.locator('img').evaluateAll(images => images.filter(image => !image.hasAttribute('alt')).map(image => image.currentSrc || image.src));
+  if (missingHomepageAlt.length) throw new Error('Homepage images missing alt attributes: ' + missingHomepageAlt.join(', '));
+  if (await page.locator('h1').count() !== 1) throw new Error('Homepage should have exactly one primary h1 heading.');
   const canonical = await page.locator('link[rel="canonical"]').getAttribute('href');
   if (canonical !== `${baseURL}/`) {
     throw new Error(`Homepage canonical is incorrect: ${canonical}`);
@@ -450,6 +453,8 @@ try {
     const state = await page.evaluate(() => ({ path: location.pathname, title: document.title, headings: [...document.querySelectorAll('h1,h2')].map(x => x.textContent.trim()), body: document.body.innerText.slice(0, 1800) }));
     throw new Error('Digital subscriptions heading did not render: ' + JSON.stringify(state) + ' · ' + error.message);
   });
+  const missingSubscriptionAlt = await page.locator('img').evaluateAll(images => images.filter(image => !image.hasAttribute('alt')).map(image => image.currentSrc || image.src));
+  if (missingSubscriptionAlt.length) throw new Error('Subscription page images missing alt attributes: ' + missingSubscriptionAlt.join(', '));
   await page.waitForFunction(() => document.title.includes('Digital Subscriptions Bangladesh'));
   await page.waitForFunction(() => {
     try {
@@ -485,6 +490,8 @@ try {
     throw new Error('Published blog article is missing article:published_time metadata.');
   }
   await page.locator('.blog-article-body a[href="/digital-subscriptions"]').waitFor({ state: 'visible', timeout: 10000 });
+  const missingArticleAlt = await page.locator('img').evaluateAll(images => images.filter(image => !image.hasAttribute('alt')).map(image => image.currentSrc || image.src));
+  if (missingArticleAlt.length) throw new Error('Blog article images missing alt attributes: ' + missingArticleAlt.join(', '));
   const blogDescription = await page.locator('meta[name="description"]').getAttribute('content');
   if (!blogDescription || blogDescription.length > 165) {
     throw new Error('Blog article meta description is missing or exceeds the 165-character limit.');
@@ -506,6 +513,20 @@ try {
   await page.locator('.blog-article-body a[href="/services/video-editing-creation"]').waitFor({ state: 'visible', timeout: 10000 });
   await page.locator('.blog-article-body a[href="/creative-services"]').waitFor({ state: 'visible', timeout: 10000 });
   await page.locator('.blog-article-body a[href="/contact"]').waitFor({ state: 'visible', timeout: 10000 });
+
+  const internalLinkChecks = [
+    ['personal-vs-shared-digital-subscription-guide', ['/digital-subscriptions', '/help']],
+    ['smm-panel-bangladesh-order-checklist', ['/smm', '/meta-services']],
+    ['nid-correction-preparation-checklist', ['/services/nid', '/document-services']],
+    ['design-video-editing-order-brief-checklist', ['/services/graphic-design', '/services/video-editing-creation']],
+    ['online-service-checklist', ['/services', '/help']],
+    ['facebook-page-growth-quality', ['/meta-services', '/services/social-media-page-management']]
+  ];
+  for (const [slug, links] of internalLinkChecks) {
+    const response = await page.goto(`${baseURL}/blog/${slug}`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    if (!response || response.status() >= 400) throw new Error(`Internal-link article ${slug} returned HTTP ${response?.status() ?? 'no response'}`);
+    for (const href of links) await page.locator(`.blog-article-body a[href="${href}"]`).waitFor({ state: 'visible', timeout: 10000 });
+  }
 
   const documentResponse = await page.goto(`${baseURL}/document-services`, { waitUntil: 'domcontentloaded', timeout: 30000 });
   if (!documentResponse || documentResponse.status() >= 400) {

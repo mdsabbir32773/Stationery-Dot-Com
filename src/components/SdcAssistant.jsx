@@ -7,8 +7,8 @@ import SdcInvoiceRequest from './SdcInvoiceRequest';
 
 const greeting = { role: 'assistant', text: "হ্যালো! 😊 কী খুঁজছেন বা কী অর্ডার করতে চান, নিজের মতো করে বলুন। সার্ভিস বা প্যাকেজের নাম বললে আমি মিলিয়ে available package আর দাম জানাব, তারপর একে একে order confirm করব। বাংলা, English বা Banglish—যেভাবে স্বাচ্ছন্দ্য বোধ করেন, সেভাবেই লিখুন।" };
 
-export default function SdcAssistant() {
-  const [open, setOpen] = useState(false);
+export default function SdcAssistant({ defaultOpen = false } = {}) {
+  const [open, setOpen] = useState(defaultOpen);
   const [messages, setMessages] = useState([greeting]);
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);

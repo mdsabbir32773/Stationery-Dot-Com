@@ -30,6 +30,8 @@ jobs:
         run: npm ci
       - name: Validate live smoke test script syntax
         run: npm run check:smoke-script
+      - name: Validate production health-check script syntax
+        run: npm run check:live-site-script
       - name: Build website
         run: npm run build
         env:
@@ -42,6 +44,8 @@ jobs:
         run: npm run check:analytics
       - name: Deploy to Cloudflare Workers
         run: npx wrangler@latest deploy
+      - name: Verify production HTTP health
+        run: npm run check:live-site
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: 5048da0aa184b4fbb033f13a83d1cac6

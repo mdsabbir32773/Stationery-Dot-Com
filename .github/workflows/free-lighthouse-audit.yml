@@ -34,7 +34,7 @@ jobs:
           import fs from 'node:fs';
           import { execFileSync } from 'node:child_process';
           import puppeteer from 'puppeteer';
-          fs.writeFileSync(process.env.CHROME_PATH, puppeteer.executablePath());
+          fs.writeFileSync(process.env.CHROME_PATH, await puppeteer.executablePath());
           NODE
           chmod +x scripts/run-free-lighthouse.sh
           scripts/run-free-lighthouse.sh

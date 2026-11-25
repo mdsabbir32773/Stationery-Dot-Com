@@ -228,6 +228,8 @@ try {
 
   // Service data outages must be visible and recoverable on both homepage and catalog.
   const recoveryPage = await browser.newPage();
+  recoveryPage.on('pageerror', error => errors.push('recovery page: '+error.message));
+  recoveryPage.on('console', message => { if(message.type()==='error') errors.push('recovery console: '+message.text()); });
   let failedServiceRequests = 0;
   await recoveryPage.route('**/rest/v1/services**', async route => {
     failedServiceRequests += 1;
@@ -239,7 +241,7 @@ try {
   });
   await recoveryPage.goto(baseURL, { waitUntil: 'domcontentloaded', timeout: 30000 });
   const homeRecoveryAlert = recoveryPage.getByRole('alert');
-  await homeRecoveryAlert.waitFor({ state: 'visible', timeout: 15000 });
+  try { await homeRecoveryAlert.waitFor({ state: 'visible', timeout: 20000 }); } catch (error) { const bodyText=await recoveryPage.locator('body').innerText().catch(()=>'(unavailable)'); throw new Error('Homepage outage alert missing; intercepted service requests='+failedServiceRequests+'; body='+bodyText.slice(0,1200)+'; browser errors='+errors.slice(-8).join(' | ')+'; '+error.message); }
   await homeRecoveryAlert.getByRole('button', { name: 'Try again' }).click();
   await recoveryPage.waitForFunction(() => document.querySelector('[role="alert"]')?.textContent.includes('Browse services'), { timeout: 15000 });
   if (failedServiceRequests < 4) {

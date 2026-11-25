@@ -31,6 +31,8 @@ jobs:
         run: npm run build
       - name: Enforce production bundle budgets
         run: npm run check:bundle
+      - name: Validate sitemap fallback
+        run: npm run check:sitemap
       - name: Deploy to Cloudflare Workers
         run: npx wrangler@latest deploy
         env:

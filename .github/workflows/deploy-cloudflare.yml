@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: stationery-dot-com-deploy-v2
+  group: stationery-dot-com-deploy-v3
   cancel-in-progress: true
 
 jobs:

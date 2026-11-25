@@ -359,7 +359,25 @@ function routeSeo(route) {
     "/terms-of-service": ["Terms of Service | Stationery Dot Com", "Read the terms for using Stationery Dot Com, placing orders and accessing digital or online services.", "Terms of Service", "Using our website and services", "By using Stationery Dot Com or placing an order, customers should review the service description, package limits, delivery estimates and any provider requirements. Customers are responsible for supplying accurate information and using services lawfully. Availability and processing may depend on third-party platforms or authorities; no result should be assumed unless stated in the specific package terms."]
   };
   const generic = ["Stationery Dot Com | Online Services Bangladesh", "Explore online services from Stationery Dot Com in Bangladesh. Review service details and package terms before ordering.", "Stationery Dot Com Online Services", "Service information", "Review the service details, package scope and terms provided by Stationery Dot Com before placing an order."];
-  if (pages[route]) return pages[route];
+  const supporting = {
+    "/": "Customers can browse service categories, view package prices and requirements, place an order online, and follow order updates using the order tracking page.",
+    "/about": "We aim to make online service ordering easier with clear package information, customer support and order-status updates. Stationery Dot Com is an independent service provider and is not a government office or an official representative of third-party platforms.",
+    "/services": "The catalogue includes document assistance, digital subscriptions, Meta and social media support, SMM, and creative services. Each listing should be reviewed individually because requirements, pricing and fulfilment differ by service.",
+    "/digital-subscriptions": "Before purchasing, compare the subscription duration, account ownership or sharing method, storage, device limits, warranty and activation steps. Provider terms and availability can change, so the package description at checkout is the reference for the order.",
+    "/document-services": "For government-related requests, prepare accurate details and supporting documents before starting. Official eligibility, fees, appointments, processing and approval remain with the relevant government authority.",
+    "/meta-services": "Advertising support may include page setup, campaign planning, audience selection and promotion management. Ad spend, creative assets, account access and platform approvals should be agreed before campaign work begins.",
+    "/creative-services": "For a design or website request, provide the required copy, brand assets, dimensions, references, functionality and deadline. Confirm deliverables, revision rounds and ownership/hand-off details before the project starts.",
+    "/smm": "Check the platform, service type, quantity range, start estimate, delivery estimate and refill or cancellation terms on each listing. Platform metrics can change and no engagement or business outcome should be guaranteed.",
+    "/contact": "For faster support, include your order ID when asking about an existing order. Do not send account passwords, wallet PINs or one-time verification codes.",
+    "/blog": "Articles are intended to help customers prepare for online services, understand package terms and make better decisions. For government processes or platform policies, verify current details with the relevant official source.",
+    "/help": "Keep your order ID and the contact details used during checkout ready when contacting support. Payment receipt uploads are reviewed; uploading a receipt does not itself confirm payment.",
+    "/track-order": "Enter the order details requested on the tracking page. If you cannot locate an order, contact support with the order ID and the phone number used at checkout.",
+    "/delivery-policy": "Processing starts after required details and payment references are reviewed. Digital access, document assistance, creative work and third-party processing may have different fulfilment steps.",
+    "/privacy-policy": "Use the website's account and order features only with information you are authorized to provide. The full policy describes the data collected, purposes, service providers and contact options.",
+    "/refund-policy": "Contact support promptly if you need to cancel or believe fulfilment was incorrect. The team reviews the order status and published service terms before confirming available remedies.",
+    "/terms-of-service": "Customers should check package scope and submit accurate, authorized information. Third-party providers and government authorities control their own platforms, decisions and processing times."
+  };
+  if (pages[route]) { pages[route][5] = supporting[route] || "Review the service-specific information, available package options and terms before placing an order."; return pages[route]; }
   const service = route.match(/^\/services\/([a-z0-9-]+)$/);
   if (service) {
     const slug = service[1];
@@ -381,7 +399,8 @@ function routeSeo(route) {
       return acronyms[lower] || (index === 0 ? word.charAt(0).toUpperCase() + word.slice(1) : word.charAt(0).toUpperCase() + word.slice(1));
     }).join(" ");
     const detail = specific[slug] || ("For " + name + ", compare the available package options, service quantity or duration, delivery estimate and any account or provider requirements shown on the product page. Check the included scope and support terms before placing an order.");
-    return [name + " Service | Stationery Dot Com", "Explore " + name + " service options at Stationery Dot Com in Bangladesh. Check package details, access or application requirements and terms before ordering.", name + " Service in Bangladesh", "Package details and requirements", detail];
+    const nextStep = slug === "birth-certificate" || slug === "nid" || slug === "passport" ? "Use the official authority's current instructions to confirm eligibility, fees and required documents. Our service is assistance only; the authority makes the final decision." : slug.startsWith("smm-") ? "Select a quantity within the listed limits and check start, delivery and refill terms. Use services responsibly and follow the platform's terms." : "Compare the listed packages and choose the duration or scope that matches your needs. Confirm account access, delivery steps and support conditions before checkout.";
+    return [name + " Service | Stationery Dot Com", "Explore " + name + " service options at Stationery Dot Com in Bangladesh. Check package details, access or application requirements and terms before ordering.", name + " Service in Bangladesh", "Package details and requirements", detail, nextStep];
   }
   const blog = route.match(/^\/blog\/([a-z0-9-]+)$/);
   if (blog) {
@@ -496,9 +515,10 @@ export default {
       const escapedH1 = escapeHtml(seo[2]);
       const escapedH2 = escapeHtml(seo[3]);
       const escapedIntro = escapeHtml(seo[4]);
+      const escapedSupport = escapeHtml(seo[5] || "Review the service-specific information, available package options and terms before placing an order.");
       const pageSection = '<section><h1>' + escapedH1 + '</h1><p>' + escapedIntro + '</p><p>Stationery Dot Com is based in Dhaka, Bangladesh. Review the service scope, package details, requirements and delivery information shown on each listing before placing an order.</p></section>';
       html = html.replace(/<section>\s*<h1>[\s\S]*?<\/section>/i, pageSection);
-      const secondSection = '<section><h2>' + escapedH2 + '</h2><p>' + escapedIntro + '</p><p>For accurate availability, pricing and fulfilment, use the live package information on the website. If a service requires additional information, submit only what is requested for that order.</p><p><a href="/services">Browse all services</a> · <a href="/contact">Contact Stationery Dot Com</a> · <a href="/track-order">Track an order</a></p></section>';
+      const secondSection = '<section><h2>' + escapedH2 + '</h2><p>' + escapedSupport + '</p><p>For accurate availability, pricing and fulfilment, use the live package information on the website. If a service requires additional information, submit only what is requested for that order.</p><p><a href="/services">Browse all services</a> · <a href="/contact">Contact Stationery Dot Com</a> · <a href="/track-order">Track an order</a></p></section>';
       html = html.replace(/<section>\s*<h2>Online services with clear package details[\s\S]*?<\/section>/i, secondSection);
       const privateRoute = routeExists === false || route === "/admin" || route.startsWith("/admin/") ||
         route === "/account" || route === "/cart" || route === "/order" || route === "/checkout" ||

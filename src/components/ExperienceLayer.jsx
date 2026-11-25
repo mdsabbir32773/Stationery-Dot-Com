@@ -2,6 +2,7 @@ import {useEffect,useState} from 'react';
 import {Link,useLocation} from 'react-router-dom';
 import {ShoppingCart,ArrowUpRight} from 'lucide-react';
 import {cartCount} from '../lib/cartState';
+import '../experience.css';
 
 function MotionReveal(){
   useEffect(()=>{
@@ -11,7 +12,7 @@ function MotionReveal(){
     const io=new IntersectionObserver(entries=>{entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('sdc-reveal-in');io.unobserve(entry.target);}});},{threshold:.08,rootMargin:'0px 0px -40px'});
     nodes.forEach((node,i)=>{node.classList.add('sdc-reveal-ready');node.style.setProperty('--sdc-delay',Math.min(i%6,5)*45+'ms');io.observe(node);});
     return()=>io.disconnect();
-  });
+  },[]);
   return null;
 }
 function CustomCursor(){

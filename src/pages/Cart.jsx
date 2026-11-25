@@ -7,7 +7,7 @@ import {getPaymentMethods} from '../lib/paymentMethods';
 import {getUploadMime,getPaymentProofMime} from '../lib/fileValidation';
 import {subscriptionDurationLabel} from '../lib/subscription';
 import {waLink} from '../lib/whatsapp';
-import useTitle from '../lib/useTitle';import {trackInitiateCheckout} from '../lib/metaPixel';
+import useTitle from '../lib/useTitle';import {trackInitiateCheckout} from '../lib/metaPixel';import {trackGoogleEvent} from '../lib/googleAnalytics';
 
 import {readCart as read,saveCart as save,removeFromCart,clearCart} from '../lib/cartState';
 
@@ -17,7 +17,7 @@ export default function Cart(){
  useTitle('Cart');const nav=useNavigate();const[items,setItems]=useState(read);const[settings,setSettings]=useState({});const[f,setF]=useState({customer_name:'',phone:'',whatsapp:'',email:'',method:'',transaction_id:''});const[files,setFiles]=useState([]);const[proof,setProof]=useState(null),[proofMime,setProofMime]=useState('');const[paid,setPaid]=useState(false);const[busy,setBusy]=useState(false);const submitLock=useRef(false);const[err,setErr]=useState('');
  useEffect(()=>{const sync=()=>setItems(read());window.addEventListener('storage',sync);window.addEventListener('stationery-cart-change',sync);getSettings().then(setSettings).catch(()=>{});supabase.auth.getSession().then(async({data})=>{const u=data.session?.user;if(!u)return;const{data:profile}=await supabase.from('customer_profiles').select('full_name,phone').eq('id',u.id).maybeSingle();setF(v=>({...v,customer_name:v.customer_name||profile?.full_name||u.user_metadata?.full_name||u.user_metadata?.name||'',phone:v.phone||profile?.phone||u.user_metadata?.phone||'',email:v.email||u.email||''}));});return()=>{window.removeEventListener('storage',sync);window.removeEventListener('stationery-cart-change',sync)}},[]);
  const fixed=items.filter(x=>Number(x.price)>0);const quote=items.filter(x=>Number(x.price)<=0);const total=fixed.reduce((s,x)=>s+Number(x.price)*(Number(x.quantity)||1),0);
- useEffect(()=>{if(fixed.length)trackInitiateCheckout({contentIds:fixed.map(x=>x.id),value:total,numItems:fixed.reduce((n,x)=>n+(Number(x.quantity)||1),0)});},[]);
+ useEffect(()=>{if(fixed.length){const count=fixed.reduce((n,x)=>n+(Number(x.quantity)||1),0);trackInitiateCheckout({contentIds:fixed.map(x=>x.id),value:total,numItems:count});trackGoogleEvent('begin_checkout',{item_count:count,value:total,currency:'BDT'});}},[]);
  const methods=getPaymentMethods(settings);
  const selected=methods.find(x=>x.name===f.method)||methods[0];
  const changeQty=(id,n)=>{const q=Math.min(100000,Math.max(1,n||1));const c=read().map(x=>x.id===id?{...x,quantity:q}:x);save(c);setItems(c)};

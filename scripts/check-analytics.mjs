@@ -21,6 +21,7 @@ const checks = [
   ['Privacy policy discloses optional GA4 collection', /Google Analytics 4 may be enabled/.test(privacy) && /Measurement ID is configured/.test(privacy)],
   ['Direct buy and quote CTAs are tracked', /trackGoogleEvent\('begin_checkout'/.test(pkg) && /placement:'package_quote'/.test(pkg)],
   ['Checkout event is wired', /trackGoogleEvent\('begin_checkout'/.test(cart)],
+  ['SMM wallet purchase event includes synthetic transaction ID and items', /trackGoogleEvent\('purchase'/.test(read('../src/pages/SmmPanel.jsx')) && /transaction_id:'sdc_smm_/.test(read('../src/pages/SmmPanel.jsx')) && /fromWallet\)return;/.test(success)],
   ['Lead event is deduplicated', /sdc_ga_lead_/.test(success) && /trackGoogleEvent\('generate_lead'/.test(success)],
   ['Contact events are wired', /trackGoogleEvent\('contact_click'/.test(contact) && /trackGoogleEvent\('contact_click'/.test(floating)]
 ];

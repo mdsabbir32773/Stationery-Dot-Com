@@ -5,7 +5,7 @@ import {supabase} from '../lib/supabase';
 import './blog.css';
 
 const categories=['All','Document & Government','Meta & Social Media','SMM & Growth','Digital Subscriptions','Creative & Design','Travel Tips','Fun & Facts'];
-const dateLabel=value=>value?new Date(value).toLocaleDateString('en-BD',{day:'numeric',month:'long',year:'numeric'}):'';
+const dateLabel=value=>value?new Intl.DateTimeFormat('en-BD',{timeZone:'Asia/Dhaka',day:'numeric',month:'long',year:'numeric'}).format(new Date(value)):'';
 
 function renderInline(text) {
  const parts=[];

@@ -598,7 +598,7 @@ try {
     throw new Error('Document service detail meta description is missing or too long.');
   }
   const documentGraph = JSON.parse(await page.locator('#stationery-seo-jsonld').textContent())['@graph'] || [];
-  if (!documentGraph.some(node => node['@type'] === 'Service' && node.name && node.areaServed?.name === 'Bangladesh') {
+  if (!documentGraph.some(node => node['@type'] === 'Service' && node.name && node.areaServed?.name === 'Bangladesh')) {
     throw new Error('Document service detail is missing its Service structured data for Bangladesh.');
   }
   if (!documentGraph.some(node => node['@type'] === 'BreadcrumbList')) {

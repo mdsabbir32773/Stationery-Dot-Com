@@ -496,6 +496,9 @@ try {
   if (!videoGuideGraph.some(node => node['@type'] === 'BlogPosting')) {
     throw new Error('New video-editing guide is missing BlogPosting structured data.');
   }
+  await page.locator('.blog-article-body a[href="/services/video-editing-creation"]').waitFor({ state: 'visible', timeout: 10000 });
+  await page.locator('.blog-article-body a[href="/creative-services"]').waitFor({ state: 'visible', timeout: 10000 });
+  await page.locator('.blog-article-body a[href="/contact"]').waitFor({ state: 'visible', timeout: 10000 });
 
   const documentResponse = await page.goto(`${baseURL}/document-services`, { waitUntil: 'domcontentloaded', timeout: 30000 });
   if (!documentResponse || documentResponse.status() >= 400) {

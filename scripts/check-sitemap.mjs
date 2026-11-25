@@ -4,6 +4,21 @@ const sitemapPath = new URL('../public/sitemap.xml', import.meta.url);
 const xml = readFileSync(sitemapPath, 'utf8');
 const origin = 'https://stationerydotcom.me';
 
+const robotsPath = new URL('../public/robots.txt', import.meta.url);
+const robots = readFileSync(robotsPath, 'utf8');
+const robotsLines = robots.split(/\\r?\\n/).map(line => line.trim());
+if (!robotsLines.includes('User-agent: *') || !robotsLines.includes('Allow: /')) {
+  throw new Error('robots.txt must include a wildcard crawler group and allow public pages.');
+}
+if (!robotsLines.includes(`Sitemap: ${origin}/sitemap.xml`)) {
+  throw new Error('robots.txt must reference the canonical sitemap URL.');
+}
+for (const privatePath of ['/admin', '/account', '/cart', '/order', '/order-success/']) {
+  if (!robotsLines.includes(`Disallow: ${privatePath}`)) {
+    throw new Error(`robots.txt is missing the private-route rule: ${privatePath}`);
+  }
+}
+
 if (!xml.startsWith('<?xml version="1.0" encoding="UTF-8"?>')) {
   throw new Error('Sitemap is missing its UTF-8 XML declaration.');
 }

@@ -27,14 +27,14 @@ jobs:
         run: npm install --no-save --package-lock=false lighthouse puppeteer
       - name: Run Lighthouse for mobile and desktop on key pages
         env:
-          CHROME_PATH: ${{ runner.temp }}/chrome-path
+          CHROME_PATH_FILE: ${{ runner.temp }}/chrome-path
         run: |
           mkdir -p lighthouse-results
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
           import { execFileSync } from 'node:child_process';
           import puppeteer from 'puppeteer';
-          fs.writeFileSync(process.env.CHROME_PATH, await puppeteer.executablePath());
+          fs.writeFileSync(process.env.CHROME_PATH_FILE, await puppeteer.executablePath());
           NODE
           chmod +x scripts/run-free-lighthouse.sh
           scripts/run-free-lighthouse.sh

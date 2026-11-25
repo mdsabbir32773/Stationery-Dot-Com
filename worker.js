@@ -380,6 +380,49 @@ function routeSeo(route) {
   if (pages[route]) { pages[route][5] = supporting[route] || "Review the service-specific information, available package options and terms before placing an order."; return pages[route]; }
   const service = route.match(/^\/services\/([a-z0-9-]+)$/);
   if (service) {
+    const serviceMeta = {
+      "birth-certificate": ["Birth Certificate Support BD | Stationery Dot Com", "Birth certificate application and correction assistance in Bangladesh. Check required records and official registration rules before ordering."],
+      "nid": ["NID Application & Correction BD | Stationery Dot Com", "NID application and information-correction assistance in Bangladesh. Verify eligibility and documents with the Election Commission."],
+      "passport": ["Passport Application Support BD | Stationery Dot Com", "Passport application assistance in Bangladesh. Confirm current fees, documents and appointments with the official passport authority."],
+      "trade-license": ["Trade License Support BD | Stationery Dot Com", "Assistance with trade licence application or renewal in Bangladesh. Requirements and approval depend on the relevant local authority."],
+      "canva": ["Canva Subscription BD | Stationery Dot Com", "Compare available Canva subscription packages in Bangladesh, including duration, account access and included plan terms."],
+      "capcut-pro": ["CapCut Pro Subscription BD | Stationery Dot Com", "Review the available CapCut Pro subscription package in Bangladesh, including duration, device terms and activation method."],
+      "chatgpt-go-plus": ["ChatGPT Go & Plus BD | Stationery Dot Com", "Compare ChatGPT Go and Plus subscription options in Bangladesh. Review plan, account eligibility and activation details."],
+      "claude": ["Claude AI Subscription BD | Stationery Dot Com", "Explore Claude AI subscription options in Bangladesh. Check duration, access method and package conditions."],
+      "gemini-ai-google-ai": ["Google AI & Gemini Subscription BD | Stationery Dot Com", "Review Google AI and Gemini subscription options, duration, storage and access method available in Bangladesh."],
+      "spotify-premium": ["Spotify Premium BD | Stationery Dot Com", "Review Spotify Premium subscription options in Bangladesh and confirm current plan duration and account requirements."],
+      "youtube-premium": ["YouTube Premium BD | Stationery Dot Com", "Compare YouTube Premium subscription options in Bangladesh and review package duration and access details."],
+      "facebook": ["Facebook Page Setup BD | Stationery Dot Com", "Facebook Page setup and optimization support in Bangladesh for business information, profile setup and page presence."],
+      "social-media-boosting-ads-run": ["Facebook & Instagram Ads BD | Stationery Dot Com", "Advertising support for Facebook and Instagram in Bangladesh, including campaign setup and promotion planning."],
+      "social-media-page-management": ["Social Media Page Management BD | Stationery Dot Com", "Social media page management support for content updates, inbox handling and consistent brand communication."],
+      "graphic-design": ["Graphic Design Services BD | Stationery Dot Com", "Graphic design for business branding, social media posts, marketing materials and print deliverables in Bangladesh."],
+      "video-editing-creation": ["Video Editing Services BD | Stationery Dot Com", "Video editing for supplied footage, social media videos and business content. Review deliverables and revisions."],
+      "web-design-development": ["Website Design & Development BD | Stationery Dot Com", "Website design and development for business sites, landing pages, blogs and online stores in Bangladesh."],
+      "smm-fb-fol-ww": ["Facebook Followers Worldwide | Stationery Dot Com", "Review worldwide Facebook follower service quantity, price, delivery estimate and refill terms before ordering."],
+      "smm-fb-fol-mix": ["Facebook Followers BD & Worldwide | Stationery Dot Com", "Compare mixed Bangladesh and worldwide Facebook follower options and check quantity, delivery and refill details."],
+      "smm-fb-fol-bd-n": ["Facebook Followers Bangladesh | Stationery Dot Com", "Review Bangladesh Facebook follower service limits, current package price and fulfilment terms."],
+      "smm-fb-fol-bd-p": ["Facebook Premium Followers BD | Stationery Dot Com", "Review Bangladesh premium Facebook follower service quantity, pricing and delivery terms."],
+      "smm-fb-fol-bd-life": ["Facebook Followers BD Lifetime Refill | SDC", "Review Bangladesh Facebook follower service with lifetime refill terms and listed quantity limits."],
+      "smm-fb-rea-ww": ["Facebook Reactions Worldwide | Stationery Dot Com", "Review worldwide Facebook reaction service options, quantity limits and listed pricing."],
+      "smm-fb-rea-bd": ["Facebook Reactions Bangladesh | Stationery Dot Com", "Review Bangladesh Facebook reaction service options, quantity limits and listed pricing."],
+      "smm-fb-reviews-genuine": ["Facebook Review Support | Stationery Dot Com", "Read the Facebook review service details and follow platform rules; reviews must reflect real customer experiences."],
+      "smm-fb-views-nr": ["Facebook Video Views | Stationery Dot Com", "Review Facebook video and Reels view service quantity, price and no-refill terms."],
+      "smm-fb-views-r1": ["Facebook Video Views with Refill | SDC", "Review Facebook video and Reels view service with one-time refill terms and quantity limits."],
+      "smm-fb-com-rnd": ["Facebook Comments Service | Stationery Dot Com", "Review random Facebook comments service limits, pricing and order requirements."],
+      "smm-fb-com-cus": ["Custom Facebook Comments | Stationery Dot Com", "Custom Facebook comments service details, required post information, quantity limits and pricing."],
+      "smm-fb-com-pcus": ["Premium Custom Facebook Comments | SDC", "Review premium custom Facebook comments service requirements, quantity limits and pricing."],
+      "smm-fb-shr-nr": ["Facebook Post Shares | Stationery Dot Com", "Review Facebook post shares service quantity, price and no-refill terms."],
+      "smm-fb-shr-r1": ["Facebook Post Shares with Refill | SDC", "Review Facebook post shares service with one-time refill terms and quantity limits."],
+      "smm-fb-shr-life": ["Facebook Post Shares Lifetime Refill | SDC", "Review Facebook post shares service with lifetime refill terms and listed price."],
+      "smm-tg-mem-bot": ["Telegram Bot Members | Stationery Dot Com", "Review Telegram bot member service quantity, pricing and order requirements."],
+      "smm-tg-mem-low": ["Telegram Members Low Quality | SDC", "Review Telegram low-quality member service quantity limits and listed pricing."],
+      "smm-tg-mem-med": ["Telegram Members Medium Quality | SDC", "Review Telegram medium-quality member service quantity limits and listed pricing."],
+      "smm-tg-mem-high": ["Telegram Members High Quality | SDC", "Review Telegram high-quality member service quantity limits and listed pricing."],
+      "smm-ig-fol-real-bot": ["Instagram Followers Service | Stationery Dot Com", "Review Instagram follower service options, quantity limits, pricing and order terms."],
+      "smm-ig-fol-old-post": ["Instagram Followers from Aged Accounts | SDC", "Review Instagram follower package described as aged accounts with posts, including quantity and pricing."],
+      "smm-ig-fol-real-hq": ["Instagram High Quality Followers | SDC", "Review Instagram high-quality follower service quantity limits, pricing and order requirements."],
+      "smm-ig-fol-old-post-r30": ["Instagram Followers 30-Day Refill | SDC", "Review Instagram follower package with aged accounts, posts and 30-day refill terms."]
+    };
     const slug = service[1];
     const specific = {
       "birth-certificate": "This service supports customers with birth-certificate application or correction steps. Prepare the required identity and supporting documents, check spelling and information carefully, and confirm current requirements with the official registration authority.",
@@ -400,7 +443,8 @@ function routeSeo(route) {
     }).join(" ");
     const detail = specific[slug] || ("For " + name + ", compare the available package options, service quantity or duration, delivery estimate and any account or provider requirements shown on the product page. Check the included scope and support terms before placing an order.");
     const nextStep = slug === "birth-certificate" || slug === "nid" || slug === "passport" ? "Use the official authority's current instructions to confirm eligibility, fees and required documents. Our service is assistance only; the authority makes the final decision." : slug.startsWith("smm-") ? "Select a quantity within the listed limits and check start, delivery and refill terms. Use services responsibly and follow the platform's terms." : "Compare the listed packages and choose the duration or scope that matches your needs. Confirm account access, delivery steps and support conditions before checkout.";
-    return [name + " Service | Stationery Dot Com", "Explore " + name + " service options at Stationery Dot Com in Bangladesh. Check package details, access or application requirements and terms before ordering.", name + " Service in Bangladesh", "Package details and requirements", detail, nextStep];
+    const meta = serviceMeta[slug] || [name + " Service Bangladesh | Stationery Dot Com", "Review " + name + " service options in Bangladesh. Compare package duration or quantity, current pricing, delivery estimate and fulfilment terms before ordering."];
+    return [meta[0], meta[1], name + " Service in Bangladesh", "Package details and requirements", detail, nextStep];
   }
   const blog = route.match(/^\/blog\/([a-z0-9-]+)$/);
   if (blog) {

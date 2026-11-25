@@ -32,6 +32,8 @@ jobs:
         run: npm run check:smoke-script
       - name: Validate production health-check script syntax
         run: npm run check:live-site-script
+      - name: Validate deployment and mobile-nav configuration
+        run: npm run check:release-config
       - name: Build website
         run: npm run build
         env:

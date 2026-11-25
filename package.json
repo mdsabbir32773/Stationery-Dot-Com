@@ -12,7 +12,8 @@
     "check:analytics": "node scripts/check-analytics.mjs",
     "check:smoke-script": "node --check scripts/sdc-ui-smoke.mjs",
     "check:live-site": "node scripts/check-live-site.mjs",
-    "check:live-site-script": "node --check scripts/check-live-site.mjs"
+    "check:live-site-script": "node --check scripts/check-live-site.mjs",
+    "check:release-config": "node scripts/check-release-config.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",

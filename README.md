@@ -1,6 +1,6 @@
 # Stationery Dot Com — Setup Guide (for beginners)
 
-> **Current production setup (24 Nov 2026):** The live website is already hosted at **https://stationerydotcom.me** on **Cloudflare Workers**, deployed automatically from the `main` branch through GitHub Actions. The `workers.dev` hostname is a redirect-only alias for the public website (the Meta webhook remains on its registered callback path). The live sitemap is **https://stationerydotcom.me/sitemap.xml** and `robots.txt` points to that canonical sitemap. Do not create a second Cloudflare Pages project for the existing production site.
+> **Current production setup (25 Nov 2026):** The live website is already hosted at **https://stationerydotcom.me** on **Cloudflare Workers**, deployed automatically from the `main` branch through GitHub Actions. The `workers.dev` hostname is a redirect-only alias for the public website (the Meta webhook remains on its registered callback path). The live sitemap is **https://stationerydotcom.me/sitemap.xml** and `robots.txt` points to that canonical sitemap. Do not create a second Cloudflare Pages project for the existing production site.
 
 
 You will need: a free Supabase account, a free GitHub account, a free Cloudflare account, and Node.js (https://nodejs.org → download "LTS" → install).
@@ -124,6 +124,7 @@ Customers see an image QR as a picture, and a PDF QR as a "View Payment QR" butt
 - The production sitemap is generated dynamically at https://stationerydotcom.me/sitemap.xml and is referenced in robots.txt. The owner has submitted the canonical sitemap in Google Search Console; continue monitoring indexing and use the Search Console account for any manual indexing requests.
 - Meta Pixel is configured in src/lib/metaPixel.js (default Pixel ID is already set; VITE_META_PIXEL_ID can override it at build time). Events include PageView, ViewContent, AddToCart, InitiateCheckout and Lead. A manual-payment order is tracked as a Lead until an admin verifies payment; wallet-funded SMM purchases are tracked as Purchase.
 - Cloudflare Workers static-asset response headers are defined in public/_headers. Worker-generated responses also receive security headers in worker.js. Hashed /assets/* files receive long-lived immutable caching.
+- Free production monitoring runs through GitHub Actions: deployment includes a live HTTP health check, and a daily health check is scheduled for 03:00 UTC (09:00 Bangladesh). The UI smoke test covers mobile navigation and critical customer flows without submitting a real order or payment.
 - For stronger account security, enable Supabase Auth leaked-password protection in the project’s Authentication password-security settings.
 
 

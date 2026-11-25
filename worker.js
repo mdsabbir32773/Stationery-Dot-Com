@@ -457,7 +457,7 @@ export default {
       }
       const seo = routeSeo(route);
       const titleTag = "<title>" + escapeHtml(seo[0]) + "</title>";
-      if (/<title>[\\s\\S]*?<\\/title>/i.test(html)) html = html.replace(/<title>[\\s\\S]*?<\\/title>/i, titleTag);
+      if (/<title>[\s\S]*?<\/title>/i.test(html)) html = html.replace(/<title>[\s\S]*?<\/title>/i, titleTag);
       else html = html.replace("</head>", titleTag + "</head>");
       const descriptionTag = '<meta name="description" content="' + escapeHtml(seo[1]) + '"/>';
       if (/<meta[^>]*name=["']description["'][^>]*>/i.test(html)) html = html.replace(/<meta[^>]*name=["']description["'][^>]*>/i, descriptionTag);
@@ -479,9 +479,9 @@ export default {
       const escapedH2 = escapeHtml(seo[3]);
       const escapedIntro = escapeHtml(seo[4]);
       const pageSection = '<section><h1>' + escapedH1 + '</h1><p>' + escapedIntro + '</p><p>Browse the service pages below to compare options and contact Stationery Dot Com for assistance.</p></section>';
-      html = html.replace(/<section>\\s*<h1>[\\s\\S]*?<\\/section>/i, pageSection);
+      html = html.replace(/<section>\s*<h1>[\s\S]*?<\/section>/i, pageSection);
       const secondSection = '<section><h2>' + escapedH2 + '</h2><p>' + escapedIntro + '</p><p><a href="/services">Browse all services</a> · <a href="/contact">Contact Stationery Dot Com</a> · <a href="/track-order">Track an order</a></p></section>';
-      html = html.replace(/<section>\\s*<h2>Online services with clear package details[\\s\\S]*?<\\/section>/i, secondSection);
+      html = html.replace(/<section>\s*<h2>Online services with clear package details[\s\S]*?<\/section>/i, secondSection);
       const privateRoute = routeExists === false || route === "/admin" || route.startsWith("/admin/") ||
         route === "/account" || route === "/cart" || route === "/order" || route === "/checkout" ||
         route === "/order-success" || route.startsWith("/order-success/") ||

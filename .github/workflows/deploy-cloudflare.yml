@@ -1,5 +1,9 @@
 name: Build and deploy Stationery Dot Com to Cloudflare Workers
 
+permissions:
+  contents: read
+  actions: write
+
 on:
   push:
     branches:
@@ -30,3 +34,7 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: 5048da0aa184b4fbb033f13a83d1cac6
+      - name: Trigger live UI smoke test
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run sdc-ui-smoke.yml --ref main -f commit_sha=${GITHUB_SHA}

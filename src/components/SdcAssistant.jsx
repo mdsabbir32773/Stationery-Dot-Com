@@ -83,7 +83,7 @@ export default function SdcAssistant({ defaultOpen = false } = {}) {
         <div className="sdc-chat-foot"><Headphones size={12}/> AI support by Stationery Dot Com</div>
       </section>}
       <button className={'sdc-chat-launcher ' + (open ? 'is-open' : '')} onClick={() => setOpen(v => !v)} aria-label={open ? 'Close SDC Assistant' : 'Chat with SDC Assistant'}>
-        {open ? <X size={23}/> : <><MessageCircle size={23}/><span>Chat with us</span></>}
+        {open ? <X size={23}/> : <><MessageCircle size={22} strokeWidth={2}/><span>Chat with us</span></>}
         {!open && <b className="sdc-chat-launcher-dot"/>}
       </button>
     </div>

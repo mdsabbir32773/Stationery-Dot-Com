@@ -6,13 +6,14 @@ import StatusBadge from '../../components/StatusBadge';
 const PAGE_SIZE=50;
 const dhakaDateTime=value=>value?new Intl.DateTimeFormat('en-BD',{timeZone:'Asia/Dhaka',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true}).format(new Date(value)):'—';
 const csvCell=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+const dhakaDateEndExclusive=value=>new Date(new Date(value+'T00:00:00+06:00').getTime()+86400000).toISOString();
 export default function Orders(){
  const[rows,setRows]=useState([]),[count,setCount]=useState(0),[page,setPage]=useState(0),[f,setF]=useState(''),[pf,setPf]=useState(''),[q,setQ]=useState(''),[service,setService]=useState(''),[from,setFrom]=useState(''),[to,setTo]=useState(''),[services,setServices]=useState([]),[selected,setSelected]=useState([]),[bulkStatus,setBulkStatus]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState('');
  const load=useCallback(async()=>{
   setBusy(true);setError('');
   let query=supabase.from('orders').select(pf?'*,payments!inner(status,provider)':'*,payments(status,provider)',{count:'exact'}).order('created_at',{ascending:false}).range(page*PAGE_SIZE,(page+1)*PAGE_SIZE-1);
   if(f)query=query.eq('status',f);if(pf)query=query.eq('payments.status',pf);if(service)query=query.eq('service_name',service);
-  if(from)query=query.gte('created_at',from+'T00:00:00+06:00');if(to)query=query.lt('created_at',to+'T23:59:59.999+06:00');const term=q.trim().replace(/[,%_()]/g,' ').trim();if(term)query=query.or('order_code.ilike.%'+term+'%,customer_name.ilike.%'+term+'%,phone.ilike.%'+term+'%');
+  if(from)query=query.gte('created_at',from+'T00:00:00+06:00');if(to)query=query.lt('created_at',dhakaDateEndExclusive(to));const term=q.trim().replace(/[,%_()]/g,' ').trim();if(term)query=query.or('order_code.ilike.%'+term+'%,customer_name.ilike.%'+term+'%,phone.ilike.%'+term+'%');
   const{data,error:e,count:n}=await query;
   if(e)setError(e.message);else{const ids=(data||[]).map(x=>x.id);const{data:financials,error:fe}=ids.length?await supabase.from('admin_order_financials').select('order_id,cost_amount').in('order_id',ids):{data:[],error:null};if(fe)setError(fe.message);const costMap=Object.fromEntries((financials||[]).map(x=>[x.order_id,Number(x.cost_amount)]));setRows((data||[]).map(x=>({...x,cost_amount:costMap[x.id]??null})));setCount(n||0);setSelected([]);}
   setBusy(false);

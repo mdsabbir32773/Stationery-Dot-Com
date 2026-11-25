@@ -574,6 +574,24 @@ try {
     throw new Error(`Birth certificate detail page returned HTTP ${documentDetailResponse?.status() ?? 'no response'}`);
   }
   await page.getByRole('link', { name: /Browse all document services/ }).waitFor({ state: 'visible', timeout: 15000 });
+  await page.waitForFunction(() => document.title.includes('Birth Certificate'));
+  const documentCanonical = await page.locator('link[rel="canonical"]').getAttribute('href');
+  if (documentCanonical !== `${baseURL}/services/birth-certificate`) {
+    throw new Error('Document service detail canonical URL is incorrect: ' + documentCanonical);
+  }
+  const documentDescription = await page.locator('meta[name="description"]').getAttribute('content');
+  if (!documentDescription || documentDescription.length > 165) {
+    throw new Error('Document service detail meta description is missing or too long.');
+  }
+  const documentGraph = JSON.parse(await page.locator('#stationery-seo-jsonld').textContent())['@graph'] || [];
+  if (!documentGraph.some(node => node['@type'] === 'Service' && node.name && node.areaServed?.name === 'Bangladesh') {
+    throw new Error('Document service detail is missing its Service structured data for Bangladesh.');
+  }
+  if (!documentGraph.some(node => node['@type'] === 'BreadcrumbList')) {
+    throw new Error('Document service detail is missing BreadcrumbList structured data.');
+  }
+  const missingDocumentAlt = await page.locator('img').evaluateAll(images => images.filter(image => !image.hasAttribute('alt')).map(image => image.currentSrc || image.src));
+  if (missingDocumentAlt.length) throw new Error('Document service detail images missing alt attributes: ' + missingDocumentAlt.join(', '));
 
   const reviewServiceResponse = await page.goto(`${baseURL}/services/smm-fb-reviews-genuine`, { waitUntil: 'domcontentloaded', timeout: 30000 });
   if (!reviewServiceResponse || reviewServiceResponse.status() >= 400) {

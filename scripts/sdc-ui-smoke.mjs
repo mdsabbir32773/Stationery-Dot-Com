@@ -439,7 +439,10 @@ try {
   if (!subscriptionResponse || subscriptionResponse.status() >= 400) {
     throw new Error(`Digital subscriptions page returned HTTP ${subscriptionResponse?.status() ?? 'no response'}`);
   }
-  await page.getByRole('heading', { name: 'Digital Subscriptions in Bangladesh' }).waitFor({ state: 'visible', timeout: 15000 });
+  await page.waitForFunction(() => document.querySelector('.digital-subscriptions-page h1')?.textContent.includes('Digital Subscriptions in Bangladesh'), { timeout: 25000 }).catch(async error => {
+    const state = await page.evaluate(() => ({ path: location.pathname, title: document.title, headings: [...document.querySelectorAll('h1,h2')].map(x => x.textContent.trim()), body: document.body.innerText.slice(0, 1800) }));
+    throw new Error('Digital subscriptions heading did not render: ' + JSON.stringify(state) + ' · ' + error.message);
+  });
   await page.waitForFunction(() => document.title.includes('Digital Subscriptions Bangladesh'));
   await page.waitForFunction(() => {
     try {

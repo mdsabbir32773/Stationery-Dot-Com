@@ -489,6 +489,9 @@ try {
   }
   await page.locator('.blog-detail h1').waitFor({ state: 'visible', timeout: 15000 });
   await page.waitForFunction(() => document.title.includes('ভিডিও এডিটিংয়ের ফুটেজ প্রস্তুতি: চেকলিস্ট'));
+  if (await page.locator('html').getAttribute('lang') !== 'bn-BD') {
+    throw new Error('Bengali blog article must set the document language to bn-BD.');
+  }
   const videoGuideGraph = JSON.parse(await page.locator('#stationery-seo-jsonld').textContent())['@graph'] || [];
   if (!videoGuideGraph.some(node => node['@type'] === 'BlogPosting')) {
     throw new Error('New video-editing guide is missing BlogPosting structured data.');

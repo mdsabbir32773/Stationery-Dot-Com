@@ -1,4 +1,4 @@
-import {lazy,Suspense,useEffect,useState} from 'react';import {Routes,Route,Navigate} from 'react-router-dom';import {MessageCircle} from 'lucide-react';
+import {lazy,Suspense,useEffect,useState} from 'react';import {Routes,Route,Navigate,Outlet} from 'react-router-dom';import {MessageCircle} from 'lucide-react';
 import Navbar from './components/Navbar';import {useLocation} from 'react-router-dom';import {initMetaPixel,trackPageView} from './lib/metaPixel';import {initGoogleAnalytics,trackGooglePageView} from './lib/googleAnalytics';import SEO from './components/SEO';import Footer from './components/Footer';import WhatsAppButton from './components/WhatsAppButton';
 const SdcAssistant=lazy(()=>import('./components/SdcAssistant'));const AdminGate=lazy(()=>import('./components/AdminGate'));
 const CreativeServices=lazy(()=>import('./pages/CreativeServices'));

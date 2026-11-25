@@ -1,7 +1,6 @@
 import {useEffect,useState} from 'react';
 import {useSearchParams,Link,useNavigate} from 'react-router-dom';
 import {supabase,getSettings} from '../lib/supabase';
-import {waLink} from '../lib/whatsapp';
 import OrderForm from '../components/OrderForm';
 import useTitle from '../lib/useTitle';
 
@@ -20,8 +19,6 @@ function QuoteForm({service,pkg}){
     try{
       const{data,error}=await supabase.rpc('create_order',{p:{...f,quantity:1,package_id:pkg.id,files:[],quote:true}});
       if(error)throw error;
-      const msg='Hello, I have submitted a price-on-request order. Order ID: '+data+'. Service: '+service.name+' — '+pkg.name+'. Please confirm the requirements and final price.';
-      window.open(waLink(msg),'_blank','noopener,noreferrer');
       nav('/order-success/'+data+'?quote=1',{state:{phone:f.phone}});
     }catch(x){setErr(x.message||'Something went wrong. Please try again.');setBusy(false);}
   }

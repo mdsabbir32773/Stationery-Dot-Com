@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "check:bundle": "node scripts/check-bundle-size.mjs",
     "check:sitemap": "node scripts/check-sitemap.mjs",
-    "check:analytics": "node scripts/check-analytics.mjs"
+    "check:analytics": "node scripts/check-analytics.mjs",
+    "check:smoke-script": "node --check scripts/sdc-ui-smoke.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",

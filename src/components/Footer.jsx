@@ -80,7 +80,7 @@ export default function Footer() {
           </div>
         </div>
         <div>
-          <h4>Services</h4>
+          <h2>Services</h2>
           {cats.length ? (
             <ul>{cats.map((c) => <li key={c.name}><Link to={'/services?category=' + encodeURIComponent(c.name)}>{c.name}</Link></li>)}</ul>
           ) : (
@@ -88,7 +88,7 @@ export default function Footer() {
           )}
         </div>
         <div>
-          <h4>Help</h4>
+          <h2>Help</h2>
           <ul>
             <li><Link to="/about">About us</Link></li>
             <li><Link to="/services">All services</Link></li>

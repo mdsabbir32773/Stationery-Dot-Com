@@ -3,6 +3,7 @@ import { MessageCircle, X, Send, Sparkles, Headphones } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import '../chatbot.css';
 import SdcChatActions from './SdcChatActions';
+import SdcInvoiceRequest from './SdcInvoiceRequest';
 
 const greeting = { role: 'assistant', text: "হ্যালো! 😊 কী খুঁজছেন বা কী অর্ডার করতে চান, নিজের মতো করে বলুন। সার্ভিস বা প্যাকেজের নাম বললে আমি মিলিয়ে available package আর দাম জানাব, তারপর একে একে order confirm করব। বাংলা, English বা Banglish—যেভাবে স্বাচ্ছন্দ্য বোধ করেন, সেভাবেই লিখুন।" };
 
@@ -22,6 +23,8 @@ export default function SdcAssistant() {
   async function sendMessage(value = input) {
     const text = value.trim();
     if (!text || busy || action) return;
+    const invoiceRequestIntent=/\\b(invoice|bill)\\b.{0,45}\\b(request|email|send|mail|download|get|need|want|please|chai|lagbe|daw|den|pathao|pathan)\\b|\\b(request|email|send|mail|download|get|need|want)\\b.{0,40}\\b(invoice|bill)\\b|invoice request|invoice chai|invoice lagbe|ইনভয়েস.*(চাই|পাঠ|ডাউনলোড|রিকোয়েস্ট)|বিল.*(চাই|পাঠ)/i.test(text);
+    if(invoiceRequestIntent){setMessages(prev=>[...prev,{role:'user',text}]);setInput('');setActionMessage(text);setAction('invoice-request');return;}
     const statusIntent = /\b(order|deposit|request|wallet)\b.{0,24}\b(status|track|tracking|update|check)\b|\b(where is|track)\s+(?:my\s+)?order\b|স্ট্যাটাস|ট্র্যাক|অবস্থা/i.test(text);
     const asksForInformation = /\b(how|what|which|where|when|why|process|procedure|requirements?|details?|information|explain|price|cost|charge|fee|know| জানতে)\b|কীভাবে|কিভাবে|কি লাগে|কী লাগে|প্রক্রিয়া|নিয়ম|তথ্য|দাম|কত টাকা|চার্জ|ফি|জানতে চাই/i.test(text);
     const wantsDeposit = !statusIntent && !asksForInformation && /\b(add (?:money|funds)|deposit|top.?up (?:my )?wallet|wallet balance)\b|wallet e taka add|funds add|deposit korte|ওয়ালেট.*(জমা|অ্যাড)|ডিপোজিট|ব্যালেন্স.*(যোগ|জমা)/i.test(text);
@@ -69,7 +72,7 @@ export default function SdcAssistant() {
             <div className="sdc-chat-bubble">{m.text.split('\n').map((line, n) => <span key={n}>{line.split(/(\*\*[^*]+\*\*)/g).map((part, j) => part.startsWith('**') && part.endsWith('**') ? <strong key={j}>{part.slice(2, -2)}</strong> : part)}{n < m.text.split('\n').length - 1 && <br/>}</span>)}</div>
           </div>)}
 
-          {action && <SdcChatActions mode={action} initialMessage={actionMessage} onCancel={() => setAction('')} onComplete={message => { setMessages(prev => [...prev, { role: 'assistant', text: message }]); if (message.startsWith('Your wallet balance is insufficient.')) setAction('deposit'); else if (/\bOrder ID:/i.test(message)) { /* Keep the success card mounted so the customer can open the invoice. */ } else setAction(''); }} />}
+          {action==='invoice-request'?<SdcInvoiceRequest initialMessage={actionMessage} onCancel={()=>setAction('')} onComplete={message=>setMessages(prev=>[...prev,{role:'assistant',text:message}])}/>:action&&<SdcChatActions mode={action} initialMessage={actionMessage} onCancel={() => setAction('')} onComplete={message => { setMessages(prev => [...prev, { role: 'assistant', text: message }]); if (message.startsWith('Your wallet balance is insufficient.')) setAction('deposit'); else if (/\bOrder ID:/i.test(message)) { /* Keep the success card mounted so the customer can open the invoice. */ } else setAction(''); }} />}
           {busy && <div className="sdc-chat-row is-assistant"><div className="sdc-chat-mini-avatar"><Sparkles size={13}/></div><div className="sdc-chat-bubble sdc-chat-typing"><i/><i/><i/></div></div>}
           <div ref={endRef}/>
         </div>

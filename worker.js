@@ -382,7 +382,7 @@ function routeSeo(route) {
   if (service) {
     const serviceMeta = {
       "birth-certificate": ["Birth Certificate Support BD | Stationery Dot Com", "Birth certificate application and correction assistance in Bangladesh. Check required records and official registration rules before ordering."],
-      "nid": ["NID Application & Correction BD | Stationery Dot Com", "NID application and information-correction assistance in Bangladesh. Verify eligibility and documents with the Election Commission."],
+      "nid": ["NID Application & Correction BD | Stationery Dot Com", "Bangladesh National Identity Card application or correction assistance. Verify eligibility and documents with the Election Commission."],
       "passport": ["Passport Application Support BD | Stationery Dot Com", "Passport application assistance in Bangladesh. Confirm current fees, documents and appointments with the official passport authority."],
       "trade-license": ["Trade License Support BD | Stationery Dot Com", "Assistance with trade licence application or renewal in Bangladesh. Requirements and approval depend on the relevant local authority."],
       "canva": ["Canva Subscription BD | Stationery Dot Com", "Compare available Canva subscription packages in Bangladesh, including duration, account access and included plan terms."],

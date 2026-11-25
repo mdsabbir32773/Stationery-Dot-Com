@@ -10,7 +10,7 @@ permissions:
 
 concurrency:
   group: free-lighthouse-audit
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   lighthouse:

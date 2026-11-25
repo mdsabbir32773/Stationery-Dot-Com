@@ -131,7 +131,7 @@ export default function SEO(){
       const serviceImage=service?.image_url||'';
       const usableServiceImage=/google\.com\/s2\/favicons/i.test(serviceImage)?'':serviceImage;
       const image=new URL(blogPost?.cover_image_url||usableServiceImage||'/stationery-dot-com-logo.webp',window.location.origin).href;
-      document.documentElement.lang='en';
+      document.documentElement.lang=/[\\u0980-\\u09FF]/.test(page.title+' '+description)?'bn-BD':'en-BD';
       document.title=page.title;
       setLink('canonical',canonical);
       setMeta('meta[name="description"]',{name:'description',content:description});

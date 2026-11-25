@@ -1,7 +1,9 @@
 name: Free Lighthouse SEO and performance audit
 
 on:
-  push:
+  workflow_run:
+    workflows: ["Build and deploy Stationery Dot Com to Cloudflare Workers"]
+    types: [completed]
     branches: [main]
   workflow_dispatch:
 
@@ -14,6 +16,7 @@ concurrency:
 
 jobs:
   lighthouse:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:

@@ -62,6 +62,17 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
  useEffect(()=>{initialProcessed.current=false;setMessages([{role:'assistant',text:mode==='deposit'?(language==='bn'?'Wallet deposit-টা এখানেই একে একে করব।':'I’ll help with the wallet deposit right here, one step at a time.'):initialMessage?'':(language==='bn'?'কোন সেবাটি নিতে চান? নাম লিখুন বা কী দরকার বলুন, আমি প্যাকেজ মিলিয়ে দেখছি।':'Sure—tell me what service you need, and I’ll find the matching package.') }]);},[mode,initialMessage,language]);
  useEffect(()=>{(async()=>{try{const [{data:sv,error:se},{data:pk,error:pe},{data:{session:ss}},{data:st}]=await Promise.all([supabase.from('services').select('*').eq('is_active',true).order('sort_order'),supabase.from('packages').select('*').eq('is_active',true).order('sort_order'),supabase.auth.getSession(),supabase.from('site_settings').select('key,value')]);if(se)throw se;if(pe)throw pe;setServices(sv||[]);setPackages(pk||[]);setSession(ss);setSettings(Object.fromEntries((st||[]).map(x=>[x.key,x.value])));if(ss?.user){const{data:p}=await supabase.from('customer_profiles').select('full_name,phone').eq('id',ss.user.id).maybeSingle();setName(p?.full_name||ss.user.user_metadata?.full_name||'');setPhone(p?.phone||ss.user.user_metadata?.phone||'');setEmail(ss.user.email||'');}}catch(e){setError(e.message||'Could not load secure order options.');}finally{setLoading(false)}})();},[]);
  useEffect(()=>{if(isSmm&&session)supabase.rpc('get_smm_wallet').then(({data,error:e})=>{if(!e)setBalance(Number(data||0));});},[isSmm,session?.user?.id]);
+ useEffect(()=>{
+  const {data:{subscription}}=supabase.auth.onAuthStateChange((_event,nextSession)=>{
+   setSession(nextSession);
+   if(nextSession?.user&&mode==='order'&&step==='signin'&&serviceId){
+    if(typeof window!=='undefined')window.sessionStorage.removeItem('sdc_chat_pending_smm_order');
+    setStep('target');setError('');
+    setMessages(prev=>[...prev,{role:'assistant',text:prompts.target}]);
+   }
+  });
+  return ()=>subscription.unsubscribe();
+ },[mode,step,serviceId,language]);
  useEffect(()=>{if(!loading&&mode==='order'&&step==='service'&&services.length===0)setError('No active services are available right now.');},[loading,mode,step,services.length]);
  function bot(text){setMessages(v=>[...v,{role:'assistant',text}]);}
  function user(text){setMessages(v=>[...v,{role:'user',text}]);}
@@ -70,7 +81,7 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
   const s=services.find(x=>x.id===id);if(!s)return;
   setServiceId(id);setPackageId('');
   const smm=Boolean(s.smm_platform||s.category==='SMM Panel Services');
-  if(smm){if(!session){go('signin',language==='bn'?'এই service order করতে account-এ sign in করতে হবে।':'Please sign in to order this service.');return;}go('target',prompts.target);return;}
+  if(smm){if(!session){if(typeof window!=='undefined'){try{window.sessionStorage.setItem('sdc_chat_pending_smm_order',JSON.stringify({message:initialMessage||s.name,serviceId:id,createdAt:Date.now()}));}catch{}}go('signin',language==='bn'?'এই SMM order চালিয়ে যেতে account-এ sign in করুন। Sign in করার পর chatbot খুললেই order এখান থেকে continue হবে।':'Please sign in to continue this SMM order. Open the chatbot after signing in and it will resume here.');return;}go('target',prompts.target);return;}
   const matched=matchedPackageId?packages.find(x=>x.id===matchedPackageId):null;
   if(matched){setPackageId(matched.id);go('name',(language==='bn'?'ঠিক আছে—':'Got it—')+s.name+', '+matched.name+' ('+(Number(matched.price)>0?taka(matched.price):'Price on request')+'). '+(language==='bn'?'এখন আপনার নামটি বলুন।':'What name should I put on the order?'));return;}
   go('package',prompts.package+'\n\n'+packageCatalog(s,packages.filter(x=>x.service_id===id)));

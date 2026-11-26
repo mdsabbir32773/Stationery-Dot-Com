@@ -138,3 +138,22 @@ main .scard .sfoot a.btn svg {
   color:#fff !important;
   stroke:currentColor;
 }
+
+
+/* Fix primary CTA label contrast across the Services catalogue and every service detail page. */
+.catalog-head + main .btn:not(.alt):not(.wa),
+main.wrap:has(.service-title-row) .btn:not(.alt):not(.wa),
+main.wrap:has(.service-title-row) a.btn:not(.alt):not(.wa):visited,
+.catalog-main .btn:not(.alt):not(.wa),
+.catalog-head + main .btn:not(.alt):not(.wa):hover,
+main.wrap:has(.service-title-row) .btn:not(.alt):not(.wa):hover,
+.catalog-main .btn:not(.alt):not(.wa):hover {
+  color:#fff !important;
+  -webkit-text-fill-color:#fff !important;
+}
+.catalog-head + main .btn:not(.alt):not(.wa) svg,
+main.wrap:has(.service-title-row) .btn:not(.alt):not(.wa) svg,
+.catalog-main .btn:not(.alt):not(.wa) svg {
+  color:#fff !important;
+  stroke:currentColor;
+}

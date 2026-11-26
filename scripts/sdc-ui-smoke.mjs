@@ -94,24 +94,7 @@ try {
     { href: '/services/canva', label: 'a subscription detail' }
   ];
   for (const target of routeTargets) {
-    // Every displayed SMM platform filter must have active services; no dead TikTok/YouTube/X filters.
-  const platformButtons = page.locator('.smm-filter-pills button');
-  const platformButtonCount = await platformButtons.count();
-  if (platformButtonCount < 2) throw new Error('SMM catalogue should show All platforms and at least one active platform.');
-  const platformLabels = await platformButtons.allTextContents();
-  for (let i = 1; i < platformButtonCount; i++) {
-    await platformButtons.nth(i).click();
-    await page.waitForFunction((index) => {
-      const buttons = document.querySelectorAll('.smm-filter-pills button');
-      const results = document.querySelector('.smm-results')?.textContent || '';
-      return buttons[index]?.classList.contains('active') && /^\d+ services$/.test(results);
-    }, i, { timeout: 10000 });
-    const resultText = await page.locator('.smm-results').innerText();
-    if (Number.parseInt(resultText, 10) <= 0) {
-      throw new Error('Displayed SMM platform filter has no active services: ' + platformLabels[i]);
-    }
-  }
-  await platformButtons.first().click();
+  
 
   await page.goto(baseURL, { waitUntil: 'domcontentloaded', timeout: 30000 });
     await page.locator('.home-hero h1').waitFor({ state: 'visible', timeout: 20000 });
@@ -792,6 +775,26 @@ try {
   if (!/WELCOME5/.test(offerText) || !/5% OFF/.test(offerText) || !/৳300/.test(offerText) || !/৳50/.test(offerText)) {
     throw new Error('WELCOME5 SMM offer banner is missing its code or discount terms.');
   }
+
+  // Every displayed SMM platform filter must have active services; no dead TikTok/YouTube/X filters.
+  const platformButtons = page.locator('.smm-filter-pills button');
+  const platformButtonCount = await platformButtons.count();
+  if (platformButtonCount < 2) throw new Error('SMM catalogue should show All platforms and at least one active platform.');
+  const platformLabels = await platformButtons.allTextContents();
+  for (let i = 1; i < platformButtonCount; i++) {
+    await platformButtons.nth(i).click();
+    await page.waitForFunction((index) => {
+      const buttons = document.querySelectorAll('.smm-filter-pills button');
+      const results = document.querySelector('.smm-results')?.textContent || '';
+      return buttons[index]?.classList.contains('active') && /^\d+ services$/.test(results);
+    }, i, { timeout: 10000 });
+    const resultText = await page.locator('.smm-results').innerText();
+    if (Number.parseInt(resultText, 10) <= 0) {
+      throw new Error('Displayed SMM platform filter has no active services: ' + platformLabels[i]);
+    }
+  }
+  await platformButtons.first().click();
+
 
   await page.goto(baseURL, { waitUntil: 'domcontentloaded', timeout: 30000 });
   const launcher = page.getByRole('button', { name: 'Chat with SDC Assistant' });

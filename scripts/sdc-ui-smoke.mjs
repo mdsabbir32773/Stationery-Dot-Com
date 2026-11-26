@@ -850,6 +850,10 @@ try {
   if (!/TikTok/i.test(tiktokReply) || !/no active|currently|catalogue|active SMM/i.test(tiktokReply) || /Facebook Followers/i.test(tiktokReply)) {
     throw new Error('TikTok request must not return unrelated Facebook services: ' + tiktokReply.slice(0, 220));
   }
+  const telegramReply = await askAssistant('Telegram followers');
+  if (!/Telegram Members/i.test(telegramReply) || !/Members|মেম্বার/i.test(telegramReply) || /Facebook Followers/i.test(telegramReply)) {
+    throw new Error('Telegram follower wording should be clarified as Telegram Members, not mixed with Facebook: ' + telegramReply.slice(0, 220));
+  }
   const facebookFollowersReply = await askAssistant('Facebook page followers');
   if (!/Facebook Followers/i.test(facebookFollowersReply) || /Facebook Page Setup/i.test(facebookFollowersReply)) {
     throw new Error('Facebook page followers must resolve to Facebook Followers, not Page Setup: ' + facebookFollowersReply.slice(0, 220));

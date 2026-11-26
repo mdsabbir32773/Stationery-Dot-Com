@@ -11,7 +11,15 @@ const PHONE=/^(880|0)?1[0-9]{9}$/;
 const extOf=f=>f.name.split('.').pop().toLowerCase();
 const STOPWORDS=new Set(['i','me','my','we','want','need','looking','for','to','a','an','the','some','please','order','buy','purchase','get','give','show','find','related','recommend','recommendation','package','packages','service','services','price','cost','of','and','with','have','you','can','could','do','on','from','amar','amr','ami','amake','ekta','ta','lagbe','chai','dorkar','nibo','kinbo','den','dao','daw','koro','korbo','korte','dibo','jonno','কি','কী','আমার','আমি','আমাকে','একটা','লাগবে','চাই','দরকার','নেব','কিনব','দেন','দাও','করতে','অর্ডার','প্যাকেজ','সার্ভিস','দাম','কত','আছে','দেখান','দেখাও']);
 function normalized(value){return String(value||'').toLowerCase().normalize('NFKC').replace(/(\d+)(year|yr|month|mo)\b/g,'$1 $2').replace(/[^a-z0-9\u0980-\u09ff]+/g,' ').trim();}
-function tokens(value){return normalized(value).split(/\s+/).filter(word=>word.length>1&&!STOPWORDS.has(word));}
+const TOKEN_ALIASES={
+ ig:'instagram',insta:'instagram',fb:'facebook',yt:'youtube',
+ follower:'followers',follow:'followers',ফলোয়ার:'followers',ফলোয়ার:'followers',ফলো:'followers',
+ like:'likes',লাইক:'likes',view:'views',ভিউ:'views',subscriber:'subscribers',সাবস্ক্রাইবার:'subscribers',
+ reaction:'reactions',comment:'comments',কমেন্ট:'comments',share:'shares',save:'saves',
+ boosting:'boost',promote:'boost',promotion:'boost','watchtime':'watchtime',subscription:'subscription',subscriptions:'subscription',
+ lifetime:'lifetime',forever:'lifetime'
+};
+function tokens(value){return normalized(value).split(/\s+/).map(word=>TOKEN_ALIASES[word]||word).filter(word=>word.length>1&&!STOPWORDS.has(word));}
 function catalogScore(query,label){const q=normalized(query),c=normalized(label);if(!q||!c)return 0;if(q===c)return 100;const qt=tokens(query),ct=tokens(label);if(!qt.length||!ct.length)return 0;const overlap=ct.filter(word=>qt.includes(word)).length;if(!overlap)return 0;return Math.round((overlap/ct.length*.72+overlap/qt.length*.28)*100);}
 function rankCatalog(query,items,labelOf){return items.map(item=>({item,score:catalogScore(query,labelOf(item))})).filter(row=>row.score>=42).sort((a,b)=>b.score-a.score);}
 function asksForSuggestions(text){return /\b(related|recommend|suggest|options?|list|show me|what do you have|which packages?)\b|ki ki ache|aro package|related package|option gula|প্যাকেজ.*(দেখা|আছে|কোন)|কোন কোন|কি কি আছে|আরো.*প্যাকেজ/i.test(text);}
@@ -70,8 +78,8 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
  function currentPrompt(){return prompts[step]||'';}
  useEffect(()=>{actionEndRef.current?.scrollIntoView({behavior:'smooth'});},[messages,step,error,loading,result]);
  function handleServiceQuery(query){
-  const serviceMatches=rankCatalog(query,services,x=>(x.name||'')+' '+(x.category||''));
-  const packageMatches=rankCatalog(query,packages,x=>{const d=x.duration_months===0?'lifetime':x.duration_months%12===0?(x.duration_months/12)+' year':x.duration_months+' months';return (x.name||'')+' '+(x.access_type||'')+' '+d+' '+x.duration_months+' '+(services.find(y=>y.id===x.service_id)?.name||'');});
+  const serviceMatches=rankCatalog(query,services,x=>(x.name||'')+' '+(x.category||'')+' '+(x.description||'')+' '+(x.slug||'')+' '+(x.smm_platform||'')+' '+(x.smm_category||'')+' '+(x.smm_delivery_time||'')+' '+(x.smm_platform?'social media smm followers likes views subscribers comments engagement boost':''));
+  const packageMatches=rankCatalog(query,packages,x=>{const d=x.duration_months===0?'lifetime':x.duration_months%12===0?(x.duration_months/12)+' year':x.duration_months+' months';const svc=services.find(y=>y.id===x.service_id);return (x.name||'')+' '+(x.access_type||'')+' '+d+' '+x.duration_months+' '+(x.description||'')+' '+(svc?.name||'')+' '+(svc?.category||'')+' '+(svc?.description||'');});
   const best=serviceMatches[0],next=serviceMatches[1];
   const exactNamed=services.filter(s=>normalized(query).includes(normalized(s.name))).sort((a,b)=>normalized(b.name).length-normalized(a.name).length)[0];
   const queryWords=tokens(query);
@@ -92,7 +100,7 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
   const pb=packageMatches[0],pn=packageMatches[1];
   if(pb&&pb.score>=82&&(!pn||pb.score-pn.score>=12)){const svc=services.find(x=>x.id===pb.item.service_id);if(svc){chooseService(svc.id,pb.item.id);return;}}
   if(asksForSuggestions(query)){bot((language==='bn'?'অবশ্যই। Available service-গুলো হলো:\n• ':'Here are the available services:\n• ')+services.slice(0,12).map(x=>x.name).join('\n• ')+'\n'+(language==='bn'?'যেটা দরকার, নামটা বলুন।':'Tell me the one you need.'));return;}
-  const close=serviceMatches.filter(x=>x.score>=50).slice(0,5).map(x=>x.item.name);
+  const close=serviceMatches.filter(x=>x.score>=38).slice(0,5).map(x=>x.item.name);
   if(close.length){bot((language==='bn'?'এই service-গুলোর সাথে মিল পেয়েছি: ':'I found a few related services: ')+close.join(', ')+(language==='bn'?'। কোনটার কথা বলছেন, নামটা একটু পরিষ্কার করে বলবেন?':'. Which one did you mean?'));return;}
   bot(language==='bn'?'কোন সেবাটি নিতে চান? নাম লিখুন বা কী দরকার বলুন—যেমন Gemini, Canva বা Facebook। আমি সেই অনুযায়ী package দেখাব।':'Which service do you need? Tell me its name or what you need it for—for example Gemini, Canva or Facebook—and I’ll find matching packages.');
  }

@@ -10,7 +10,7 @@ img,video,canvas,iframe { max-width:100%; }
 svg { flex-shrink:0; }
 button,input,select,textarea { min-width:0; max-width:100%; font:inherit; }
 input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=submit]):not([type=button]),select,textarea { width:100%; }
-button,.btn { line-height:1.35; white-space:normal; overflow-wrap:anywhere; }
+button,.btn { line-height:1.35; white-space:normal; overflow-wrap:break-word; word-break:normal; }
 h1,h2,h3,h4,h5,h6,p,li,label,small,strong,b,span,a,td,th { min-width:0; }
 h1,h2,h3,h4,p { overflow-wrap:break-word; }
 p,li { line-height:1.65; }

@@ -788,9 +788,16 @@ try {
     }, null, { timeout: 15000 });
   } catch (error) {
     const state = await page.evaluate(() => ({
+      url: location.href,
+      title: document.title,
+      heading: document.querySelector('h1')?.innerText || '',
+      main: document.querySelectorAll('.smm-new-main').length,
+      toolbar: document.querySelectorAll('.smm-toolbar').length,
+      filter: document.querySelectorAll('.smm-filter-pills').length,
       result: document.querySelector('.smm-results')?.textContent || '',
       empty: document.querySelector('.smm-empty')?.innerText || '',
-      buttons: document.querySelectorAll('.smm-filter-pills button').length
+      buttons: document.querySelectorAll('.smm-filter-pills button').length,
+      body: document.body.innerText.slice(0,1200)
     }));
     throw new Error('SMM catalogue did not resolve: ' + JSON.stringify(state) + '; ' + error.message);
   }
@@ -798,9 +805,16 @@ try {
   const platformButtonCount = await platformButtons.count();
   if (platformButtonCount < 2) {
     const state = await page.evaluate(() => ({
+      url: location.href,
+      title: document.title,
+      heading: document.querySelector('h1')?.innerText || '',
+      main: document.querySelectorAll('.smm-new-main').length,
+      toolbar: document.querySelectorAll('.smm-toolbar').length,
+      filter: document.querySelectorAll('.smm-filter-pills').length,
       result: document.querySelector('.smm-results')?.textContent || '',
       empty: document.querySelector('.smm-empty')?.innerText || '',
-      buttons: document.querySelectorAll('.smm-filter-pills button').length
+      buttons: document.querySelectorAll('.smm-filter-pills button').length,
+      body: document.body.innerText.slice(0,1200)
     }));
     throw new Error('SMM catalogue should show active platforms: ' + JSON.stringify(state));
   }

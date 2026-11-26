@@ -270,6 +270,8 @@ try {
     });
   });
   await recoveryPage.goto(baseURL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  // Homepage service loading is intentionally deferred until interaction; trigger it to exercise outage recovery.
+  await recoveryPage.evaluate(() => window.dispatchEvent(new Event('scroll')));
   const homeRecoveryAlert = recoveryPage.getByRole('alert');
   try { await homeRecoveryAlert.waitFor({ state: 'visible', timeout: 20000 }); } catch (error) { const bodyText=await recoveryPage.locator('body').innerText().catch(()=>'(unavailable)'); throw new Error('Homepage outage alert missing; intercepted service requests='+failedServiceRequests+'; body='+bodyText.slice(0,1200)+'; browser errors='+errors.slice(-8).join(' | ')+'; '+error.message); }
   await homeRecoveryAlert.getByRole('button', { name: 'Try again' }).click();
@@ -777,7 +779,7 @@ try {
   }
 
   // Every displayed SMM platform filter must have active services; no dead TikTok/YouTube/X filters.
-  await page.waitForFunction(() => document.querySelectorAll('.smm-filter-pills button').length >= 2, { timeout: 15000 });
+  await page.waitForFunction(() => document.querySelectorAll('.smm-filter-pills button').length >= 2, null, { timeout: 15000 });
   const platformButtons = page.locator('.smm-filter-pills button');
   const platformButtonCount = await platformButtons.count();
   if (platformButtonCount < 2) throw new Error('SMM catalogue should show All platforms and at least one active platform.');

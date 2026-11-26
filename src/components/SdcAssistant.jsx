@@ -27,6 +27,24 @@ export default function SdcAssistant({ defaultOpen = false } = {}) {
 
   useEffect(() => { if (open) { endRef.current?.scrollIntoView({ behavior: 'smooth' }); if (!action) setTimeout(() => inputRef.current?.focus(), 120); } }, [open, messages, busy, action]);
   useEffect(() => { if (open) endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
+  useEffect(() => {
+    if (!open || action || typeof window === 'undefined') return;
+    try {
+      const raw = window.sessionStorage.getItem('sdc_chat_pending_smm_order');
+      if (!raw) return;
+      const pending = JSON.parse(raw);
+      if (!pending?.message || Date.now() - Number(pending.createdAt || 0) > 30 * 60 * 1000) {
+        window.sessionStorage.removeItem('sdc_chat_pending_smm_order');
+        return;
+      }
+      window.sessionStorage.removeItem('sdc_chat_pending_smm_order');
+      setActionMessage(String(pending.message).slice(0, 1800));
+      setAction('order');
+    } catch {
+      window.sessionStorage.removeItem('sdc_chat_pending_smm_order');
+    }
+  }, [open, action]);
+
 
   async function sendMessage(value = input) {
     const text = value.trim();

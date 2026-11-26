@@ -85,7 +85,7 @@ Deno.serve(async (req: Request) => {
       return json({ reply: containsBangla(message) ? "হ্যালো! 😊 কীভাবে সাহায্য করতে পারি?" : "Hello! 😊 Welcome to Stationery Dot Com. How can I help you today?" });
     }
     if (/^(?:thanks?|thank you|thank you so much|thx|ধন্যবাদ|অনেক ধন্যবাদ)$/.test(simple)) {
-      return json({ reply: /[\\u0980-\\u09ff]/.test(message) ? "আপনাকে স্বাগতম! 😊" : "You’re welcome! 😊" });
+      return json({ reply: containsBangla(message) ? "আপনাকে স্বাগতম! 😊" : "You’re welcome! 😊" });
     }
 
     const supabase = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });

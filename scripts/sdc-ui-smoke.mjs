@@ -821,11 +821,31 @@ try {
     throw new Error(`Chat UI did not render a valid streamed AI response: stream=${streamResponseObserved}, reply=${streamedReply.slice(0, 120)}`);
   }
 
+  // Outcome-based SMM request should enter the same in-chat order journey,
+  // even when the customer does not type the exact catalogue title.
+  await compose.fill('Instagram followers chai');
+  await compose.press('Enter');
+  const smmOrderFlow = chat.locator('.sdc-convo-card');
+  await smmOrderFlow.waitFor({ state: 'visible', timeout: 15000 });
+  const smmOrderText = await smmOrderFlow.innerText();
+  if (!/followers|sign in|option/i.test(smmOrderText)) {
+    throw new Error('Natural SMM request did not resolve to a service/order flow: ' + smmOrderText.slice(0, 180));
+  }
+
+  // Clear the unfinished guest SMM request before exercising the standard order flow.
+  await page.reload({ waitUntil: 'domcontentloaded', timeout: 30000 });
+  const freshLauncher = page.getByRole('button', { name: 'Chat with SDC Assistant' });
+  await freshLauncher.waitFor({ state: 'visible', timeout: 15000 });
+  await freshLauncher.click();
+  const freshChat = page.locator('[aria-label="SDC Assistant chat"]');
+  await freshChat.waitFor({ state: 'visible', timeout: 10000 });
+  const freshCompose = freshChat.locator('.sdc-chat-compose input');
+
   // The order flow starts when the visitor types a natural request; do not submit an order.
   await compose.fill('ORDER KORTE CHAI');
   await compose.press('Enter');
 
-  const orderFlow = chat.locator('.sdc-convo-card');
+  const orderFlow = freshChat.locator('.sdc-convo-card');
   await orderFlow.waitFor({ state: 'visible', timeout: 15000 });
   const orderReply = orderFlow.locator('input[aria-label="Your message"]');
   await orderReply.waitFor({ state: 'visible', timeout: 10000 });

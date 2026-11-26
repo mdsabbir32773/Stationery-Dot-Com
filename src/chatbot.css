@@ -51,7 +51,7 @@
 /* Conversational order/deposit flow embedded in the SDC chat thread */
 .sdc-convo-card{padding:12px;background:#fff;border-color:#ead6ca}
 .sdc-convo-thread{display:flex;flex-direction:column;gap:7px;margin-bottom:10px;max-height:180px;overflow:auto}
-.sdc-convo-msg{max-width:92%;padding:9px 11px;border-radius:13px;background:#f4f6f9;color:#344054;font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+.sdc-convo-msg{max-width:92%;padding:9px 11px;border-radius:13px;background:#f4f6f9;color:#344054;font-size:12px;line-height:1.5;overflow-wrap:anywhere;white-space:pre-line}
 .sdc-convo-msg.user{align-self:flex-end;background:#ed6426;color:#fff}
 .sdc-convo-msg.bot{align-self:flex-start}
 .sdc-convo-control{display:flex;flex-direction:column;gap:7px;margin:8px 0;color:#414b5c;font-size:12px;font-weight:650}

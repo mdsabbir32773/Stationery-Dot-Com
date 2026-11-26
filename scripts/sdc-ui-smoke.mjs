@@ -84,6 +84,30 @@ try {
     throw new Error('Homepage React content did not render. Browser errors: ' + errors.slice(0,8).join(' | ') + ' Body text: ' + bodyText.slice(0,1200) + ' Original: ' + error.message);
   }
   await page.locator('.scard').first().waitFor({ state: 'visible', timeout: 20000 });
+  // Verify client-side navigation from the homepage into each major service route.
+  const routeTargets = [
+    { href: '/digital-subscriptions', label: 'digital subscriptions' },
+    { href: '/smm', label: 'SMM panel' },
+    { href: '/meta-services', label: 'Meta services' },
+    { href: '/creative-services', label: 'creative services' },
+    { href: '/document-services', label: 'document services' },
+    { href: '/services/canva', label: 'a subscription detail' }
+  ];
+  for (const target of routeTargets) {
+    await page.goto(baseURL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await page.locator('.home-hero h1').waitFor({ state: 'visible', timeout: 20000 });
+    const routeLink = page.locator(`.home-seo-links a[href="${target.href}"]`).first();
+    await routeLink.scrollIntoViewIfNeeded();
+    await routeLink.click();
+    await page.waitForURL(url => url.pathname === target.href, { timeout: 15000 });
+    await page.locator('main h1:visible').first().waitFor({ state: 'visible', timeout: 20000 });
+    const routeText = await page.locator('main').innerText();
+    if (routeText.trim().length < 80 || /PAGE DID NOT LOAD|Let’s get this page back/i.test(routeText)) {
+      throw new Error(`Client navigation to ${target.label} did not render usable page content.`);
+    }
+  }
+  await page.goto(baseURL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  await page.locator('.home-hero h1').waitFor({ state: 'visible', timeout: 20000 });
   const zeroPriceServiceCards = await page.locator('.scard').evaluateAll(cards => cards.filter(card => card.innerText.includes('Starting from') && card.innerText.includes('৳0')).map(card => card.innerText.slice(0,160)));
   if (zeroPriceServiceCards.length) {
     throw new Error('Service cards must label zero-price quote packages as Price on request, not ৳0: ' + zeroPriceServiceCards.join(' | '));

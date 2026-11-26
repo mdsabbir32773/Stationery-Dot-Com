@@ -12,6 +12,10 @@ pages=(
   "https://stationerydotcom.me/contact"
   "https://stationerydotcom.me/services/nid"
   "https://stationerydotcom.me/services/gemini-ai-google-ai"
+  "https://stationerydotcom.me/services/claude"
+  "https://stationerydotcom.me/services/smm-fb-fol-ww"
+  "https://stationerydotcom.me/smm"
+  "https://stationerydotcom.me/cart"
 )
 tasks_file="$(mktemp)"
 for url in "${pages[@]}"; do

@@ -4,6 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type", "Access-Control-Allow-Methods": "POST, OPTIONS", "Content-Type": "application/json" };
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: cors });
 const rateBuckets = new Map<string, { start: number; count: number }>();
+const containsBangla = (value: string) => Array.from(value).some((character) => { const code = character.codePointAt(0) || 0; return code >= 0x0980 && code <= 0x09ff; });
 const sanitizeForModel = (value: string) => value.slice(0, 1800)
   .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "[email removed]")
   .replace(/(?:\+?88)?01[3-9](?:[\s-]?\d){8}/g, "[phone number removed]")
@@ -81,7 +82,7 @@ Deno.serve(async (req: Request) => {
       return json({ reply: "ওয়ালাইকুম আসসালাম! 😊 কীভাবে সাহায্য করতে পারি?" });
     }
     if (/^(?:hi|hello|hey|hiya|good morning|good afternoon|good evening|হাই|হ্যালো|হেই)$/.test(simple)) {
-      return json({ reply: /[\\u0980-\\u09ff]/.test(message) ? "হ্যালো! 😊 কীভাবে সাহায্য করতে পারি?" : "Hello! 😊 Welcome to Stationery Dot Com. How can I help you today?" });
+      return json({ reply: containsBangla(message) ? "হ্যালো! 😊 কীভাবে সাহায্য করতে পারি?" : "Hello! 😊 Welcome to Stationery Dot Com. How can I help you today?" });
     }
     if (/^(?:thanks?|thank you|thank you so much|thx|ধন্যবাদ|অনেক ধন্যবাদ)$/.test(simple)) {
       return json({ reply: /[\\u0980-\\u09ff]/.test(message) ? "আপনাকে স্বাগতম! 😊" : "You’re welcome! 😊" });

@@ -22,6 +22,7 @@ const TOKEN_ALIASES={
 function tokens(value){return normalized(value).split(/\s+/).map(word=>TOKEN_ALIASES[word]||word).filter(word=>word.length>1&&!STOPWORDS.has(word)&&!/^\\d+(?:k|m)?$/i.test(word));}
 function catalogScore(query,label){const q=normalized(query),c=normalized(label);if(!q||!c)return 0;if(q===c)return 100;const qt=tokens(query),ct=tokens(label);if(!qt.length||!ct.length)return 0;const overlap=ct.filter(word=>qt.includes(word)).length;if(!overlap)return 0;return Math.round((overlap/qt.length*.72+overlap/ct.length*.28)*100);}
 function rankCatalog(query,items,labelOf){return items.map(item=>({item,score:catalogScore(query,labelOf(item))})).filter(row=>row.score>=42).sort((a,b)=>b.score-a.score);}
+function selectedOption(value,max){const v=String(value||'').trim().toLowerCase();const words={first:1,second:2,third:3,fourth:4,fifth:5,sixth:6,প্রথম:1,দ্বিতীয়:2,দ্বিতীয়:2,তৃতীয়:3,তৃতীয়:3,চতুর্থ:4,পঞ্চম:5};const m=v.match(/^(?:option\\s*)?(\\d+|first|second|third|fourth|fifth|sixth|প্রথম|দ্বিতীয়|দ্বিতীয়|তৃতীয়|তৃতীয়|চতুর্থ|পঞ্চম)$/i);if(!m)return -1;const n=words[m[1]]||Number(m[1]);return Number.isInteger(n)&&n>=1&&n<=max?n-1:-1;}
 function asksForSuggestions(text){return /\b(related|recommend|suggest|options?|list|show me|what do you have|which packages?)\b|ki ki ache|aro package|related package|option gula|প্যাকেজ.*(দেখা|আছে|কোন)|কোন কোন|কি কি আছে|আরো.*প্যাকেজ/i.test(text);}
 
 
@@ -84,12 +85,13 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
   if(smm){if(!session){if(typeof window!=='undefined'){try{window.sessionStorage.setItem('sdc_chat_pending_smm_order',JSON.stringify({message:initialMessage||s.name,serviceId:id,createdAt:Date.now()}));}catch{}}go('signin',language==='bn'?'এই SMM order চালিয়ে যেতে account-এ sign in করুন। Sign in করার পর chatbot খুললেই order এখান থেকে continue হবে।':'Please sign in to continue this SMM order. Open the chatbot after signing in and it will resume here.');return;}go('target',prompts.target);return;}
   const matched=matchedPackageId?packages.find(x=>x.id===matchedPackageId):null;
   if(matched){setPackageId(matched.id);go('name',(language==='bn'?'ঠিক আছে—':'Got it—')+s.name+', '+matched.name+' ('+(Number(matched.price)>0?taka(matched.price):'Price on request')+'). '+(language==='bn'?'এখন আপনার নামটি বলুন।':'What name should I put on the order?'));return;}
-  go('package',prompts.package+'\n\n'+packageCatalog(s,packages.filter(x=>x.service_id===id)));
+  const available=packages.filter(x=>x.service_id===id);setPackageOptions(available);go('package',prompts.package+'\n\n'+available.slice(0,10).map((p,i)=>(i+1)+'. '+p.name+(p.access_type?' · '+p.access_type:'')+(p.duration_months===0?' · Lifetime':p.duration_months?' · '+p.duration_months+' months':'')+' — '+(Number(p.price)>0?taka(p.price):'Price on request')).join('\n')+'\n'+(language==='bn'?'Option number বললেই হবে।':'Reply with the option number.'));
  }
  function choosePackage(id){const p=servicePackages.find(x=>x.id===id);if(!p)return;setPackageId(id);if(isSmm){go('target',prompts.target);}else go('name',(language==='bn'?'বুঝেছি—':'Got it—')+p.name+' ('+(Number(p.price)>0?taka(p.price):'Price on request')+'). '+(language==='bn'?'অর্ডারে কোন নামটি দেব?':'What name should I put on the order?'));}
  function currentPrompt(){return prompts[step]||'';}
  useEffect(()=>{actionEndRef.current?.scrollIntoView({behavior:'smooth'});},[messages,step,error,loading,result]);
  function handleServiceQuery(query){
+  setServiceOptions([]);setPackageOptions([]);
   const serviceMatches=rankCatalog(query,services,x=>(x.name||'')+' '+(x.category||'')+' '+(x.description||'')+' '+(x.slug||'')+' '+(x.smm_platform||'')+' '+(x.smm_category||'')+' '+(x.smm_delivery_time||'')+' '+(x.smm_platform?'social media smm followers likes views subscribers comments engagement boost':''));
   const packageMatches=rankCatalog(query,packages,x=>{const d=x.duration_months===0?'lifetime':x.duration_months%12===0?(x.duration_months/12)+' year':x.duration_months+' months';const svc=services.find(y=>y.id===x.service_id);return (x.name||'')+' '+(x.access_type||'')+' '+d+' '+x.duration_months+' '+(x.description||'')+' '+(svc?.name||'')+' '+(svc?.category||'')+' '+(svc?.description||'');});
   const best=serviceMatches[0],next=serviceMatches[1];
@@ -111,10 +113,19 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
   }
   const pb=packageMatches[0],pn=packageMatches[1];
   if(pb&&pb.score>=82&&(!pn||pb.score-pn.score>=12)){const svc=services.find(x=>x.id===pb.item.service_id);if(svc){chooseService(svc.id,pb.item.id);return;}}
-  if(asksForSuggestions(query)){bot((language==='bn'?'অবশ্যই। Available service-গুলো হলো:\n• ':'Here are the available services:\n• ')+services.slice(0,12).map(x=>x.name).join('\n• ')+'\n'+(language==='bn'?'যেটা দরকার, নামটা বলুন।':'Tell me the one you need.'));return;}
-  const close=serviceMatches.filter(x=>x.score>=38).slice(0,5).map(x=>x.item.name);
-  if(close.length){bot((language==='bn'?'এই service-গুলোর সাথে মিল পেয়েছি: ':'I found a few related services: ')+close.join(', ')+(language==='bn'?'। কোনটার কথা বলছেন, নামটা একটু পরিষ্কার করে বলবেন?':'. Which one did you mean?'));return;}
-  bot(language==='bn'?'কোন সেবাটি নিতে চান? নাম লিখুন বা কী দরকার বলুন—যেমন Gemini, Canva বা Facebook। আমি সেই অনুযায়ী package দেখাব।':'Which service do you need? Tell me its name or what you need it for—for example Gemini, Canva or Facebook—and I’ll find matching packages.');
+  if(asksForSuggestions(query)){
+   const list=serviceMatches.length?serviceMatches.slice(0,12).map(x=>x.item):services.slice(0,12);
+   setServiceOptions(list);
+   bot((language==='bn'?'Available service-গুলো:\\n':'Available services:\\n')+list.map((x,i)=>(i+1)+'. '+x.name).join('\\n')+'\\n'+(language==='bn'?'Option number বলুন।':'Reply with an option number.'));
+   return;
+  }
+  const closeRows=serviceMatches.filter(x=>x.score>=42).slice(0,6);
+  if(closeRows.length){
+   setServiceOptions(closeRows.map(x=>x.item));
+   bot((language==='bn'?'আপনার কথার সঙ্গে এই service-গুলো মিলেছে:\\n':'These services match what you described:\\n')+closeRows.map((x,i)=>(i+1)+'. '+x.item.name+(x.item.smm_platform?' — '+taka(getSmmUnitPrice(x.item))+' / 1,000':'' )).join('\\n')+'\\n'+(language==='bn'?'Option number বললেই হবে—পুরো নাম লিখতে হবে না।':'Reply with the option number; you do not need the exact service name.'));
+   return;
+  }
+  bot(language==='bn'?'আপনি কী কাজটি করতে চান বা কোন platform-এ service দরকার বলুন—আমি catalogue থেকে মিলিয়ে দেখছি।':'Tell me what you want to do or which platform you need; I’ll search the catalogue for matching services.');
  }
  function handlePackageQuery(query){
   const years=query.match(/\b(\d+)\s*(?:years?|yrs?)\b/i);
@@ -124,18 +135,24 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
   const durationMatches=servicePackages.filter(x=>wantsLifetime?x.duration_months===0:requestedMonths!==null?Number(x.duration_months)===requestedMonths:false);
   if(durationMatches.length===1){choosePackage(durationMatches[0].id);return;}
   const candidates=durationMatches.length?durationMatches:servicePackages;
-  const matches=rankCatalog(query,candidates,x=>(x.name||'')+' '+(x.access_type||'')+' '+(x.duration_months||'')+' '+(x.price||''));
-  if(asksForSuggestions(query)){const related=matches.filter(x=>x.score>=50).map(x=>x.item);const chosen=related.length?related:candidates;setPackageOptions(chosen);bot(packageCatalog(service,chosen)+'\\n'+(language==='bn'?'Option number বললেই হবে।':'Reply with the option number.'));return;}
+  const matches=rankCatalog(query,candidates,x=>(x.name||'')+' '+(x.access_type||'')+' '+(x.duration_months===0?'lifetime':x.duration_months||'')+' '+(x.price||'')+' '+(x.description||'')+' '+service?.name+' '+service?.description);
   const best=matches[0],next=matches[1];
   if(best&&best.score>=76&&(!next||best.score-next.score>=10)){choosePackage(best.item.id);return;}
-  const close=matches.filter(x=>x.score>=48).slice(0,6).map(x=>'• '+x.item.name+' — '+(Number(x.item.price)>0?taka(x.item.price):'Price on request'));
-  if(close.length)bot((language==='bn'?'এই package-গুলো আপনার কথার সাথে মিলে:\n':'These packages seem related:\n')+close.join('\n')+'\n'+(language==='bn'?'যেটা চান, নামটা বলুন।':'Tell me which package name you want.'));
-  else bot((language==='bn'?'এই নামে package পেলাম না। ':'I could not find that package name. ')+packageCatalog(service));
+  const closeRows=matches.filter(x=>x.score>=48).slice(0,6);
+  if(asksForSuggestions(query)||closeRows.length){
+   const related=asksForSuggestions(query)?matches.filter(x=>x.score>=42).slice(0,6):closeRows;
+   const chosen=(related.length?related:candidates.slice(0,6)).map(x=>x.item||x);
+   setPackageOptions(chosen);
+   bot((language==='bn'?'আপনার কথার সঙ্গে এই package-গুলো মিলেছে:\\n':'These packages match your request:\\n')+chosen.map((x,i)=>(i+1)+'. '+x.name+' — '+(Number(x.price)>0?taka(x.price):'Price on request')+(x.duration_months===0?' · Lifetime':x.duration_months?' · '+x.duration_months+' months':'')).join('\\n')+'\\n'+(language==='bn'?'Option number বললেই হবে।':'Reply with the option number.'));
+   return;
+  }
+  const all=servicePackages.slice(0,10);setPackageOptions(all);
+  bot((language==='bn'?'এই service-এর available package:\\n':'Available packages:\\n')+all.map((x,i)=>(i+1)+'. '+x.name+' — '+(Number(x.price)>0?taka(x.price):'Price on request')).join('\\n')+'\\n'+(language==='bn'?'Option number বলুন।':'Reply with an option number.'));
  }
  useEffect(()=>{if(loading||mode!=='order'||!initialMessage||initialProcessed.current||!services.length)return;initialProcessed.current=true;handleServiceQuery(initialMessage);},[loading,mode,initialMessage,services,packages]);
  async function submitText(e){e.preventDefault();const v=reply.trim();if(!v||busy)return;setReply('');user(v);
-  if(step==='service'){handleServiceQuery(v);}
-  else if(step==='package'){handlePackageQuery(v);}
+  if(step==='service'){const index=selectedOption(v,serviceOptions.length);if(index>=0&&serviceOptions[index]){const chosen=serviceOptions[index];setServiceOptions([]);chooseService(chosen.id);}else handleServiceQuery(v);}
+  else if(step==='package'){const index=selectedOption(v,packageOptions.length);if(index>=0&&packageOptions[index]){const chosen=packageOptions[index];setPackageOptions([]);choosePackage(chosen.id);}else handlePackageQuery(v);}
   else if(step==='amount'){const n=Number(v);if(!Number.isFinite(n)||n<50||n>1000000){setError('Deposit amount must be between ৳50 and ৳1,000,000.');return;}setAmount(String(n));go('review',language==='bn'?'Wallet deposit-এর details দেখে নিন। ঠিক থাকলে “confirm” লিখুন।':'Review your wallet deposit details. Reply “confirm” when they look right.');}
   else if(step==='target'){if(!/^https?:\/\//i.test(v)){setError('Please enter a complete URL beginning with https://');return;}setTarget(v);go('quantity',prompts.quantity);}
   else if(step==='quantity'){const q=Number(v);if(!Number.isInteger(q)||q<Number(service.smm_min_quantity)||q>Number(service.smm_max_quantity)){setError('Quantity must be between '+service.smm_min_quantity+' and '+service.smm_max_quantity+'.');return;}setQuantity(String(q));go('name',prompts.name);}

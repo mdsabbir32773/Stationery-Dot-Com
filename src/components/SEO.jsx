@@ -36,7 +36,7 @@ export default function SEO(){
     const run=async()=>{
       const route=pathname.replace(/\/+$/,'')||'/';
       const pages={
-        '/':{title:'Stationery Dot Com | Online Service Provider in Bangladesh',description:'Dhaka-based Stationery Dot Com offers digital subscriptions, Meta ads, SMM, document assistance and creative services across Bangladesh.'},
+        '/':{title:'Stationery Dot | Subscriptions, Followers & Online Services BD',description:'Stationery Dot offers digital subscriptions in Bangladesh, Facebook and Instagram followers, SMM panel services, Meta ads, document assistance and creative services.'},
         '/about':{title:'About Stationery Dot Com | Dhaka, Bangladesh',description:'Learn about Stationery Dot Com, a Dhaka-based online service platform for digital subscriptions, SMM, Meta support, document assistance and creative services.'},
         '/refund-policy':{title:'Refund & Cancellation Policy | Stationery Dot Com',description:'Understand how Stationery Dot Com reviews order cancellation and refund requests.'},
         '/delivery-policy':{title:'Service Delivery Policy | Stationery Dot Com',description:'Learn how Stationery Dot Com reviews orders and handles online service delivery.'},

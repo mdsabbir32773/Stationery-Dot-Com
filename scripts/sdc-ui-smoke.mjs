@@ -848,7 +848,7 @@ try {
     const smmReply = smmOrderFlow.locator('input[aria-label="Your message"]');
     await smmReply.fill('1');
     await smmReply.press('Enter');
-    await smmOrderFlow.getByText(/sign in/i).waitFor({ state: 'visible', timeout: 10000 });
+    await smmOrderFlow.getByRole('link', { name: /sign in/i }).waitFor({ state: 'visible', timeout: 10000 });
   }
 
   // Clear the unfinished guest SMM request before exercising the standard order flow.

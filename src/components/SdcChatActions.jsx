@@ -33,7 +33,8 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
  const language=hasBangla?'bn':isBanglish?'bn':'en';
  const[services,setServices]=useState([]),[packages,setPackages]=useState([]),[settings,setSettings]=useState({}),[paymentMethod,setPaymentMethod]=useState('');
  const[session,setSession]=useState(null),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[error,setError]=useState(''),[result,setResult]=useState(''),[successLink,setSuccessLink]=useState(null);
- const[step,setStep]=useState(mode==='deposit'?'amount':'service'),[messages,setMessages]=useState([]),[reply,setReply]=useState('');\n const[serviceOptions,setServiceOptions]=useState([]),[packageOptions,setPackageOptions]=useState([]);
+ const[step,setStep]=useState(mode==='deposit'?'amount':'service'),[messages,setMessages]=useState([]),[reply,setReply]=useState('');
+ const[serviceOptions,setServiceOptions]=useState([]),[packageOptions,setPackageOptions]=useState([]);
  const[serviceId,setServiceId]=useState(''),[packageId,setPackageId]=useState(''),[name,setName]=useState(''),[phone,setPhone]=useState(''),[whatsapp,setWhatsapp]=useState(''),[email,setEmail]=useState(''),[target,setTarget]=useState(''),[quantity,setQuantity]=useState(''),[notes,setNotes]=useState('');
  const[proof,setProof]=useState(null),[proofMime,setProofMime]=useState(''),[docs,setDocs]=useState([]),[amount,setAmount]=useState(''),[balance,setBalance]=useState(null);
  const service=services.find(x=>x.id===serviceId);

@@ -861,8 +861,8 @@ try {
   const freshCompose = freshChat.locator('.sdc-chat-compose input');
 
   // The order flow starts when the visitor types a natural request; do not submit an order.
-  await compose.fill('ORDER KORTE CHAI');
-  await compose.press('Enter');
+  await freshCompose.fill('ORDER KORTE CHAI');
+  await freshCompose.press('Enter');
 
   const orderFlow = freshChat.locator('.sdc-convo-card');
   await orderFlow.waitFor({ state: 'visible', timeout: 15000 });

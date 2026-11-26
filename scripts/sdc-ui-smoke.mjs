@@ -834,6 +834,34 @@ try {
     throw new Error('Assistant did not recognize an SMM catalogue question: ' + smmInfoReply.slice(0, 180));
   }
 
+  async function askAssistant(query) {
+    const before = await chat.locator('.sdc-chat-row.is-assistant .sdc-chat-bubble').count();
+    await compose.fill(query);
+    await compose.press('Enter');
+    await page.waitForFunction((count) => {
+      const bubbles = document.querySelectorAll('[aria-label="SDC Assistant chat"] .sdc-chat-row.is-assistant .sdc-chat-bubble');
+      const input = document.querySelector('[aria-label="SDC Assistant chat"] .sdc-chat-compose input');
+      return bubbles.length > count && input && !input.disabled;
+    }, before, { timeout: 30000 });
+    return chat.locator('.sdc-chat-row.is-assistant .sdc-chat-bubble').last().innerText();
+  }
+
+  const tiktokReply = await askAssistant('TikTok followers');
+  if (!/TikTok/i.test(tiktokReply) || !/no active|currently|catalogue|active SMM/i.test(tiktokReply) || /Facebook Followers/i.test(tiktokReply)) {
+    throw new Error('TikTok request must not return unrelated Facebook services: ' + tiktokReply.slice(0, 220));
+  }
+  const facebookFollowersReply = await askAssistant('Facebook page followers');
+  if (!/Facebook Followers/i.test(facebookFollowersReply) || /Facebook Page Setup/i.test(facebookFollowersReply)) {
+    throw new Error('Facebook page followers must resolve to Facebook Followers, not Page Setup: ' + facebookFollowersReply.slice(0, 220));
+  }
+  if (await chat.locator('.sdc-chat-row.is-assistant .sdc-chat-list-item').count() < 3) {
+    throw new Error('Catalogue options should render as separate mobile-friendly list items.');
+  }
+  const typoFollowerReply = await askAssistant('Facebook followrs');
+  if (!/Facebook Followers/i.test(typoFollowerReply) || /Facebook Page Setup/i.test(typoFollowerReply)) {
+    throw new Error('Common misspelling "followrs" should still match the follower catalogue: ' + typoFollowerReply.slice(0, 220));
+  }
+
   // Outcome-based SMM request should enter the same in-chat order journey,
   // even when the customer does not type the exact catalogue title.
   await compose.fill('Instagram followers chai');

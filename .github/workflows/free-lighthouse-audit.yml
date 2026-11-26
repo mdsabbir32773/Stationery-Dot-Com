@@ -48,15 +48,26 @@ jobs:
           import fs from 'node:fs';
           const dir='lighthouse-results';
           const rows=[];
+          const opportunities=[];
           if(fs.existsSync(dir)) for(const file of fs.readdirSync(dir).filter(x=>x.endsWith('.json'))) {
             try {
               const r=JSON.parse(fs.readFileSync(dir+'/'+file,'utf8'));
               const c=r.categories||{};
-              rows.push({page:r.requestedUrl||r.finalDisplayedUrl||file,device:file.includes('desktop')?'Desktop':'Mobile',performance:Math.round((c.performance?.score??0)*100),accessibility:Math.round((c.accessibility?.score??0)*100),bestPractices:Math.round((c['best-practices']?.score??0)*100),seo:Math.round((c.seo?.score??0)*100),lcp:r.audits?.['largest-contentful-paint']?.displayValue||'',cls:r.audits?.['cumulative-layout-shift']?.displayValue||'',inp:r.audits?.['interaction-to-next-paint']?.displayValue||r.audits?.['total-blocking-time']?.displayValue||''});
+              const pageName=r.requestedUrl||r.finalDisplayedUrl||file;
+              const device=file.includes('desktop')?'Desktop':'Mobile';
+              rows.push({page:pageName,device,performance:Math.round((c.performance?.score??0)*100),accessibility:Math.round((c.accessibility?.score??0)*100),bestPractices:Math.round((c['best-practices']?.score??0)*100),seo:Math.round((c.seo?.score??0)*100),lcp:r.audits?.['largest-contentful-paint']?.displayValue||'',cls:r.audits?.['cumulative-layout-shift']?.displayValue||'',inp:r.audits?.['interaction-to-next-paint']?.displayValue||r.audits?.['total-blocking-time']?.displayValue||''});
+              for(const audit of Object.values(r.audits||{})){
+                const savingsMs=Number(audit.details?.overallSavingsMs||0),savingsBytes=Number(audit.details?.overallSavingsBytes||0);
+                if(audit.scoreDisplayMode==='metricSavings'&&(savingsMs>=100||savingsBytes>=50000))opportunities.push({page:pageName,device,title:audit.title,savingsMs,savingsBytes,display:audit.displayValue||''});
+              }
             } catch {}
           }
           const header='| Page | Device | Performance | Accessibility | Best Practices | SEO | LCP | CLS | INP/TBT |\n|---|---|---:|---:|---:|---:|---|---|---|';
           const table=rows.map(x=>'| '+x.page+' | '+x.device+' | '+x.performance+' | '+x.accessibility+' | '+x.bestPractices+' | '+x.seo+' | '+x.lcp+' | '+x.cls+' | '+x.inp+' |').join('\n');
+          opportunities.sort((a,b)=>b.savingsMs-a.savingsMs||b.savingsBytes-a.savingsBytes);
+          const opportunityTable=opportunities.slice(0,20).map(x=>'- '+x.device+' · '+x.page+' — '+x.title+(x.display?' ('+x.display+')':'')+(x.savingsMs?' · '+Math.round(x.savingsMs)+' ms savings':'')+(x.savingsBytes?' · '+Math.round(x.savingsBytes/1024)+' KB savings':'')).join('\n');
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'\n## Top Lighthouse opportunities\n\n'+(opportunityTable||'No high-savings opportunities were reported.')+'\n\n');
+          console.log('\n## Top Lighthouse opportunities\n\n'+(opportunityTable||'No high-savings opportunities were reported.')+'\n');
           fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'\n## Lighthouse scores\n\n'+header+'\n'+table+'\n\n');
           console.log('\n## Lighthouse scores\n\n'+header+'\n'+table+'\n');
           NODE

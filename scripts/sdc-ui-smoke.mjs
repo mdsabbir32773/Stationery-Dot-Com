@@ -157,13 +157,14 @@ try {
     console.error('NID SEO smoke details:', JSON.stringify({ status: nidSeoResponse.status(), titleSource: nidTitleSource, titleText: nidTitleText, hasNidContent }));
     throw new Error('NID service fallback does not have a distinct, readable SEO title and useful content.');
   }
-  const faviconHref = await page.locator('link[rel="icon"][type="image/png"]').getAttribute('href');
-  if (faviconHref !== '/favicon-192.png') {
-    throw new Error(`Google-compatible PNG favicon is missing or incorrect: ${faviconHref}`);
+  const favicon = page.locator('link[rel="icon"][type="image/webp"]');
+  const faviconHref = await favicon.getAttribute('href');
+  if (faviconHref !== '/stationery-dot-com-logo.webp') {
+    throw new Error(`Official Stationery Dot Com logo favicon is missing or incorrect: ${faviconHref}`);
   }
   const faviconResponse = await page.request.get(new URL(faviconHref, baseURL).href);
-  if (faviconResponse.status() !== 200 || !(faviconResponse.headers()['content-type'] || '').includes('image/png')) {
-    throw new Error('PNG favicon did not return a successful image/png response.');
+  if (faviconResponse.status() !== 200 || !(faviconResponse.headers()['content-type'] || '').includes('image/webp')) {
+    throw new Error('Official WebP logo favicon did not return a successful image/webp response.');
   }
 
   // Privacy notice must disclose the optional GA4 event collection introduced in the analytics rollout.

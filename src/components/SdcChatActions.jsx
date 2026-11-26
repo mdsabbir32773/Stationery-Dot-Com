@@ -70,12 +70,14 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
   bn:{service:'কোন সেবাটি নিতে চান? নাম লিখুন বা কী দরকার বলুন, আমি মিলিয়ে দেখছি।',package:'এই সেবার প্যাকেজের নাম ও দাম দেখুন। প্যাকেজের নাম লিখুন, অথবা “related” লিখলে কাছাকাছি প্যাকেজ দেখাব।',target:'কোন প্রোফাইল, পোস্ট বা চ্যানেলে সেবাটি লাগবে? লিংকটি পাঠান।',quantity:'কতটি চান বলুন।',name:'অর্ডারে কোন নামটি দেব?',phone:'আপনার বাংলাদেশি মোবাইল নম্বরটি দিন।',whatsapp:'WhatsApp নম্বরটি কি মোবাইল নম্বরের থেকে আলাদা? একই হলে “same” লিখুন।',email:'অর্ডারের জন্য কোন ইমেইল ব্যবহার করব? এটি ঐচ্ছিক; না দিতে চাইলে “skip” লিখুন।',notes:'টিমকে জানানোর মতো কোনো নির্দেশনা আছে? না থাকলে “skip” লিখুন।',docs:'এই সেবার জন্য একটি ফাইল দরকার। এখানে আপলোড করে “continue” লিখুন।',review:'অর্ডারের তথ্যগুলো আবার দেখুন। ঠিক থাকলে “confirm” লিখুন; পরিবর্তন চাইলে বলুন।',amount:'ওয়ালেটে কত টাকা যোগ করতে চান? সর্বনিম্ন ৳৫০।',proof:'পেমেন্ট সম্পন্ন হলে রসিদের screenshot এখানে আপলোড করে “paid” লিখুন (JPG, PNG বা WEBP; সর্বোচ্চ ৫ MB)।',paid:'“paid” লিখলে অনুরোধটি জমা হবে। এরপর টিম রসিদ যাচাই করবে.'}
  };
  const prompts=promptSets[language];
+ const formatDuration=months=>months===0?'Lifetime':months%12===0?(months/12)+' '+(months/12===1?'year':'years'):months+' months';
  const packageCatalog=(svc,list=packages.filter(p=>p.service_id===svc?.id))=>{
   if(!list.length)return language==='bn'?'এই service-এ এখন active package নেই। অন্য service-এর নাম বলুন।':'There are no active packages for this service right now. Tell me another service name.';
-  const rows=list.slice(0,10).map(p=>'• '+p.name+(p.access_type?' · '+p.access_type:'')+(p.duration_months===0?' · Lifetime':p.duration_months?' · '+p.duration_months+' months':'')+' — '+(Number(p.price)>0?taka(p.price):'Price on request')).join('\n');
-  const more=list.length>10?'\n…and '+(list.length-10)+' more.':'';
-  return (language==='bn'?'এই service-এর available package:\n':'Available packages for '+(svc?.name||'this service')+':\n')+rows+more;
+  const rows=list.slice(0,10).map((p,i)=>(i+1)+'. '+p.name+'\n   '+(p.access_type?'Access: '+p.access_type+' · ':'')+'Duration: '+formatDuration(Number(p.duration_months||0))+'\n   Price: '+(Number(p.price)>0?taka(p.price):'Price on request')).join('\n\n');
+  const more=list.length>10?'\n\nআরও '+(list.length-10)+'টি package আছে।':'';
+  return (language==='bn'?'📦 এই service-এর available packages:\n\n':'📦 Available packages for '+(svc?.name||'this service')+':\n\n')+rows+more;
  };
+
  const serviceCatalog=()=>services.slice(0,12).map(x=>x.name).join(', ')+(services.length>12?'…':'');
 
  useEffect(()=>{initialProcessed.current=false;setMessages([{role:'assistant',text:mode==='deposit'?(language==='bn'?'Wallet deposit-টা এখানেই একে একে করব।':'I’ll help with the wallet deposit right here, one step at a time.'):initialMessage?'':(language==='bn'?'কোন সেবাটি নিতে চান? নাম লিখুন বা কী দরকার বলুন, আমি প্যাকেজ মিলিয়ে দেখছি।':'Sure—tell me what service you need, and I’ll find the matching package.') }]);},[mode,initialMessage,language]);
@@ -103,7 +105,7 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
   if(smm){if(!session){if(typeof window!=='undefined'){try{window.sessionStorage.setItem('sdc_chat_pending_smm_order',JSON.stringify({message:initialMessage||s.name,serviceId:id,createdAt:Date.now()}));}catch{}}go('signin',language==='bn'?'এই SMM order চালিয়ে যেতে account-এ sign in করুন। Sign in করার পর chatbot খুললেই order এখান থেকে continue হবে।':'Please sign in to continue this SMM order. Open the chatbot after signing in and it will resume here.');return;}go('target',prompts.target);return;}
   const matched=matchedPackageId?packages.find(x=>x.id===matchedPackageId):null;
   if(matched){setPackageId(matched.id);go('name',(language==='bn'?'ঠিক আছে—':'Got it—')+s.name+', '+matched.name+' ('+(Number(matched.price)>0?taka(matched.price):'Price on request')+'). '+(language==='bn'?'এখন আপনার নামটি বলুন।':'What name should I put on the order?'));return;}
-  const available=packages.filter(x=>x.service_id===id);setPackageOptions(available);go('package',prompts.package+'\n\n'+available.slice(0,10).map((p,i)=>(i+1)+'. '+p.name+(p.access_type?' · '+p.access_type:'')+(p.duration_months===0?' · Lifetime':p.duration_months?' · '+p.duration_months+' months':'')+' — '+(Number(p.price)>0?taka(p.price):'Price on request')).join('\n')+'\n'+(language==='bn'?'Option number বললেই হবে।':'Reply with the option number.'));
+  const available=packages.filter(x=>x.service_id===id);setPackageOptions(available);go('package',prompts.package+'\n\n'+available.slice(0,10).map((p,i)=>(i+1)+'. '+p.name+'\n   '+(p.access_type?'Access: '+p.access_type+' · ':'')+'Duration: '+formatDuration(Number(p.duration_months||0))+'\n   Price: '+(Number(p.price)>0?taka(p.price):'Price on request')).join('\n\n')+'\n\n'+(language==='bn'?'Option number বললেই হবে।':'Reply with the option number'));
  }
  function choosePackage(id){const p=servicePackages.find(x=>x.id===id);if(!p)return;setPackageId(id);if(isSmm){go('target',prompts.target);}else go('name',(language==='bn'?'বুঝেছি—':'Got it—')+p.name+' ('+(Number(p.price)>0?taka(p.price):'Price on request')+'). '+(language==='bn'?'অর্ডারে কোন নামটি দেব?':'What name should I put on the order?'));}
  function currentPrompt(){return prompts[step]||'';}

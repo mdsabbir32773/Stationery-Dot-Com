@@ -777,6 +777,7 @@ try {
   }
 
   // Every displayed SMM platform filter must have active services; no dead TikTok/YouTube/X filters.
+  await page.waitForFunction(() => document.querySelectorAll('.smm-filter-pills button').length >= 2, { timeout: 15000 });
   const platformButtons = page.locator('.smm-filter-pills button');
   const platformButtonCount = await platformButtons.count();
   if (platformButtonCount < 2) throw new Error('SMM catalogue should show All platforms and at least one active platform.');

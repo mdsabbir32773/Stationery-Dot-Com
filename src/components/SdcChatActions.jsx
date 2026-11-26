@@ -9,7 +9,7 @@ import {getUploadMime,getPaymentProofMime} from '../lib/fileValidation';
 
 const PHONE=/^(880|0)?1[0-9]{9}$/;
 const extOf=f=>f.name.split('.').pop().toLowerCase();
-const STOPWORDS=new Set(['i','me','my','we','want','need','looking','for','to','a','an','the','some','please','order','buy','purchase','get','give','show','find','related','recommend','recommendation','package','packages','service','services','price','cost','of','and','with','have','you','can','could','do','on','from','amar','amr','ami','amake','ekta','ta','lagbe','chai','dorkar','nibo','kinbo','den','dao','daw','koro','korbo','korte','dibo','jonno','কি','কী','আমার','আমি','আমাকে','একটা','লাগবে','চাই','দরকার','নেব','কিনব','দেন','দাও','করতে','অর্ডার','প্যাকেজ','সার্ভিস','দাম','কত','আছে','দেখান','দেখাও']);
+const STOPWORDS=new Set(['i','me','my','we','want','need','looking','for','to','a','an','the','some','please','order','buy','purchase','get','give','show','find','related','recommend','recommendation','package','packages','service','services','price','cost','of','and','with','have','you','can','could','do','on','from','for','er','e','te','amar','amr','ami','amake','ekta','ta','lagbe','chai','dorkar','nibo','kinbo','den','dao','daw','koro','korbo','korte','dibo','jonno','কি','কী','আমার','আমি','আমাকে','একটা','লাগবে','চাই','দরকার','নেব','কিনব','দেন','দাও','করতে','অর্ডার','প্যাকেজ','সার্ভিস','দাম','কত','আছে','দেখান','দেখাও']);
 function normalized(value){return String(value||'').toLowerCase().normalize('NFKC').replace(/(\d+)(year|yr|month|mo)\b/g,'$1 $2').replace(/[^a-z0-9\u0980-\u09ff]+/g,' ').trim();}
 const TOKEN_ALIASES={
  ig:'instagram',insta:'instagram',fb:'facebook',yt:'youtube',
@@ -19,8 +19,8 @@ const TOKEN_ALIASES={
  boosting:'boost',promote:'boost',promotion:'boost','watchtime':'watchtime',subscription:'subscription',subscriptions:'subscription',
  lifetime:'lifetime',forever:'lifetime'
 };
-function tokens(value){return normalized(value).split(/\s+/).map(word=>TOKEN_ALIASES[word]||word).filter(word=>word.length>1&&!STOPWORDS.has(word));}
-function catalogScore(query,label){const q=normalized(query),c=normalized(label);if(!q||!c)return 0;if(q===c)return 100;const qt=tokens(query),ct=tokens(label);if(!qt.length||!ct.length)return 0;const overlap=ct.filter(word=>qt.includes(word)).length;if(!overlap)return 0;return Math.round((overlap/ct.length*.72+overlap/qt.length*.28)*100);}
+function tokens(value){return normalized(value).split(/\s+/).map(word=>TOKEN_ALIASES[word]||word).filter(word=>word.length>1&&!STOPWORDS.has(word)&&!/^\\d+(?:k|m)?$/i.test(word));}
+function catalogScore(query,label){const q=normalized(query),c=normalized(label);if(!q||!c)return 0;if(q===c)return 100;const qt=tokens(query),ct=tokens(label);if(!qt.length||!ct.length)return 0;const overlap=ct.filter(word=>qt.includes(word)).length;if(!overlap)return 0;return Math.round((overlap/qt.length*.72+overlap/ct.length*.28)*100);}
 function rankCatalog(query,items,labelOf){return items.map(item=>({item,score:catalogScore(query,labelOf(item))})).filter(row=>row.score>=42).sort((a,b)=>b.score-a.score);}
 function asksForSuggestions(text){return /\b(related|recommend|suggest|options?|list|show me|what do you have|which packages?)\b|ki ki ache|aro package|related package|option gula|প্যাকেজ.*(দেখা|আছে|কোন)|কোন কোন|কি কি আছে|আরো.*প্যাকেজ/i.test(text);}
 

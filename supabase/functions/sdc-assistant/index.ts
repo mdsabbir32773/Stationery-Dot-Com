@@ -178,16 +178,28 @@ Deno.serve(async (req: Request) => {
       ...history.filter((m: any) => ["user","model"].includes(m?.role) && typeof m?.text === "string").map((m: any) => ({ role: m.role, parts: [{ text: sanitizeForModel(m.text) }] })),
       { role: "user", parts: [{ text: message }] }
     ];
-    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=" + encodeURIComponent(apiKey), {
+    const stream = body?.stream === true;
+    const modelUrl = stream
+      ? "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:streamGenerateContent?alt=sse&key=" + encodeURIComponent(apiKey)
+      : "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=" + encodeURIComponent(apiKey);
+    const response = await fetch(modelUrl, {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ systemInstruction: { parts: [{ text: system }] }, contents, generationConfig: { temperature: 0.78, maxOutputTokens: 850, topP: 0.92 } }),
       signal: AbortSignal.timeout(25000)
     });
-    const result = await response.json();
     if (!response.ok) {
+      const result = await response.json().catch(() => ({}));
       console.error("Gemini request failed", response.status, JSON.stringify(result).slice(0, 500));
       return json({ error: response.status === 429 ? "অনেকগুলো message একসাথে এসেছে। একটু পরে আবার চেষ্টা করুন।" : "দুঃখিত, এই মুহূর্তে উত্তর দিতে পারছি না। WhatsApp-এ আমাদের সাথে যোগাযোগ করুন।" }, 502);
     }
+    if (stream) {
+      if (!response.body) return json({ error: "Streaming response unavailable. Please try again." }, 502);
+      return new Response(response.body, {
+        status: 200,
+        headers: { ...cors, "Content-Type": "text/event-stream; charset=utf-8", "Cache-Control": "no-cache, no-transform", "X-Accel-Buffering": "no" }
+      });
+    }
+    const result = await response.json();
     const reply = result?.candidates?.[0]?.content?.parts?.map((p: any) => p.text || "").join("").trim();
     if (!reply) return json({ error: "I couldn't prepare a reply. Please try again." }, 502);
     return json({ reply });

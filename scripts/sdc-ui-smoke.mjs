@@ -130,7 +130,7 @@ try {
     throw new Error('Homepage WebSite structured data is missing the Stationery Dot Com brand identity.');
   }
   if (organization?.address ||
-      organization?.sameAs?.some(url => /google\\.com\\/maps|share\\.google/i.test(url)) ||
+      organization?.sameAs?.some(url => url.includes('google.com/maps') || url.includes('share.google')) ||
       organization.logo !== `${baseURL}/stationery-dot-com-logo.webp`) {
     throw new Error('Online-only Organization structured data must retain the brand logo and omit physical address/location links.');
   }

@@ -7,6 +7,14 @@ import SdcInvoiceRequest from './SdcInvoiceRequest';
 
 const greeting = { role: 'assistant', text: "আসসালামু আলাইকুম! 😊 কী খুঁজছেন? সার্ভিস বা প্যাকেজের নাম বলুন—দাম ও অর্ডারে সাহায্য করছি।" };
 
+function quickChatReply(text) {
+  const normalized = text.toLowerCase().replace(/[.!?…،,]+$/g, '').trim();
+  if (/^(?:assalamu?\s*alaikum|assalamualaikum|as-salamu\s*alaykum|salam|সালাম|আসসালামু আলাইকুম)$/.test(normalized)) return 'ওয়ালাইকুম আসসালাম! 😊 কীভাবে সাহায্য করতে পারি?';
+  if (/^(?:hi|hello|hey|hiya|good morning|good afternoon|good evening|হাই|হ্যালো|হেই)$/.test(normalized)) return /[\u0980-\u09ff]/.test(text) ? 'হ্যালো! 😊 কীভাবে সাহায্য করতে পারি?' : 'Hello! 😊 Welcome to Stationery Dot Com. How can I help you today?';
+  if (/^(?:thanks?|thank you|thank you so much|thx|ধন্যবাদ|অনেক ধন্যবাদ)$/.test(normalized)) return /[\u0980-\u09ff]/.test(text) ? 'আপনাকে স্বাগতম! 😊' : 'You’re welcome! 😊';
+  return '';
+}
+
 export default function SdcAssistant({ defaultOpen = false } = {}) {
   const [open, setOpen] = useState(defaultOpen);
   const [messages, setMessages] = useState([greeting]);
@@ -23,6 +31,12 @@ export default function SdcAssistant({ defaultOpen = false } = {}) {
   async function sendMessage(value = input) {
     const text = value.trim();
     if (!text || busy || action) return;
+    const quickReply = quickChatReply(text);
+    if (quickReply) {
+      setMessages(prev => [...prev, { role: 'user', text }, { role: 'assistant', text: quickReply }]);
+      setInput('');
+      return;
+    }
     const invoiceRequestIntent=/\b(invoice|bill)\b.{0,45}\b(request|email|send|mail|download|get|need|want|please|chai|lagbe|daw|den|pathao|pathan)\b|\b(request|email|send|mail|download|get|need|want)\b.{0,40}\b(invoice|bill)\b|invoice request|invoice chai|invoice lagbe|ইনভয়েস.*(চাই|পাঠ|ডাউনলোড|রিকোয়েস্ট)|বিল.*(চাই|পাঠ)/i.test(text);
     if(invoiceRequestIntent){setMessages(prev=>[...prev,{role:'user',text}]);setInput('');setActionMessage(text);setAction('invoice-request');return;}
     const statusIntent = /\b(order|deposit|request|wallet)\b.{0,24}\b(status|track|tracking|update|check)\b|\b(where is|track)\s+(?:my\s+)?order\b|স্ট্যাটাস|ট্র্যাক|অবস্থা/i.test(text);

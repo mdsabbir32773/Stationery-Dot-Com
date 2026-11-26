@@ -797,7 +797,8 @@ try {
       result: document.querySelector('.smm-results')?.textContent || '',
       empty: document.querySelector('.smm-empty')?.innerText || '',
       buttons: document.querySelectorAll('.smm-filter-pills button').length,
-      body: document.body.innerText.slice(0,1200)
+      body: document.body.innerText.slice(0,1200),
+      browserErrors: errors.slice(-20)
     }));
     throw new Error('SMM catalogue did not resolve: ' + JSON.stringify(state) + '; ' + error.message);
   }

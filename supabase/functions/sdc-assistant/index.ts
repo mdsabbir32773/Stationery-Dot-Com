@@ -88,6 +88,17 @@ Deno.serve(async (req: Request) => {
     }
 
     const supabase = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
+    // Shared, atomic per-IP limit across Edge Function instances; raw IP is never stored.
+    const rateDigest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(serviceKey + ":" + ip));
+    const ipHash = Array.from(new Uint8Array(rateDigest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+    const { data: rateAllowed, error: rateError } = await supabase.rpc("sdc_chat_consume_rate_limit", {
+      p_ip_hash: ipHash, p_max_requests: 20, p_window_seconds: 60
+    });
+    if (rateError) {
+      console.error("Shared chat rate limit failed", rateError.message);
+      return json({ error: "Chat support is temporarily unavailable. Please try again shortly." }, 503);
+    }
+    if (!rateAllowed) return json({ error: "অনেকগুলো message এসেছে। এক মিনিট পরে আবার চেষ্টা করুন।" }, 429);
     const userHistory = history.filter((m: any) => m?.role === "user" && typeof m?.text === "string").slice(-6);
     const userText = [...userHistory.map((m: any) => String(m.text).slice(0, 1800)), String(body?.message || "")].join("\n");
     const orderCodeMatch = userText.match(/\b(?:SD\d{6}-[A-Z0-9]{8}|[A-Z]{2,10}-\d{6,8}-[A-Z0-9]{2,12})\b/i);

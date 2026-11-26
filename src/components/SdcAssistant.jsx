@@ -55,8 +55,9 @@ export default function SdcAssistant({ defaultOpen = false } = {}) {
       setAction(wantsDeposit ? 'deposit' : 'order');
       return;
     }
-    const prior = messages.filter(m => m.role !== 'assistant' || m !== greeting).slice(-8)
-      .map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', text: m.text }));
+    // Keep the request well below the Edge Function's 24 KB limit, even after long replies.
+    const prior = messages.filter(m => m.role !== 'assistant' || m !== greeting).slice(-6)
+      .map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', text: m.text.slice(-1400) }));
     setMessages(prev => [...prev, { role: 'user', text }]);
     setInput('');
     setBusy(true);

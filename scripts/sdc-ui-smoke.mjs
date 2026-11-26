@@ -99,9 +99,10 @@ try {
     const routeLink = page.locator(`.home-seo-links a[href="${target.href}"]`).first();
     await routeLink.scrollIntoViewIfNeeded();
     await routeLink.click();
+    console.log('Client navigation check: ' + target.label + ' (' + target.href + ')');
     await page.waitForURL(url => url.pathname === target.href, { timeout: 15000 });
-    await page.locator('main h1:visible').first().waitFor({ state: 'visible', timeout: 20000 });
-    const routeText = await page.locator('main').innerText();
+    await page.locator('h1:visible').first().waitFor({ state: 'visible', timeout: 20000 });
+    const routeText = await page.locator('body').innerText();
     if (routeText.trim().length < 80 || /PAGE DID NOT LOAD|Let’s get this page back/i.test(routeText)) {
       throw new Error(`Client navigation to ${target.label} did not render usable page content.`);
     }

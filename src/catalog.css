@@ -157,3 +157,19 @@ main.wrap:has(.service-title-row) .btn:not(.alt):not(.wa) svg,
   color:#fff !important;
   stroke:currentColor;
 }
+
+
+/* Package cards: keep the purple Buy now CTA label readable in every state. */
+.package-card .package-actions > a.btn:not(.alt),
+.package-card .package-actions > a.btn:not(.alt):visited,
+.package-card .package-actions > a.btn:not(.alt):hover,
+.package-card .package-actions > a.btn:not(.alt):focus,
+.package-card .package-actions > a.btn:not(.alt):focus-visible,
+.package-card .package-actions > a.btn:not(.alt):active {
+  color:#fff !important;
+  -webkit-text-fill-color:#fff !important;
+}
+.package-card .package-actions > a.btn:not(.alt) svg {
+  color:#fff !important;
+  stroke:currentColor !important;
+}

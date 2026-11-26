@@ -61,7 +61,7 @@ function detectSmmPlatform(value: string): string | null {
 }
 function detectSmmOutcome(value: string): string | null {
   const text = chatbotNormalize(value);
-  if (/\bfollowers?\b|\bfollow\b|ফলো/.test(text)) return "Followers";
+  if (/\bfollow(?:ers?|rs?)\b|\bfollow\b|\bfolowers?\b|\bfollwers?\b|ফলো/.test(text)) return "Followers";
   if (/\bmembers?\b|\bchannel\s*members?\b|মেম্বার/.test(text)) return "Members";
   if (/\blikes?\b|লাইক/.test(text)) return "Likes";
   if (/\bviews?\b|ভিউ/.test(text)) return "Views";
@@ -102,7 +102,7 @@ function formatSmmCatalogueReply(catalogue: any, platform: string, outcome: stri
     lines.push(`   ${priceText}${Number.isFinite(min) && min > 0 ? ` · Min ${min.toLocaleString("en-US")}` : ""}`);
   });
   lines.push("", "যেটি নিতে চান, option number বলুন—আমি order process-এ নিয়ে যাব।");
-  return lines.join("\\n");
+  return lines.join("\n");
 }
 
 let catalogueCache: { expiresAt: number; value: any } | null = null;

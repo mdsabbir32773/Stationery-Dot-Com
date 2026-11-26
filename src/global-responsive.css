@@ -1439,3 +1439,26 @@ main a {
   .support-admin-message{padding:13px}
   .support-admin-filters .chip{min-height:40px;padding:9px 12px;font-size:13px}
 }
+
+/* Final mobile ticket-filter layout: keep every status visible and readable. */
+@media(max-width:760px){
+  .support-admin-filters{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    overflow:visible;
+    padding:0;
+    gap:8px;
+  }
+  .support-admin-filters .chip{
+    width:100%;
+    min-width:0;
+    min-height:46px;
+    padding:10px 9px;
+    white-space:normal;
+    overflow-wrap:normal;
+    word-break:normal;
+    text-align:center;
+    justify-content:center;
+    line-height:1.25;
+  }
+}

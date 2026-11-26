@@ -113,7 +113,7 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
   if(durationMatches.length===1){choosePackage(durationMatches[0].id);return;}
   const candidates=durationMatches.length?durationMatches:servicePackages;
   const matches=rankCatalog(query,candidates,x=>(x.name||'')+' '+(x.access_type||'')+' '+(x.duration_months||'')+' '+(x.price||''));
-  if(asksForSuggestions(query)){const related=matches.filter(x=>x.score>=50).map(x=>x.item);bot(packageCatalog(service,related.length?related:candidates));return;}
+  if(asksForSuggestions(query)){const related=matches.filter(x=>x.score>=50).map(x=>x.item);const chosen=related.length?related:candidates;setPackageOptions(chosen);bot(packageCatalog(service,chosen)+'\\n'+(language==='bn'?'Option number বললেই হবে।':'Reply with the option number.'));return;}
   const best=matches[0],next=matches[1];
   if(best&&best.score>=76&&(!next||best.score-next.score>=10)){choosePackage(best.item.id);return;}
   const close=matches.filter(x=>x.score>=48).slice(0,6).map(x=>'• '+x.item.name+' — '+(Number(x.item.price)>0?taka(x.item.price):'Price on request'));

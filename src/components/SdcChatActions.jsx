@@ -126,7 +126,7 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
    let note='';
    if(!matching.length&&requestedPlatform==='Telegram'&&targetOutcome==='Followers'){
     matching=platformServices.filter(s=>String(s.smm_category||'').toLowerCase()==='members');
-    if(matching.length)note='Telegram channel/group member service is listed as “Members” (not a follower package).';
+    if(matching.length)note=language==='bn'?'Telegram channel/group-এর service catalogue-এ “Members” নামে আছে—এটি follower package নয়।':'Telegram channel/group member service is listed as “Members” (not a follower package).';
    }
    if(!matching.length){
     const categories=[...new Set(platformServices.map(s=>s.smm_category).filter(Boolean))];

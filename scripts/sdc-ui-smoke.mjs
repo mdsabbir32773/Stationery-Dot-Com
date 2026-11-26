@@ -851,7 +851,8 @@ try {
     await smmOrderFlow.getByRole('link', { name: /sign in/i }).waitFor({ state: 'visible', timeout: 10000 });
   }
 
-  // Clear the unfinished guest SMM request before exercising the standard order flow.
+  // Clear the pending SMM resume token so this smoke test can separately exercise a fresh generic order.
+  await page.evaluate(() => sessionStorage.removeItem('sdc_chat_pending_smm_order'));
   await page.reload({ waitUntil: 'domcontentloaded', timeout: 30000 });
   const freshLauncher = page.getByRole('button', { name: 'Chat with SDC Assistant' });
   await freshLauncher.waitFor({ state: 'visible', timeout: 15000 });

@@ -104,7 +104,7 @@ try {
     await page.waitForFunction((index) => {
       const buttons = document.querySelectorAll('.smm-filter-pills button');
       const results = document.querySelector('.smm-results')?.textContent || '';
-      return buttons[index]?.classList.contains('active') && /^\\d+ services$/.test(results);
+      return buttons[index]?.classList.contains('active') && /^\d+ services$/.test(results);
     }, i, { timeout: 10000 });
     const resultText = await page.locator('.smm-results').innerText();
     if (Number.parseInt(resultText, 10) <= 0) {

@@ -7,6 +7,24 @@ import SdcInvoiceRequest from './SdcInvoiceRequest';
 
 const greeting = { role: 'assistant', text: "আসসালামু আলাইকুম! 😊 কী খুঁজছেন? সার্ভিস বা প্যাকেজের নাম বলুন—দাম ও অর্ডারে সাহায্য করছি।" };
 
+function renderInlineText(line) {
+  return line.split(/(\*\*[^*]+\*\*)/g).map((part, j) =>
+    part.startsWith('**') && part.endsWith('**') ? <strong key={j}>{part.slice(2, -2)}</strong> : part
+  );
+}
+function renderAssistantMessage(text) {
+  return text.split('\n').map((line, index) => {
+    if (!line.trim()) return <div className="sdc-chat-list-spacer" key={index}/>;
+    const numbered = line.match(/^\s*(\d+)[.)]\s+(.*)$/);
+    if (numbered) return <div className="sdc-chat-list-item" key={index}><span className="sdc-chat-list-number">{numbered[1]}</span><div className="sdc-chat-list-copy">{renderInlineText(numbered[2])}</div></div>;
+    const bullet = line.match(/^\s*[-•]\s+(.*)$/);
+    if (bullet) return <div className="sdc-chat-list-item is-bullet" key={index}><span className="sdc-chat-list-bullet">•</span><div className="sdc-chat-list-copy">{renderInlineText(bullet[1])}</div></div>;
+    if (/^\s{2,}/.test(line)) return <div className="sdc-chat-list-detail" key={index}>{renderInlineText(line.trim())}</div>;
+    if (/^(?:📦|📋|🛍️|Available packages|Available services|Package|Packages|প্যাকেজ|সার্ভিস)/i.test(line.trim())) return <div className="sdc-chat-list-heading" key={index}>{renderInlineText(line.trim())}</div>;
+    return <div className="sdc-chat-list-line" key={index}>{renderInlineText(line)}</div>;
+  });
+}
+
 function quickChatReply(text) {
   const normalized = text.toLowerCase().replace(/[.!?…،,]+$/g, '').trim();
   if (/^(?:assalamu?\s*alaikum|assalamualaikum|as-salamu\s*alaykum|salam|সালাম|আসসালামু আলাইকুম)$/.test(normalized)) return 'ওয়ালাইকুম আসসালাম! 😊 কীভাবে সাহায্য করতে পারি?';
@@ -171,7 +189,7 @@ export default function SdcAssistant({ defaultOpen = false } = {}) {
           <div className="sdc-chat-day">TODAY</div>
           {messages.map((m, i) => <div className={'sdc-chat-row ' + (m.role === 'user' ? 'is-user' : 'is-assistant')} key={i}>
             {m.role === 'assistant' && <div className="sdc-chat-mini-avatar"><Sparkles size={13}/></div>}
-            <div className="sdc-chat-bubble">{m.text.split('\n').map((line, n) => <span key={n}>{line.split(/(\*\*[^*]+\*\*)/g).map((part, j) => part.startsWith('**') && part.endsWith('**') ? <strong key={j}>{part.slice(2, -2)}</strong> : part)}{n < m.text.split('\n').length - 1 && <br/>}</span>)}</div>
+            <div className="sdc-chat-bubble">{m.role === 'assistant' ? renderAssistantMessage(m.text) : m.text.split('\n').map((line, n) => <span key={n}>{line}{n < m.text.split('\n').length - 1 && <br/>}</span>)}</div>
           </div>)}
 
           {action==='invoice-request'?<SdcInvoiceRequest initialMessage={actionMessage} onCancel={()=>setAction('')} onComplete={message=>setMessages(prev=>[...prev,{role:'assistant',text:message}])}/>:action&&<SdcChatActions mode={action} initialMessage={actionMessage} onCancel={() => setAction('')} onComplete={message => { setMessages(prev => [...prev, { role: 'assistant', text: message }]); if (message.startsWith('Your wallet balance is insufficient.')) setAction('deposit'); else if (/\bOrder ID:/i.test(message)) { /* Keep the success card mounted so the customer can open the invoice. */ } else setAction(''); }} onInvoiceClick={() => { setAction(''); setOpen(false); }} />}

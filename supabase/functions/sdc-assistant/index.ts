@@ -10,6 +10,44 @@ const sanitizeForModel = (value: string) => value.slice(0, 1800)
   .replace(/(?:\+?88)?01[3-9](?:[\s-]?\d){8}/g, "[phone number removed]")
   .replace(/\b[a-f0-9]{32,}\b/gi, "[secure token removed]");
 
+const CHATBOT_SYNONYMS: Record<string,string[]> = {
+  instagram:["ig","insta"], facebook:["fb","meta page"], youtube:["yt"],
+  followers:["follower","follow","followings","ফলোয়ার","ফলোয়ার","ফলো"], likes:["like","লাইক"],
+  views:["view","ভিউ"], subscribers:["subscriber","subs","সাবস্ক্রাইবার"], comments:["comment","কমেন্ট"],
+  shares:["share"], reactions:["reaction"], boost:["boosting","promote","promotion","প্রমোশন","বুস্ট"],
+  smm:["social media marketing","social media growth","smm panel","social growth"],
+  subscription:["subscriptions","membership","premium plan"], lifetime:["forever","permanent","আজীবন"],
+  claude:["anthropic","claude ai"], gemini:["google ai","google gemini"], chatgpt:["openai chatgpt","gpt"],
+  design:["creative","graphic design"], engagement:["interaction"], watchtime:["watch time","watch hours"]
+};
+const CHATBOT_STOPWORDS = new Set(["i","me","my","we","want","need","looking","for","to","a","an","the","some","please","order","buy","purchase","get","show","find","related","recommend","package","packages","service","services","price","cost","of","and","with","you","can","could","do","on","from","how","what","which","is","are","am","have","tell","about","chai","lagbe","dorkar","nibo","kinbo","den","daw","dao","ami","amar","amr","ekta","ta","কি","কী","আমার","আমি","একটা","লাগবে","চাই","দরকার","দাম","কত"]);
+function chatbotNormalize(value: unknown): string {
+  return String(value || "").toLowerCase().normalize("NFKC")
+    .replace(/\b(?:ig|insta)\b/g," instagram ").replace(/\bfb\b/g," facebook ").replace(/\byt\b/g," youtube ")
+    .replace(/\b(?:subs|sub)\b/g," subscribers ").replace(/\b(?:follower|follow)\b/g," followers ")
+    .replace(/\blike\b/g," likes ").replace(/\bview\b/g," views ")
+    .replace(/\bcomment\b/g," comments ").replace(/\bshare\b/g," shares ")
+    .replace(/\breaction\b/g," reactions ").replace(/\b(?:boosting|promote|promotion)\b/g," boost ")
+    .replace(/[^a-z0-9\u0980-\u09ff]+/g," ").trim();
+}
+function chatbotTerms(value: unknown): string[] {
+  const base=chatbotNormalize(value).split(/\s+/).filter((word)=>word.length>1&&!CHATBOT_STOPWORDS.has(word));
+  const terms=new Set(base);
+  for(const [canonical,synonyms] of Object.entries(CHATBOT_SYNONYMS)) {
+    if(base.some((word)=>word===canonical||synonyms.some((syn)=>chatbotNormalize(syn).split(/\s+/).includes(word)))) {
+      terms.add(canonical);
+      for(const synonym of synonyms) for(const word of chatbotNormalize(synonym).split(/\s+/)) if(word.length>1&&!CHATBOT_STOPWORDS.has(word)) terms.add(word);
+    }
+  }
+  return [...terms];
+}
+function serviceSearchText(service: Record<string, any>): string {
+  const text=[service.name,service.category,service.description,service.slug,service.platform,service.smm_category].join(" ");
+  const platform=chatbotNormalize(service.platform||"");
+  const smmTerms=service.platform? "smm social media marketing followers likes views subscribers comments shares reactions boost engagement instagram facebook youtube tiktok telegram profile post channel":"";
+  return text+" "+smmTerms+" "+(platform.includes("instagram")?"ig insta instagram":platform.includes("facebook")?"fb facebook":platform.includes("youtube")?"yt youtube":"");
+}
+
 let catalogueCache: { expiresAt: number; value: any } | null = null;
 let catalogueLoading: Promise<any> | null = null;
 async function loadCatalogue(supabase: any) {
@@ -18,7 +56,7 @@ async function loadCatalogue(supabase: any) {
   catalogueLoading = (async () => {
     const [servicesRes, packagesRes, settingsRes] = await Promise.all([
       supabase.from("services").select("name,category,slug,description,requires_file,smm_platform,smm_category,smm_price_per_1000,smm_min_quantity,smm_max_quantity,smm_delivery_time").eq("is_active", true).order("sort_order").limit(120),
-      supabase.from("packages").select("name,description,price,unit,access_type,duration_months,services!inner(name,category,is_active)").eq("is_active", true).eq("services.is_active", true).order("sort_order").limit(100),
+      supabase.from("packages").select("name,description,price,unit,access_type,duration_months,services!inner(name,category,description,slug,smm_platform,smm_category,is_active)").eq("is_active", true).eq("services.is_active", true).order("sort_order").limit(100),
       supabase.from("site_settings").select("key,value").in("key", ["contact_phone","contact_phone_2","contact_whatsapp","payment_method_name","payment_number","payment_account_name","payment_instructions"])
     ]);
     if (servicesRes.error) console.error("Service lookup failed", servicesRes.error.message);
@@ -26,12 +64,15 @@ async function loadCatalogue(supabase: any) {
     const safeSettings = Object.fromEntries((settingsRes.data || []).map((x: {key:string;value:string|null}) => [x.key, x.value]));
     const catalogue = {
       services: (servicesRes.data || []).map((s: Record<string, unknown>) => ({
-        name: s.name, category: s.category, description: s.description, slug: s.slug, requires_file: s.requires_file,
+        name: s.name, category: s.category, description: s.description, slug: s.slug, requires_file: s.requires_file, search_terms: serviceSearchText({name:s.name,category:s.category,description:s.description,slug:s.slug,platform:s.smm_platform,smm_category:s.smm_category}),
         ...(s.smm_platform ? { platform: s.smm_platform, smm_category: s.smm_category, price_per_1000_bdt: s.smm_price_per_1000, min_quantity: s.smm_min_quantity, max_quantity: s.smm_max_quantity, delivery_estimate: s.smm_delivery_time } : {})
       })),
       packages: (packagesRes.data || []).map((p: Record<string, any>) => ({
         service: Array.isArray(p.services) ? p.services[0]?.name : p.services?.name,
-        name: p.name, description: p.description, price_bdt: p.price, unit: p.unit, access: p.access_type === "shared" ? "Shared access" : p.access_type, duration: p.duration_months === 0 ? "Lifetime" : p.duration_months % 12 === 0 ? (p.duration_months / 12) + (p.duration_months / 12 === 1 ? " year" : " years") : p.duration_months + " months"
+        category: Array.isArray(p.services) ? p.services[0]?.category : p.services?.category,
+        service_description: Array.isArray(p.services) ? p.services[0]?.description : p.services?.description,
+        name: p.name, description: p.description, price_bdt: p.price, unit: p.unit, access: p.access_type === "shared" ? "Shared access" : p.access_type, duration: p.duration_months === 0 ? "Lifetime" : p.duration_months % 12 === 0 ? (p.duration_months / 12) + (p.duration_months / 12 === 1 ? " year" : " years") : p.duration_months + " months",
+        search_terms: chatbotTerms([p.name,p.description,p.services?.name,p.services?.category,p.services?.description,p.access_type,p.duration_months].join(" ")).join(" ")
       })),
       contact_and_payment: safeSettings
     };
@@ -137,16 +178,31 @@ Deno.serve(async (req: Request) => {
     const catalogue = await loadCatalogue(supabase);
     const queryContext = [...userHistory.slice(-3).map((m: any) => m.text), String(body?.message || "")].join(" ").toLowerCase();
     const packageRows = catalogue.packages || [];
-    const genericCatalogueQuestion = /\b(all|list|show|what|which|services|packages|catalogue|catalog|price list|available)\b|সার্ভিস|প্যাকেজ|কী কী|কি কি|দাম/i.test(queryContext);
-    const queryWords = queryContext.match(/[a-z0-9\u0980-\u09ff]{3,}/g) || [];
+    const genericCatalogueQuestion = /\b(all|list|show|what|which|services|packages|catalogue|catalog|price list|available|options?)\b|সার্ভিস|প্যাকেজ|কী কী|কি কি|দাম|কোন কোন/i.test(queryContext);
+    const queryTerms = chatbotTerms(queryContext);
+    const scoreText = (text: string) => {
+      const itemTerms = new Set(chatbotTerms(text));
+      const overlap = queryTerms.filter((term) => itemTerms.has(term));
+      if (!overlap.length) return 0;
+      const coverage = overlap.length / Math.max(1, queryTerms.length);
+      const itemCoverage = overlap.length / Math.max(1, itemTerms.size);
+      return Math.round((coverage * 58 + itemCoverage * 42) * 100) / 100;
+    };
+    const serviceMatches = (catalogue.services || []).map((s: any) => ({s,score:scoreText(serviceSearchText(s)+" "+(s.search_terms||""))})).sort((a:any,b:any)=>b.score-a.score);
+    const matchedServiceNames = new Set(serviceMatches.filter((x:any)=>x.score>=8).slice(0,18).map((x:any)=>x.s.name));
     const packageMatches = packageRows.map((p: any) => {
-      const text = [p.service, p.name, p.description, p.access, p.duration].join(" ").toLowerCase();
-      const score = queryWords.reduce((sum: number, word: string) => sum + (text.includes(word) ? Math.min(word.length, 5) : 0), 0);
-      return { p, score };
+      const text = [p.service,p.category,p.service_description,p.name,p.description,p.search_terms,p.access,p.duration].join(" ");
+      const serviceBonus = matchedServiceNames.has(p.service) ? 8 : 0;
+      return { p, score: scoreText(text)+serviceBonus };
     }).sort((a: any, b: any) => b.score - a.score);
+    const smmRequested = /\b(smm|social media|followers?|likes?|views?|subscribers?|comments?|shares?|reactions?|boost|engagement|reach|instagram|insta|ig|facebook|fb|youtube|yt|tiktok|telegram)\b|ফলো|লাইক|ভিউ|সাবস্ক্রাইবার|বুস্ট|এনগেজমেন্ট/i.test(queryContext);
+    const matchedServices = serviceMatches.filter((x:any)=>x.score>=8).slice(0,30).map((x:any)=>x.s);
+    const smmServices = smmRequested ? (catalogue.services||[]).filter((s:any)=>s.platform||/smm|social media/i.test(String(s.category||""))) : [];
+    const serviceMap = new Map<string,any>();
+    for(const s of [...matchedServices,...smmServices]) serviceMap.set(String(s.name),s);
     const relevantCatalogue = {
-      services: catalogue.services,
-      packages: (genericCatalogueQuestion ? packageMatches.slice(0, 12) : packageMatches.filter((x: any) => x.score > 0).slice(0, 14)).map((x: any) => x.p),
+      services: serviceMap.size ? [...serviceMap.values()].slice(0,65) : catalogue.services,
+      packages: (genericCatalogueQuestion ? packageMatches.slice(0,24) : packageMatches.filter((x: any) => x.score > 0).slice(0,30)).map((x: any) => x.p),
       contact_and_payment: catalogue.contact_and_payment
     };
     const catalogueJson = JSON.stringify(relevantCatalogue);
@@ -157,7 +213,7 @@ Deno.serve(async (req: Request) => {
       "SALAM & CONVERSATION CLOSING: The first assistant message in every new chat must begin with “আসসালামু আলাইকুম”. If the visitor greets with salam, reply with “ওয়ালাইকুম আসসালাম”. When the visitor clearly says goodbye or ends the conversation, close with “ওয়ালাইকুম আসসালাম, আল্লাহ হাফেজ”. Do not repeat salam in every ordinary follow-up; keep the chat natural.",
       "NATURAL CONVERSATION (VERY IMPORTANT): Behave like an attentive, emotionally intelligent customer-care person. First understand what the visitor is saying and why they are saying it; do not treat every message as a service enquiry. If they greet you, greet them naturally. If they make small talk, respond briefly and warmly before gently leaving space for their actual need. If they share frustration, worry, disappointment or confusion, acknowledge the feeling first in a sincere, non-dramatic way, then help with the practical next step. Never sound defensive, dismissive, scripted or overly cheerful when the visitor is upset.",
       "FOLLOW THE FLOW: Read the recent conversation as one continuous conversation. Remember what the visitor has already told you in this chat; do not ask for the same detail again unless it needs verification for a secure lookup. Answer follow-up questions in context, understand pronouns and references such as 'eta', 'oita', 'ager ta', 'that one' and 'same service', and connect your reply to the immediately preceding topic. Do not restart with a greeting on every turn. If the visitor changes topic, follow the new topic naturally.",
-      "LISTEN BEFORE SELLING: Do not push services, packages, links, order forms or WhatsApp in every reply. Recommend a service only when it genuinely matches what the visitor asked. For casual conversation, simple greetings, thanks or acknowledgements, respond naturally without forcing a sales pitch. If the request is unclear, ask one short, specific question rather than listing every service.",
+      "LISTEN BEFORE SELLING: Do not push services, packages, links, order forms or WhatsApp in every reply. Recommend a service only when it genuinely matches what the visitor asked. For casual conversation, simple greetings, thanks or acknowledgements, respond naturally without forcing a sales pitch. If the request is unclear, ask one short, specific question rather than listing every service. Customers do not need to type the exact service/package title: understand their goal, platform, product, synonym, Banglish wording or outcome; search the live catalogue and suggest the closest real matches. If ambiguous, ask one concise clarifying question.",
       "HUMAN-FRIENDLY RESPONSE STYLE: Use natural spoken phrasing, varied sentence openings and short paragraphs. Match the visitor's energy and level of detail. Avoid repeating the question, generic openings like 'Certainly! How may I assist you today?' and robotic phrases like 'As an AI language model'. Use a light emoji only when it fits the mood; do not overuse emojis. Be empathetic without pretending to have human feelings or personal experiences.",
       "ANSWER QUALITY STANDARD: Give the direct answer first, then only the explanation needed for the next step. Prefer 1–4 short sentences for simple questions; use a short numbered sequence only for multi-step instructions. Do not dump the whole catalogue unless asked. Distinguish confirmed facts from estimates and unknowns. If live data does not answer something, say the team must confirm it—never guess.",
       "BANGLA & BANGLISH QUALITY: If the customer writes Banglish, reply in natural, easy Bangla script by default; retain common English service names, technical terms and brand names where clearer. Avoid awkward literal translations. If they write English, use clear everyday English. Follow explicit language requests.",
@@ -166,7 +222,7 @@ Deno.serve(async (req: Request) => {
       "UNDERSTANDING INTENT: Infer likely intent from the whole exchange, not isolated keywords. Distinguish casual mentions of order, deposit or wallet from an actual request to place an order or check status. Never trigger an action just because a visitor casually mentions one of those words. If they ask how something works, explain it first; only guide them into an action flow when they clearly want to proceed.",
       "HONESTY & REPAIR: If you do not understand, say so politely and ask them to rephrase one part. If you made a mistake, acknowledge it directly, correct it and continue—do not argue or blame the visitor. Never invent or alter a customer's name, phone number, email, order detail, completed action, policy, price, promise or human handoff. Never claim you can see or verify personal details unless they are explicitly shown in the current conversation. Clearly distinguish what the built-in order flow does from what the support team must review.",
       "BUSINESS: Stationery Dot Com is a fully online-based service business. No physical office visit is needed. Never provide or invent a physical address. Use catalogue and packages below as source of truth. Never invent prices, discounts, timelines or policies. For packages, reproduce each listed package's exact name, duration, access type and price. NEVER invent extra durations or packages. A duration of 0 is explicitly Lifetime (not 0 months); 12 is 1 year; 36 is 3 years. Do not turn 36 months into 3 months. If several packages share a name, distinguish them only using exact duration/access fields in JSON.",
-      "ORDER JOURNEY: Help the visitor choose from the live catalogue and continue the built-in order flow in this same chat. Match service/package names, including Banglish, to the exact live catalogue and state exact name, duration, access type and price. If they say they want to order, explain that the website starts secure in-chat order steps automatically. It gathers one detail at a time, shows a review, accepts the visitor typing confirm, then shows payment QR and accepts proof upload; typing paid submits the request and returns an Order ID. Never claim an order was submitted until the built-in flow returns its Order ID. SMM orders require sign-in and use authenticated wallet flow. For price-on-request packages, explain the team will agree the price before payment. Never ask for OTP/password/PIN.",
+      "ORDER JOURNEY: Help the visitor choose from the live catalogue and continue the built-in order flow in this same chat. Match service/package names, including Banglish, colloquial phrases, abbreviations, synonyms and described outcomes, to the exact live catalogue; do not insist on exact title wording. State exact name, duration, access type and price. For SMM, match platform + outcome (e.g. Instagram followers, YouTube views, Facebook reactions) and guide to the built-in SMM order form; SMM orders require sign-in and authenticated wallet balance. If a customer clearly asks to order or expresses a clear purchase need for an SMM service, tell them the order form will open in this chat. If they say they want to order, explain that the website starts secure in-chat order steps automatically. It gathers one detail at a time, shows a review, accepts the visitor typing confirm, then shows payment QR and accepts proof upload; typing paid submits the request and returns an Order ID. Never claim an order was submitted until the built-in flow returns its Order ID. SMM orders require sign-in and use authenticated wallet flow. For price-on-request packages, explain the team will agree the price before payment. Never ask for OTP/password/PIN.",
       "ORDER STATUS: If a visitor asks for order status, ask for their Order ID and the mobile number used for that order. Once both are provided, the secure backend verifies the last 10 digits against the order and returns only order/service/package/total/status/payment status and last updated time. Never ask for OTP/password/PIN. If details do not match, do not reveal whether the Order ID exists. Offer the secure tracking page https://stationerydotcom.me/track-order or WhatsApp support.",
       "DEPOSIT HELP: Customers can submit a wallet deposit request directly in this chat. Never tell them to tap an old “Add wallet funds here” button. They must be signed in, enter an amount from ৳50 to ৳1,000,000, pay using the displayed Bangla QR, upload a JPG/PNG/WEBP screenshot (max 5MB), confirm payment completion, and submit. The secure deposit RPC associates the request with their authenticated account. It remains Pending until an admin reviews it; only an admin can approve/reject and credit the wallet. Never claim funds are credited before status is Approved. Deposit status can be checked in chat with Request ID + registered phone, or in Account > Wallet. Never ask for PIN, OTP or login credentials.",
       "PAYMENT: Uploading proof only submits a request for manual verification. Never claim payment is received/verified or wallet funds credited until the account/order status confirms it. Never collect transaction PIN, OTP or passwords.",

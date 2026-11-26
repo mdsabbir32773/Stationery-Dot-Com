@@ -58,6 +58,7 @@ jobs:
           const header='| Page | Device | Performance | Accessibility | Best Practices | SEO | LCP | CLS | INP/TBT |\n|---|---|---:|---:|---:|---:|---|---|---|';
           const table=rows.map(x=>'| '+x.page+' | '+x.device+' | '+x.performance+' | '+x.accessibility+' | '+x.bestPractices+' | '+x.seo+' | '+x.lcp+' | '+x.cls+' | '+x.inp+' |').join('\n');
           fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'\n## Lighthouse scores\n\n'+header+'\n'+table+'\n\n');
+          console.log('\n## Lighthouse scores\n\n'+header+'\n'+table+'\n');
           NODE
       - name: Upload detailed Lighthouse reports
         if: always()

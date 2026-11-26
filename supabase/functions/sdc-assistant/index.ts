@@ -176,7 +176,7 @@ Deno.serve(async (req: Request) => {
 
     // Fast-path simple greetings and thanks: no catalogue queries or LLM call needed.
     const simple = message.toLowerCase().replace(/[.!?…،,]+$/g, "").trim();
-    if (/^(?:assalamu?\\s*alaikum|assalamualaikum|as-salamu\\s*alaykum|salam|সালাম|আসসালামু আলাইকুম)$/.test(simple)) {
+    if (/^(?:assalamu?\s*alaikum|assalamualaikum|as-salamu\s*alaykum|salam|সালাম|আসসালামু আলাইকুম)$/.test(simple)) {
       return json({ reply: "ওয়ালাইকুম আসসালাম! 😊 কীভাবে সাহায্য করতে পারি?" });
     }
     if (/^(?:hi|hello|hey|hiya|good morning|good afternoon|good evening|হাই|হ্যালো|হেই)$/.test(simple)) {
@@ -237,8 +237,8 @@ Deno.serve(async (req: Request) => {
     // Never let broad keyword overlap recommend Facebook/Instagram when the customer asked for TikTok.
     const currentPlatform = detectSmmPlatform(message);
     const currentOutcome = detectSmmOutcome(message);
-    const smmIntentInCurrent = /\\b(?:smm|social media|followers?|likes?|views?|subscribers?|comments?|shares?|reactions?|members?|boost|engagement|reach|instagram|insta|ig|facebook|fb|youtube|yt|tiktok|telegram)\\b|ফলো|লাইক|ভিউ|সাবস্ক্রাইবার|মেম্বার|বুস্ট/i.test(chatbotNormalize(message));
-    if (currentPlatform && smmIntentInCurrent) {
+    const smmIntentInCurrent = /\b(?:smm|social media|followers?|likes?|views?|subscribers?|comments?|shares?|reactions?|members?|boost|engagement|reach|instagram|insta|ig|facebook|fb|youtube|yt|tiktok|telegram)\b|ফলো|লাইক|ভিউ|সাবস্ক্রাইবার|মেম্বার|বুস্ট/i.test(chatbotNormalize(message));
+    if (currentPlatform && (currentOutcome || smmIntentInCurrent)) {
       return json({ reply: formatSmmCatalogueReply(catalogue, currentPlatform, currentOutcome) });
     }
 

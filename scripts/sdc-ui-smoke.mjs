@@ -821,6 +821,19 @@ try {
     throw new Error(`Chat UI did not render a valid streamed AI response: stream=${streamResponseObserved}, reply=${streamedReply.slice(0, 120)}`);
   }
 
+  // The assistant should use the live SMM catalogue for natural product/service questions.
+  await compose.fill('What SMM options do you have for Instagram followers, and what is the minimum quantity?');
+  await compose.press('Enter');
+  await page.waitForFunction(() => {
+    const bubbles = document.querySelectorAll('[aria-label="SDC Assistant chat"] .sdc-chat-row.is-assistant .sdc-chat-bubble');
+    const input = document.querySelector('[aria-label="SDC Assistant chat"] .sdc-chat-compose input');
+    return bubbles.length > 1 && (bubbles[bubbles.length - 1].textContent || '').trim().length > 15 && input && !input.disabled;
+  }, null, { timeout: 30000 });
+  const smmInfoReply = await chat.locator('.sdc-chat-row.is-assistant .sdc-chat-bubble').last().innerText();
+  if (!/instagram|followers|smm|minimum|quantity|ফলো/i.test(smmInfoReply)) {
+    throw new Error('Assistant did not recognize an SMM catalogue question: ' + smmInfoReply.slice(0, 180));
+  }
+
   // Outcome-based SMM request should enter the same in-chat order journey,
   // even when the customer does not type the exact catalogue title.
   await compose.fill('Instagram followers chai');

@@ -798,8 +798,8 @@ try {
       empty: document.querySelector('.smm-empty')?.innerText || '',
       buttons: document.querySelectorAll('.smm-filter-pills button').length,
       body: document.body.innerText.slice(0,1200),
-      browserErrors: errors.slice(-20)
     }));
+    state.browserErrors = errors.slice(-20);
     throw new Error('SMM catalogue did not resolve: ' + JSON.stringify(state) + '; ' + error.message);
   }
   const platformButtons = page.locator('.smm-filter-pills button');
@@ -816,8 +816,8 @@ try {
       empty: document.querySelector('.smm-empty')?.innerText || '',
       buttons: document.querySelectorAll('.smm-filter-pills button').length,
       body: document.body.innerText.slice(0,1200),
-      browserErrors: errors.slice(-20)
     }));
+    state.browserErrors = errors.slice(-20);
     throw new Error('SMM catalogue should show active platforms: ' + JSON.stringify(state));
   }
   const platformLabels = await platformButtons.allTextContents();

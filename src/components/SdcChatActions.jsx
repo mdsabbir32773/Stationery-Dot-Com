@@ -19,10 +19,10 @@ const TOKEN_ALIASES={
  boosting:'boost',promote:'boost',promotion:'boost','watchtime':'watchtime',subscription:'subscription',subscriptions:'subscription',
  lifetime:'lifetime',forever:'lifetime'
 };
-function tokens(value){return normalized(value).split(/\s+/).map(word=>TOKEN_ALIASES[word]||word).filter(word=>word.length>1&&!STOPWORDS.has(word)&&!/^\\d+(?:k|m)?$/i.test(word));}
+function tokens(value){return normalized(value).split(/\s+/).map(word=>TOKEN_ALIASES[word]||word).filter(word=>word.length>1&&!STOPWORDS.has(word)&&!/^\d+(?:k|m)?$/i.test(word));}
 function catalogScore(query,label){const q=normalized(query),c=normalized(label);if(!q||!c)return 0;if(q===c)return 100;const qt=tokens(query),ct=tokens(label);if(!qt.length||!ct.length)return 0;const overlap=ct.filter(word=>qt.includes(word)).length;if(!overlap)return 0;return Math.round((overlap/qt.length*.72+overlap/ct.length*.28)*100);}
 function rankCatalog(query,items,labelOf){return items.map(item=>({item,score:catalogScore(query,labelOf(item))})).filter(row=>row.score>=42).sort((a,b)=>b.score-a.score);}
-function selectedOption(value,max){const v=String(value||'').trim().toLowerCase();const words={first:1,second:2,third:3,fourth:4,fifth:5,sixth:6,প্রথম:1,দ্বিতীয়:2,দ্বিতীয়:2,তৃতীয়:3,তৃতীয়:3,চতুর্থ:4,পঞ্চম:5};const m=v.match(/^(?:option\\s*)?(\\d+|first|second|third|fourth|fifth|sixth|প্রথম|দ্বিতীয়|দ্বিতীয়|তৃতীয়|তৃতীয়|চতুর্থ|পঞ্চম)$/i);if(!m)return -1;const n=words[m[1]]||Number(m[1]);return Number.isInteger(n)&&n>=1&&n<=max?n-1:-1;}
+function selectedOption(value,max){const v=String(value||'').trim().toLowerCase();const words={first:1,second:2,third:3,fourth:4,fifth:5,sixth:6,প্রথম:1,দ্বিতীয়:2,দ্বিতীয়:2,তৃতীয়:3,তৃতীয়:3,চতুর্থ:4,পঞ্চম:5};const m=v.match(/^(?:option\s*)?(\d+|first|second|third|fourth|fifth|sixth|প্রথম|দ্বিতীয়|দ্বিতীয়|তৃতীয়|তৃতীয়|চতুর্থ|পঞ্চম)$/i);if(!m)return -1;const n=words[m[1]]||Number(m[1]);return Number.isInteger(n)&&n>=1&&n<=max?n-1:-1;}
 function asksForSuggestions(text){return /\b(related|recommend|suggest|options?|list|show me|what do you have|which packages?)\b|ki ki ache|aro package|related package|option gula|প্যাকেজ.*(দেখা|আছে|কোন)|কোন কোন|কি কি আছে|আরো.*প্যাকেজ/i.test(text);}
 
 
@@ -116,13 +116,13 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
   if(asksForSuggestions(query)){
    const list=serviceMatches.length?serviceMatches.slice(0,12).map(x=>x.item):services.slice(0,12);
    setServiceOptions(list);
-   bot((language==='bn'?'Available service-গুলো:\\n':'Available services:\\n')+list.map((x,i)=>(i+1)+'. '+x.name).join('\\n')+'\\n'+(language==='bn'?'Option number বলুন।':'Reply with an option number.'));
+   bot((language==='bn'?'Available service-গুলো:\n':'Available services:\n')+list.map((x,i)=>(i+1)+'. '+x.name).join('\n')+'\n'+(language==='bn'?'Option number বলুন।':'Reply with an option number.'));
    return;
   }
   const closeRows=serviceMatches.filter(x=>x.score>=42).slice(0,6);
   if(closeRows.length){
    setServiceOptions(closeRows.map(x=>x.item));
-   bot((language==='bn'?'আপনার কথার সঙ্গে এই service-গুলো মিলেছে:\\n':'These services match what you described:\\n')+closeRows.map((x,i)=>(i+1)+'. '+x.item.name+(x.item.smm_platform?' — '+taka(getSmmUnitPrice(x.item))+' / 1,000':'' )).join('\\n')+'\\n'+(language==='bn'?'Option number বললেই হবে—পুরো নাম লিখতে হবে না।':'Reply with the option number; you do not need the exact service name.'));
+   bot((language==='bn'?'আপনার কথার সঙ্গে এই service-গুলো মিলেছে:\n':'These services match what you described:\n')+closeRows.map((x,i)=>(i+1)+'. '+x.item.name+(x.item.smm_platform?' — '+taka(getSmmUnitPrice(x.item))+' / 1,000':'' )).join('\n')+'\n'+(language==='bn'?'Option number বললেই হবে—পুরো নাম লিখতে হবে না।':'Reply with the option number; you do not need the exact service name.'));
    return;
   }
   bot(language==='bn'?'আপনি কী কাজটি করতে চান বা কোন platform-এ service দরকার বলুন—আমি catalogue থেকে মিলিয়ে দেখছি।':'Tell me what you want to do or which platform you need; I’ll search the catalogue for matching services.');
@@ -143,11 +143,11 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
    const related=asksForSuggestions(query)?matches.filter(x=>x.score>=42).slice(0,6):closeRows;
    const chosen=(related.length?related:candidates.slice(0,6)).map(x=>x.item||x);
    setPackageOptions(chosen);
-   bot((language==='bn'?'আপনার কথার সঙ্গে এই package-গুলো মিলেছে:\\n':'These packages match your request:\\n')+chosen.map((x,i)=>(i+1)+'. '+x.name+' — '+(Number(x.price)>0?taka(x.price):'Price on request')+(x.duration_months===0?' · Lifetime':x.duration_months?' · '+x.duration_months+' months':'')).join('\\n')+'\\n'+(language==='bn'?'Option number বললেই হবে।':'Reply with the option number.'));
+   bot((language==='bn'?'আপনার কথার সঙ্গে এই package-গুলো মিলেছে:\n':'These packages match your request:\n')+chosen.map((x,i)=>(i+1)+'. '+x.name+' — '+(Number(x.price)>0?taka(x.price):'Price on request')+(x.duration_months===0?' · Lifetime':x.duration_months?' · '+x.duration_months+' months':'')).join('\n')+'\n'+(language==='bn'?'Option number বললেই হবে।':'Reply with the option number.'));
    return;
   }
   const all=servicePackages.slice(0,10);setPackageOptions(all);
-  bot((language==='bn'?'এই service-এর available package:\\n':'Available packages:\\n')+all.map((x,i)=>(i+1)+'. '+x.name+' — '+(Number(x.price)>0?taka(x.price):'Price on request')).join('\\n')+'\\n'+(language==='bn'?'Option number বলুন।':'Reply with an option number.'));
+  bot((language==='bn'?'এই service-এর available package:\n':'Available packages:\n')+all.map((x,i)=>(i+1)+'. '+x.name+' — '+(Number(x.price)>0?taka(x.price):'Price on request')).join('\n')+'\n'+(language==='bn'?'Option number বলুন।':'Reply with an option number.'));
  }
  useEffect(()=>{if(loading||mode!=='order'||!initialMessage||initialProcessed.current||!services.length)return;initialProcessed.current=true;handleServiceQuery(initialMessage);},[loading,mode,initialMessage,services,packages]);
  async function submitText(e){e.preventDefault();const v=reply.trim();if(!v||busy)return;setReply('');user(v);

@@ -810,11 +810,11 @@ try {
   await page.waitForFunction(() => {
     const bubbles = document.querySelectorAll('[aria-label="SDC Assistant chat"] .sdc-chat-row.is-assistant .sdc-chat-bubble');
     return bubbles.length > 0 && (bubbles[bubbles.length - 1].textContent || '').trim().length > 8;
-  }, { timeout: 15000 });
+  }, null, { timeout: 15000 });
   await page.waitForFunction(() => {
     const input = document.querySelector('[aria-label="SDC Assistant chat"] .sdc-chat-compose input');
     return input && !input.disabled;
-  }, { timeout: 25000 });
+  }, null, { timeout: 25000 });
   const streamedReply = await chat.locator('.sdc-chat-row.is-assistant .sdc-chat-bubble').last().innerText();
   page.off('response', observeChatStream);
   if (!streamResponseObserved || streamedReply.length < 15 || /trouble connecting/i.test(streamedReply)) {

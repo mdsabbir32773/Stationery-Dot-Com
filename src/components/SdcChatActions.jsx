@@ -190,11 +190,11 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
    const related=asksForSuggestions(query)?matches.filter(x=>x.score>=42).slice(0,6):closeRows;
    const chosen=(related.length?related:candidates.slice(0,6)).map(x=>x.item||x);
    setPackageOptions(chosen);
-   bot((language==='bn'?'আপনার কথার সঙ্গে এই package-গুলো মিলেছে:\n':'These packages match your request:\n')+chosen.map((x,i)=>(i+1)+'. '+x.name+' — '+(Number(x.price)>0?taka(x.price):'Price on request')+(x.duration_months===0?' · Lifetime':x.duration_months?' · '+x.duration_months+' months':'')).join('\n')+'\n'+(language==='bn'?'Option number বললেই হবে।':'Reply with the option number.'));
+   bot((language==='bn'?'📦 আপনার কথার সঙ্গে মেলা packages:\n\n':'📦 Matching packages:\n\n')+chosen.map((x,i)=>(i+1)+'. '+x.name+'\n   Duration: '+formatDuration(Number(x.duration_months||0))+'\n   Price: '+(Number(x.price)>0?taka(x.price):'Price on request')).join('\n\n')+'\n\n'+(language==='bn'?'Option number বললেই হবে।':'Reply with the option number.'));
    return;
   }
   const all=servicePackages.slice(0,10);setPackageOptions(all);
-  bot((language==='bn'?'এই service-এর available package:\n':'Available packages:\n')+all.map((x,i)=>(i+1)+'. '+x.name+' — '+(Number(x.price)>0?taka(x.price):'Price on request')).join('\n')+'\n'+(language==='bn'?'Option number বলুন।':'Reply with an option number.'));
+  bot((language==='bn'?'📦 এই service-এর available packages:\n\n':'📦 Available packages:\n\n')+all.map((x,i)=>(i+1)+'. '+x.name+'\n   Duration: '+formatDuration(Number(x.duration_months||0))+'\n   Price: '+(Number(x.price)>0?taka(x.price):'Price on request')).join('\n\n')+'\n\n'+(language==='bn'?'Option number বলুন।':'Reply with an option number.'));
  }
  useEffect(()=>{if(loading||mode!=='order'||!initialMessage||initialProcessed.current||!services.length)return;initialProcessed.current=true;handleServiceQuery(initialMessage);},[loading,mode,initialMessage,services,packages]);
  async function submitText(e){e.preventDefault();const v=reply.trim();if(!v||busy)return;setReply('');user(v);

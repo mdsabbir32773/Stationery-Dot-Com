@@ -2,7 +2,7 @@ import {useEffect} from 'react';
 import {useLocation} from 'react-router-dom';
 
 const SITE='Stationery Dot Com';
-const DEFAULT_DESCRIPTION='Stationery Dot Com is a Dhaka-based online service provider in Bangladesh for document and government services, Meta ads, social media growth, SMM services, digital subscriptions and creative design.';
+const DEFAULT_DESCRIPTION='Stationery Dot Com is a fully online service platform serving customers across Bangladesh for document and government services, Meta ads, social media growth, SMM services, digital subscriptions and creative design.';
 const KEYWORDS='Stationery Dot Com, online services Bangladesh, digital services Bangladesh, document services Bangladesh, government document service Bangladesh, NID service Bangladesh, passport service Bangladesh, birth certificate service Bangladesh, Meta ads Bangladesh, Facebook ads service Bangladesh, social media marketing Bangladesh, SMM panel Bangladesh, Instagram growth Bangladesh, digital subscriptions Bangladesh, Canva Pro Bangladesh, ChatGPT Plus Bangladesh, graphic design Bangladesh, web design Bangladesh, video editing Bangladesh';
 
 const BLOG_SEO_TITLES={
@@ -37,7 +37,7 @@ export default function SEO(){
       const route=pathname.replace(/\/+$/,'')||'/';
       const pages={
         '/':{title:'Stationery Dot Com | Subscriptions & Followers BD',description:'Stationery Dot offers digital subscriptions in Bangladesh, Facebook and Instagram followers, SMM panel services, Meta ads, document assistance and creative services.'},
-        '/about':{title:'About Stationery Dot Com | Dhaka, Bangladesh',description:'Learn about Stationery Dot Com, a Dhaka-based online service platform for digital subscriptions, SMM, Meta support, document assistance and creative services.'},
+        '/about':{title:'About Stationery Dot Com | Online Services Bangladesh',description:'Learn about Stationery Dot Com, a fully online service platform for digital subscriptions, SMM, Meta support, document assistance and creative services.'},
         '/refund-policy':{title:'Refund & Cancellation Policy | Stationery Dot Com',description:'Understand how Stationery Dot Com reviews order cancellation and refund requests.'},
         '/delivery-policy':{title:'Service Delivery Policy | Stationery Dot Com',description:'Learn how Stationery Dot Com reviews orders and handles online service delivery.'},
         '/services':{title:'Online Services in Bangladesh | Stationery Dot Com',description:'Explore document and government services, Meta and social media marketing, SMM panel, digital subscriptions, graphic design, web design and video services.'},
@@ -48,7 +48,7 @@ export default function SEO(){
         '/smm':{title:'SMM Panel Bangladesh | Stationery Dot Com',description:'Compare Facebook followers, reactions, views, comments, shares, Instagram and Telegram services with clear rates and refill terms at Stationery Dot Com.'},
         '/track-order':{title:'Track Order Online | Stationery Dot Com',description:'Track your Stationery Dot Com order using your Order ID and see the latest order status.'},
         '/invoice':{title:'Invoice | Stationery Dot Com',description:'View your Stationery Dot Com order invoice.',noindex:true},
-        '/contact':{title:'Contact Stationery Dot Com | Dhaka, Bangladesh',description:'Contact Stationery Dot Com in Dhaka for digital subscriptions, SMM, Meta advertising, document support and creative services. Call or message our team.'},
+        '/contact':{title:'Contact Stationery Dot Com | Online Support Bangladesh',description:'Contact Stationery Dot Com online for digital subscriptions, SMM, Meta advertising, document support and creative services. Call or message our team.'},
         '/help':{title:'Help Center | Stationery Dot Com',description:'Find answers about ordering, payments, wallet deposits, delivery, documents and customer support at Stationery Dot Com.'},
         '/blog':{title:'Stationery Dot Com Blog | Online Service Guides',description:'Practical Bangladesh-focused guides about digital subscriptions, Facebook marketing, SMM, online services, documents and creative work.'},
         '/privacy-policy':{title:'Privacy Policy | Stationery Dot Com',description:'Read the Stationery Dot Com privacy policy and learn how customer information is handled.'},
@@ -171,9 +171,8 @@ export default function SEO(){
         }else breadcrumbItems.push({'@type':'ListItem',position:2,name:clean(page.title.split('|')[0]).slice(0,80),item:canonical});
       }
       const graph=[
-        {'@type':'Organization','@id':home+'#organization',name:SITE,url:home,logo:new URL('/stationery-dot-com-logo.webp',window.location.origin).href,description:DEFAULT_DESCRIPTION,telephone:['+8801827680520','+8801611103453'],address:{'@type':'PostalAddress',streetAddress:'116, 117, G-Nat Tower (2nd Floor), Fakirapool, VIP Road',addressLocality:'Dhaka',postalCode:'1000',addressCountry:'BD'},contactPoint:[{'@type':'ContactPoint',telephone:'+8801827680520',contactType:'customer support',areaServed:'BD',availableLanguage:['English','Bengali']},{'@type':'ContactPoint',telephone:'+8801611103453',contactType:'customer support',areaServed:'BD',availableLanguage:['English','Bengali']}],sameAs:['https://www.facebook.com/StationeryDotCom2','https://www.tiktok.com/@stationerydotcom','https://www.instagram.com/stationerydotcom','https://share.google/xEArz6d6u5OedmY07','https://www.google.com/maps/place/Stationery+Dot+Com+Dhaka/data=!4m2!3m1!1s0x3755b9b06ac9e28d:0xffb9e0116d51b13a']}
+        {'@type':'Organization','@id':home+'#organization',name:SITE,url:home,logo:new URL('/stationery-dot-com-logo.webp',window.location.origin).href,description:DEFAULT_DESCRIPTION,telephone:['+8801827680520','+8801611103453'],contactPoint:[{'@type':'ContactPoint',telephone:'+8801827680520',contactType:'customer support',areaServed:'BD',availableLanguage:['English','Bengali']},{'@type':'ContactPoint',telephone:'+8801611103453',contactType:'customer support',areaServed:'BD',availableLanguage:['English','Bengali']}],sameAs:['https://www.facebook.com/StationeryDotCom2','https://www.tiktok.com/@stationerydotcom','https://www.instagram.com/stationerydotcom','https://share.google/xEArz6d6u5OedmY07']}
       ];
-      graph.push({'@type':'LocalBusiness','@id':home+'#localbusiness',name:SITE,url:home,image:new URL('/stationery-dot-com-logo.webp',window.location.origin).href,telephone:['+8801827680520','+8801611103453'],address:{'@type':'PostalAddress',streetAddress:'116, 117, G-Nat Tower (2nd Floor), Fakirapool, VIP Road',addressLocality:'Dhaka',postalCode:'1000',addressCountry:'BD'},areaServed:{'@type':'Country',name:'Bangladesh'},parentOrganization:{'@id':home+'#organization'},sameAs:['https://www.facebook.com/StationeryDotCom2','https://www.tiktok.com/@stationerydotcom','https://www.instagram.com/stationerydotcom','https://share.google/xEArz6d6u5OedmY07']});
       if(route==='/')graph.push({'@type':'WebSite','@id':home+'#website',name:SITE,alternateName:['Stationery Dot Com Dhaka','StationeryDotCom','stationerydotcom.me'],url:home,publisher:{'@id':home+'#organization'},potentialAction:{'@type':'SearchAction',target:new URL('/services?q={search_term_string}',window.location.origin).href,'query-input':'required name=search_term_string'}});
       const webPage={'@type':'WebPage','@id':canonical+'#webpage',url:canonical,name:page.title,description:description,inLanguage:'en-BD'};
       if(route==='/')webPage.isPartOf={'@id':home+'#website'};

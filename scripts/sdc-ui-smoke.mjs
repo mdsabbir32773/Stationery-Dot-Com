@@ -129,16 +129,14 @@ try {
   if (website?.name !== 'Stationery Dot Com' || !website.alternateName?.includes('stationerydotcom.me')) {
     throw new Error('Homepage WebSite structured data is missing the Stationery Dot Com brand identity.');
   }
-  if (!organization?.sameAs?.includes('https://share.google/xEArz6d6u5OedmY07') ||
+  if (organization?.address ||
+      organization?.sameAs?.some(url => /google\\.com\\/maps|share\\.google/i.test(url)) ||
       organization.logo !== `${baseURL}/stationery-dot-com-logo.webp`) {
-    throw new Error('Organization structured data is missing the Google Business Profile link or brand logo.');
+    throw new Error('Online-only Organization structured data must retain the brand logo and omit physical address/location links.');
   }
   const localBusiness = nodes.find(node => node['@type'] === 'LocalBusiness');
-  if (localBusiness?.name !== 'Stationery Dot Com' ||
-      localBusiness?.address?.addressLocality !== 'Dhaka' ||
-      localBusiness?.address?.addressCountry !== 'BD' ||
-      !localBusiness?.sameAs?.includes('https://www.facebook.com/StationeryDotCom2')) {
-    throw new Error('LocalBusiness structured data is missing the verified brand name, Dhaka address or official social identity.');
+  if (localBusiness) {
+    throw new Error('Online-only Stationery Dot Com must not publish LocalBusiness physical-location structured data.');
   }
   const crawlableHome = await page.request.get(baseURL + '/?seo-smoke=home');
   const crawlableHomeHtml = await crawlableHome.text();
@@ -246,6 +244,11 @@ try {
   await mobilePage.locator('#site-navigation a[href="/contact"]').click();
   await mobilePage.waitForURL('**/contact');
   await mobilePage.waitForFunction(() => window.scrollY <= 2, { timeout: 10000 });
+  await mobilePage.locator('.contact-page').waitFor({ state: 'visible', timeout: 10000 });
+  const contactText = await mobilePage.locator('.contact-page').innerText();
+  if (!/Fully online/i.test(contactText) || /G-Nat Tower|Fakirapool|VIP Road|Business address|Google Business Profile|Please contact us before visiting/i.test(contactText)) {
+    throw new Error('Contact page must clearly describe remote-only support and must not show a physical address or office-visit instructions.');
+  }
   if (await burger.getAttribute('aria-expanded') !== 'false') {
     throw new Error('Selecting a hamburger-menu destination did not close the mobile menu.');
   }

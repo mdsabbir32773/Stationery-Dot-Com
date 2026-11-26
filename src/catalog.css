@@ -113,3 +113,14 @@
 .catalog-category-icon{transition:transform .25s ease,box-shadow .25s ease}
 .catalog-category-card:hover .catalog-category-icon{transform:translateY(-2px) scale(1.05);box-shadow:0 8px 20px #31569b14}
 @media(max-width:600px){.active-filter-row{max-width:100%;overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px}.active-filter{flex:none}}
+
+
+/* Keep SMM service-card action text readable over the violet primary button. */
+.scard .sfoot > a.btn,
+.scard .sfoot > a.btn:hover,
+.scard .sfoot > a.btn:focus-visible {
+  color:#fff !important;
+}
+.scard .sfoot > a.btn svg {
+  color:currentColor;
+}

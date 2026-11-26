@@ -831,6 +831,12 @@ try {
   if (!/followers|sign in|option/i.test(smmOrderText)) {
     throw new Error('Natural SMM request did not resolve to a service/order flow: ' + smmOrderText.slice(0, 180));
   }
+  if (/option number/i.test(smmOrderText) && !/sign in/i.test(smmOrderText)) {
+    const smmReply = smmOrderFlow.locator('input[aria-label="Your message"]');
+    await smmReply.fill('1');
+    await smmReply.press('Enter');
+    await smmOrderFlow.getByText(/sign in/i).waitFor({ state: 'visible', timeout: 10000 });
+  }
 
   // Clear the unfinished guest SMM request before exercising the standard order flow.
   await page.reload({ waitUntil: 'domcontentloaded', timeout: 30000 });

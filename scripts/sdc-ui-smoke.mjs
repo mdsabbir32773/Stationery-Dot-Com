@@ -779,10 +779,31 @@ try {
   }
 
   // Every displayed SMM platform filter must have active services; no dead TikTok/YouTube/X filters.
-  await page.waitForFunction(() => document.querySelectorAll('.smm-filter-pills button').length >= 2, null, { timeout: 15000 });
+  try {
+    await page.waitForFunction(() => {
+      const count = document.querySelectorAll('.smm-filter-pills button').length;
+      const empty = document.querySelector('.smm-empty');
+      const result = document.querySelector('.smm-results')?.textContent || '';
+      return count >= 2 || Boolean(empty) || !/Loading/i.test(result);
+    }, null, { timeout: 15000 });
+  } catch (error) {
+    const state = await page.evaluate(() => ({
+      result: document.querySelector('.smm-results')?.textContent || '',
+      empty: document.querySelector('.smm-empty')?.innerText || '',
+      buttons: document.querySelectorAll('.smm-filter-pills button').length
+    }));
+    throw new Error('SMM catalogue did not resolve: ' + JSON.stringify(state) + '; ' + error.message);
+  }
   const platformButtons = page.locator('.smm-filter-pills button');
   const platformButtonCount = await platformButtons.count();
-  if (platformButtonCount < 2) throw new Error('SMM catalogue should show All platforms and at least one active platform.');
+  if (platformButtonCount < 2) {
+    const state = await page.evaluate(() => ({
+      result: document.querySelector('.smm-results')?.textContent || '',
+      empty: document.querySelector('.smm-empty')?.innerText || '',
+      buttons: document.querySelectorAll('.smm-filter-pills button').length
+    }));
+    throw new Error('SMM catalogue should show active platforms: ' + JSON.stringify(state));
+  }
   const platformLabels = await platformButtons.allTextContents();
   for (let i = 1; i < platformButtonCount; i++) {
     await platformButtons.nth(i).click();

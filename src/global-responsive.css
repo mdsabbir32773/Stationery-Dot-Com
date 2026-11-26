@@ -1275,3 +1275,18 @@ main a {
     overflow:visible!important;
   }
 }
+
+
+/* Route loading and failure recovery */
+.sdc-route-loading{min-height:48vh;padding:clamp(24px,5vw,64px) 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center}
+.sdc-loading-mark{width:52px;height:52px;display:grid;place-items:center;border-radius:16px;background:linear-gradient(135deg,#173f7a,#2463ad);color:#fff;font-weight:900;box-shadow:0 8px 24px #173f7a24}
+.sdc-route-loading p{margin:0;color:#5b6d83;font-weight:650}
+.sdc-loading-grid{width:min(100%,620px);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:8px}
+.sdc-loading-grid span{height:clamp(110px,22vw,190px);border-radius:16px;border:1px solid #e7edf4;background:linear-gradient(100deg,#f4f7fb 25%,#e9eff6 40%,#f4f7fb 60%);background-size:200% 100%;animation:sdc-route-shimmer 1.25s ease-in-out infinite}
+.sdc-loading-grid span:nth-child(2){animation-delay:120ms}.sdc-loading-grid span:nth-child(3){animation-delay:240ms}
+.sdc-route-error{min-height:45vh;display:grid;place-items:center;padding-top:36px;padding-bottom:36px}
+.sdc-route-error .card{max-width:640px;width:100%;padding:clamp(24px,4vw,42px)}
+.sdc-route-error h1{margin:10px 0;font-size:clamp(1.8rem,5vw,2.6rem)}
+.sdc-route-error p{color:var(--muted,#607086);line-height:1.65}
+@keyframes sdc-route-shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+@media(prefers-reduced-motion:reduce){.sdc-loading-grid span{animation:none}}

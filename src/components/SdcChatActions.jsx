@@ -70,10 +70,10 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
   bn:{service:'কোন সেবাটি নিতে চান? নাম লিখুন বা কী দরকার বলুন, আমি মিলিয়ে দেখছি।',package:'এই সেবার প্যাকেজের নাম ও দাম দেখুন। প্যাকেজের নাম লিখুন, অথবা “related” লিখলে কাছাকাছি প্যাকেজ দেখাব।',target:'কোন প্রোফাইল, পোস্ট বা চ্যানেলে সেবাটি লাগবে? লিংকটি পাঠান।',quantity:'কতটি চান বলুন।',name:'অর্ডারে কোন নামটি দেব?',phone:'আপনার বাংলাদেশি মোবাইল নম্বরটি দিন।',whatsapp:'WhatsApp নম্বরটি কি মোবাইল নম্বরের থেকে আলাদা? একই হলে “same” লিখুন।',email:'অর্ডারের জন্য কোন ইমেইল ব্যবহার করব? এটি ঐচ্ছিক; না দিতে চাইলে “skip” লিখুন।',notes:'টিমকে জানানোর মতো কোনো নির্দেশনা আছে? না থাকলে “skip” লিখুন।',docs:'এই সেবার জন্য একটি ফাইল দরকার। এখানে আপলোড করে “continue” লিখুন।',review:'অর্ডারের তথ্যগুলো আবার দেখুন। ঠিক থাকলে “confirm” লিখুন; পরিবর্তন চাইলে বলুন।',amount:'ওয়ালেটে কত টাকা যোগ করতে চান? সর্বনিম্ন ৳৫০।',proof:'পেমেন্ট সম্পন্ন হলে রসিদের screenshot এখানে আপলোড করে “paid” লিখুন (JPG, PNG বা WEBP; সর্বোচ্চ ৫ MB)।',paid:'“paid” লিখলে অনুরোধটি জমা হবে। এরপর টিম রসিদ যাচাই করবে.'}
  };
  const prompts=promptSets[language];
- const formatDuration=months=>months===0?'Lifetime':months%12===0?(months/12)+' '+(months/12===1?'year':'years'):months+' months';
+ const formatDuration=months=>{if(months===null||months===undefined||months==='')return 'Service-specific';const n=Number(months);if(!Number.isFinite(n))return 'Service-specific';if(n===0)return 'Lifetime';return n%12===0?(n/12)+' '+(n/12===1?'year':'years'):n+' months';};
  const packageCatalog=(svc,list=packages.filter(p=>p.service_id===svc?.id))=>{
   if(!list.length)return language==='bn'?'এই service-এ এখন active package নেই। অন্য service-এর নাম বলুন।':'There are no active packages for this service right now. Tell me another service name.';
-  const rows=list.slice(0,10).map((p,i)=>(i+1)+'. '+p.name+'\n   '+(p.access_type?'Access: '+p.access_type+' · ':'')+'Duration: '+formatDuration(Number(p.duration_months||0))+'\n   Price: '+(Number(p.price)>0?taka(p.price):'Price on request')).join('\n\n');
+  const rows=list.slice(0,10).map((p,i)=>(i+1)+'. '+p.name+'\n   '+(p.access_type?'Access: '+p.access_type+' · ':'')+'Duration: '+formatDuration(p.duration_months)+'\n   Price: '+(Number(p.price)>0?taka(p.price):'Price on request')).join('\n\n');
   const more=list.length>10?'\n\nআরও '+(list.length-10)+'টি package আছে।':'';
   return (language==='bn'?'📦 এই service-এর available packages:\n\n':'📦 Available packages for '+(svc?.name||'this service')+':\n\n')+rows+more;
  };
@@ -105,7 +105,7 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
   if(smm){if(!session){if(typeof window!=='undefined'){try{window.sessionStorage.setItem('sdc_chat_pending_smm_order',JSON.stringify({message:initialMessage||s.name,serviceId:id,createdAt:Date.now()}));}catch{}}go('signin',language==='bn'?'এই SMM order চালিয়ে যেতে account-এ sign in করুন। Sign in করার পর chatbot খুললেই order এখান থেকে continue হবে।':'Please sign in to continue this SMM order. Open the chatbot after signing in and it will resume here.');return;}go('target',prompts.target);return;}
   const matched=matchedPackageId?packages.find(x=>x.id===matchedPackageId):null;
   if(matched){setPackageId(matched.id);go('name',(language==='bn'?'ঠিক আছে—':'Got it—')+s.name+', '+matched.name+' ('+(Number(matched.price)>0?taka(matched.price):'Price on request')+'). '+(language==='bn'?'এখন আপনার নামটি বলুন।':'What name should I put on the order?'));return;}
-  const available=packages.filter(x=>x.service_id===id);setPackageOptions(available);go('package',prompts.package+'\n\n'+available.slice(0,10).map((p,i)=>(i+1)+'. '+p.name+'\n   '+(p.access_type?'Access: '+p.access_type+' · ':'')+'Duration: '+formatDuration(Number(p.duration_months||0))+'\n   Price: '+(Number(p.price)>0?taka(p.price):'Price on request')).join('\n\n')+'\n\n'+(language==='bn'?'Option number বললেই হবে।':'Reply with the option number'));
+  const available=packages.filter(x=>x.service_id===id);setPackageOptions(available);go('package',prompts.package+'\n\n'+available.slice(0,10).map((p,i)=>(i+1)+'. '+p.name+'\n   '+(p.access_type?'Access: '+p.access_type+' · ':'')+'Duration: '+formatDuration(p.duration_months)+'\n   Price: '+(Number(p.price)>0?taka(p.price):'Price on request')).join('\n\n')+'\n\n'+(language==='bn'?'Option number বললেই হবে।':'Reply with the option number'));
  }
  function choosePackage(id){const p=servicePackages.find(x=>x.id===id);if(!p)return;setPackageId(id);if(isSmm){go('target',prompts.target);}else go('name',(language==='bn'?'বুঝেছি—':'Got it—')+p.name+' ('+(Number(p.price)>0?taka(p.price):'Price on request')+'). '+(language==='bn'?'অর্ডারে কোন নামটি দেব?':'What name should I put on the order?'));}
  function currentPrompt(){return prompts[step]||'';}
@@ -140,7 +140,7 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
   }
   setServiceOptions([]);setPackageOptions([]);
   const serviceMatches=rankCatalog(query,services,x=>(x.name||'')+' '+(x.category||'')+' '+(x.description||'')+' '+(x.slug||'')+' '+(x.smm_platform||'')+' '+(x.smm_category||'')+' '+(x.smm_delivery_time||'')+' '+(x.smm_platform?'social media smm followers likes views subscribers comments engagement boost':''));
-  const packageMatches=rankCatalog(query,packages,x=>{const d=x.duration_months===0?'lifetime':x.duration_months%12===0?(x.duration_months/12)+' year':x.duration_months+' months';const svc=services.find(y=>y.id===x.service_id);return (x.name||'')+' '+(x.access_type||'')+' '+d+' '+x.duration_months+' '+(x.description||'')+' '+(svc?.name||'')+' '+(svc?.category||'')+' '+(svc?.description||'');});
+  const packageMatches=rankCatalog(query,packages,x=>{const d=formatDuration(x.duration_months);const svc=services.find(y=>y.id===x.service_id);return (x.name||'')+' '+(x.access_type||'')+' '+d+' '+x.duration_months+' '+(x.description||'')+' '+(svc?.name||'')+' '+(svc?.category||'')+' '+(svc?.description||'');});
   const best=serviceMatches[0],next=serviceMatches[1];
   const exactNamed=services.filter(s=>normalized(query).includes(normalized(s.name))).sort((a,b)=>normalized(b.name).length-normalized(a.name).length)[0];
   const queryWords=tokens(query);
@@ -154,7 +154,7 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
    const requestedMonths=years?Number(years[1])*12:months?Number(months[1]):null;
    const durationMatches=packages.filter(x=>x.service_id===svc.id&&(wantsLifetime?x.duration_months===0:requestedMonths!==null?Number(x.duration_months)===requestedMonths:false));
    if((exactNamed||keywordNamed)&&durationMatches.length===1){chooseService(svc.id,durationMatches[0].id);return;}
-   const within=rankCatalog(query,durationMatches.length?durationMatches:packages.filter(x=>x.service_id===svc.id),x=>{const duration=x.duration_months===0?'lifetime':x.duration_months%12===0?(x.duration_months/12)+' year':x.duration_months+' months';return (x.name||'')+' '+(x.access_type||'')+' '+duration+' '+(x.duration_months||'')+' '+(x.price||'')+' '+svc.name;});
+   const within=rankCatalog(query,durationMatches.length?durationMatches:packages.filter(x=>x.service_id===svc.id),x=>{const duration=formatDuration(x.duration_months);return (x.name||'')+' '+(x.access_type||'')+' '+duration+' '+(x.duration_months||'')+' '+(x.price||'')+' '+svc.name;});
    const match=within[0]&&within[0].score>=54&&(!within[1]||within[0].score-within[1].score>=8)?within[0].item:null;
    chooseService(svc.id,match?.id||'');return;
   }
@@ -190,11 +190,11 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
    const related=asksForSuggestions(query)?matches.filter(x=>x.score>=42).slice(0,6):closeRows;
    const chosen=(related.length?related:candidates.slice(0,6)).map(x=>x.item||x);
    setPackageOptions(chosen);
-   bot((language==='bn'?'📦 আপনার কথার সঙ্গে মেলা packages:\n\n':'📦 Matching packages:\n\n')+chosen.map((x,i)=>(i+1)+'. '+x.name+'\n   Duration: '+formatDuration(Number(x.duration_months||0))+'\n   Price: '+(Number(x.price)>0?taka(x.price):'Price on request')).join('\n\n')+'\n\n'+(language==='bn'?'Option number বললেই হবে।':'Reply with the option number.'));
+   bot((language==='bn'?'📦 আপনার কথার সঙ্গে মেলা packages:\n\n':'📦 Matching packages:\n\n')+chosen.map((x,i)=>(i+1)+'. '+x.name+'\n   Duration: '+formatDuration(x.duration_months)+'\n   Price: '+(Number(x.price)>0?taka(x.price):'Price on request')).join('\n\n')+'\n\n'+(language==='bn'?'Option number বললেই হবে।':'Reply with the option number.'));
    return;
   }
   const all=servicePackages.slice(0,10);setPackageOptions(all);
-  bot((language==='bn'?'📦 এই service-এর available packages:\n\n':'📦 Available packages:\n\n')+all.map((x,i)=>(i+1)+'. '+x.name+'\n   Duration: '+formatDuration(Number(x.duration_months||0))+'\n   Price: '+(Number(x.price)>0?taka(x.price):'Price on request')).join('\n\n')+'\n\n'+(language==='bn'?'Option number বলুন।':'Reply with an option number.'));
+  bot((language==='bn'?'📦 এই service-এর available packages:\n\n':'📦 Available packages:\n\n')+all.map((x,i)=>(i+1)+'. '+x.name+'\n   Duration: '+formatDuration(x.duration_months)+'\n   Price: '+(Number(x.price)>0?taka(x.price):'Price on request')).join('\n\n')+'\n\n'+(language==='bn'?'Option number বলুন।':'Reply with an option number.'));
  }
  useEffect(()=>{if(loading||mode!=='order'||!initialMessage||initialProcessed.current||!services.length)return;initialProcessed.current=true;handleServiceQuery(initialMessage);},[loading,mode,initialMessage,services,packages]);
  async function submitText(e){e.preventDefault();const v=reply.trim();if(!v||busy)return;setReply('');user(v);

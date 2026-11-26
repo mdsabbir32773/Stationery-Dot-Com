@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { MessageCircle, X, Send, Sparkles, Headphones } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../lib/supabase';
 import '../chatbot.css';
 import SdcChatActions from './SdcChatActions';
 import SdcInvoiceRequest from './SdcInvoiceRequest';
@@ -61,14 +61,80 @@ export default function SdcAssistant({ defaultOpen = false } = {}) {
     setMessages(prev => [...prev, { role: 'user', text }]);
     setInput('');
     setBusy(true);
+    let streamedText = '';
     try {
-      const { data, error } = await supabase.functions.invoke('sdc-assistant', { body: { message: text, history: prior } });
-      if (error) throw error;
-      if (!data?.reply) throw new Error(data?.error || 'No response');
-      setMessages(prev => [...prev, { role: 'assistant', text: data.reply }]);
+      const { data: { session } } = await supabase.auth.getSession();
+      const headers = {
+        apikey: SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json',
+        Accept: 'text/event-stream, application/json'
+      };
+      if (session?.access_token) headers.Authorization = 'Bearer ' + session.access_token;
+      const response = await fetch(SUPABASE_URL + '/functions/v1/sdc-assistant', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ message: text, history: prior, stream: true })
+      });
+      const contentType = response.headers.get('content-type') || '';
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data?.error || 'Chat request failed');
+      }
+      if (!contentType.includes('text/event-stream')) {
+        const data = await response.json();
+        if (!data?.reply) throw new Error(data?.error || 'No response');
+        setMessages(prev => [...prev, { role: 'assistant', text: data.reply }]);
+        return;
+      }
+      if (!response.body) throw new Error('Streaming response unavailable');
+      setMessages(prev => [...prev, { role: 'assistant', text: '' }]);
+      const appendChunk = chunk => {
+        if (!chunk) return;
+        streamedText += chunk;
+        setMessages(prev => {
+          const next = [...prev];
+          const last = next[next.length - 1];
+          if (last?.role === 'assistant') next[next.length - 1] = { ...last, text: last.text + chunk };
+          return next;
+        });
+      };
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      const processEvent = event => {
+        const data = event.split('\n').filter(line => line.startsWith('data:')).map(line => line.slice(5).trim()).join('\n');
+        if (!data || data === '[DONE]') return;
+        try {
+          const chunkData = JSON.parse(data);
+          const chunk = chunkData?.candidates?.[0]?.content?.parts?.map(part => part.text || '').join('');
+          appendChunk(chunk);
+        } catch { /* Ignore non-JSON keepalive events. */ }
+      };
+      while (true) {
+        const { value: chunk, done } = await reader.read();
+        buffer += decoder.decode(chunk || new Uint8Array(), { stream: !done });
+        buffer = buffer.replace(/\r\n/g, '\n');
+        let boundary = buffer.indexOf('\n\n');
+        while (boundary >= 0) {
+          processEvent(buffer.slice(0, boundary));
+          buffer = buffer.slice(boundary + 2);
+          boundary = buffer.indexOf('\n\n');
+        }
+        if (done) {
+          if (buffer.trim()) processEvent(buffer);
+          break;
+        }
+      }
+      if (!streamedText.trim()) throw new Error('No streamed reply received');
     } catch (err) {
       const fallback = 'Sorry, I’m having trouble connecting right now. Please contact our team on WhatsApp: 01827-680520.';
-      setMessages(prev => [...prev, { role: 'assistant', text: fallback }]);
+      setMessages(prev => {
+        const next = [...prev];
+        const last = next[next.length - 1];
+        if (last?.role === 'assistant' && !last.text) next[next.length - 1] = { ...last, text: fallback };
+        else next.push({ role: 'assistant', text: fallback });
+        return next;
+      });
     } finally { setBusy(false); }
   }
 

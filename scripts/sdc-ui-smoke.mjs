@@ -473,6 +473,18 @@ try {
     throw new Error(`SDC Assistant must return 400 for malformed JSON, got ${malformedAssistantResponse.status()}`);
   }
 
+  const assistantHelloStarted = Date.now();
+  const assistantHelloResponse = await page.request.post(assistantEndpoint, {
+    data: JSON.stringify({ message: 'Hello', history: [] }),
+    headers: { 'content-type': 'application/json' },
+    timeout: 10000
+  });
+  const assistantHelloElapsed = Date.now() - assistantHelloStarted;
+  const assistantHelloData = await assistantHelloResponse.json();
+  if (assistantHelloResponse.status() !== 200 || !/^Hello!/i.test(assistantHelloData.reply || '') || assistantHelloElapsed > 2500) {
+    throw new Error(`Simple chatbot greeting should return a fast direct reply; status=${assistantHelloResponse.status()}, elapsed=${assistantHelloElapsed}ms, reply=${assistantHelloData.reply || assistantHelloData.error || 'empty'}`);
+  }
+
   const trackingResponse = await page.goto(`${baseURL}/track-order`, { waitUntil: 'domcontentloaded', timeout: 30000 });
   if (!trackingResponse || trackingResponse.status() >= 400) {
     throw new Error(`Track Order page returned HTTP ${trackingResponse?.status() ?? 'no response'}`);
@@ -726,8 +738,22 @@ try {
   const chat = page.locator('[aria-label="SDC Assistant chat"]');
   await chat.waitFor({ state: 'visible', timeout: 10000 });
 
-  // The order flow starts when the visitor types a natural request; do not submit an order.
+  // Simple greetings should be answered locally without waiting for Gemini.
   const compose = chat.locator('.sdc-chat-compose input');
+  let greetingNetworkCalls = 0;
+  const countGreetingCall = (request) => { if (request.url().includes('/functions/v1/sdc-assistant')) greetingNetworkCalls += 1; };
+  page.on('request', countGreetingCall);
+  const greetingStarted = Date.now();
+  await compose.fill('Hello');
+  await compose.press('Enter');
+  await chat.getByText(/Hello! 😊 Welcome to Stationery Dot Com/i).last().waitFor({ state: 'visible', timeout: 1500 });
+  const greetingElapsed = Date.now() - greetingStarted;
+  page.off('request', countGreetingCall);
+  if (greetingElapsed > 1000 || greetingNetworkCalls !== 0) {
+    throw new Error(`Client greeting should be instant and must not call Gemini; elapsed=${greetingElapsed}ms, requests=${greetingNetworkCalls}`);
+  }
+
+  // The order flow starts when the visitor types a natural request; do not submit an order.
   await compose.fill('ORDER KORTE CHAI');
   await compose.press('Enter');
 

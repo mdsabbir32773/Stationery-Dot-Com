@@ -124,3 +124,17 @@
 .scard .sfoot > a.btn svg {
   color:currentColor;
 }
+
+
+/* Consistent high-contrast labels for every service-card action link. */
+main .scard .sfoot a.btn,
+main .scard .sfoot a.btn:hover,
+main .scard .sfoot a.btn:focus-visible,
+main .scard .sfoot a.btn:active {
+  color:#fff !important;
+  -webkit-text-fill-color:#fff;
+}
+main .scard .sfoot a.btn svg {
+  color:#fff !important;
+  stroke:currentColor;
+}

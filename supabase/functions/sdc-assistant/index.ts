@@ -238,11 +238,21 @@ Deno.serve(async (req: Request) => {
     const modelUrl = stream
       ? "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:streamGenerateContent?alt=sse&key=" + encodeURIComponent(apiKey)
       : "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=" + encodeURIComponent(apiKey);
-    const response = await fetch(modelUrl, {
+    let response = await fetch(modelUrl, {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ systemInstruction: { parts: [{ text: system }] }, contents, generationConfig: { temperature: 0.78, maxOutputTokens: 850, topP: 0.92 } }),
       signal: AbortSignal.timeout(25000)
     });
+    if (!response.ok && [502,503,504].includes(response.status)) {
+      // Gemini can return a short-lived UNAVAILABLE response during demand spikes.
+      // Retry once before returning an error to the customer.
+      await new Promise((resolve) => setTimeout(resolve, 700));
+      response = await fetch(modelUrl, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ systemInstruction: { parts: [{ text: system }] }, contents, generationConfig: { temperature: 0.78, maxOutputTokens: 850, topP: 0.92 } }),
+        signal: AbortSignal.timeout(25000)
+      });
+    }
     if (!response.ok) {
       const result = await response.json().catch(() => ({}));
       console.error("Gemini request failed", response.status, JSON.stringify(result).slice(0, 500));

@@ -48,6 +48,63 @@ function serviceSearchText(service: Record<string, any>): string {
   return text+" "+smmTerms+" "+(platform.includes("instagram")?"ig insta instagram":platform.includes("facebook")?"fb facebook":platform.includes("youtube")?"yt youtube":"");
 }
 
+function detectSmmPlatform(value: string): string | null {
+  const text = chatbotNormalize(value).replace(/\btik\s*tok\b/g, "tiktok");
+  const platforms: [string, RegExp][] = [
+    ["TikTok", /\btiktok\b|\btik\s*tok\b/],
+    ["Telegram", /\btelegram\b|\btg\b/],
+    ["Instagram", /\binstagram\b|\binsta\b|\big\b/],
+    ["Facebook", /\bfacebook\b|\bfb\b/],
+    ["YouTube", /\byoutube\b|\byt\b/]
+  ];
+  return platforms.find(([, pattern]) => pattern.test(text))?.[0] || null;
+}
+function detectSmmOutcome(value: string): string | null {
+  const text = chatbotNormalize(value);
+  if (/\bfollowers?\b|\bfollow\b|ফলো/.test(text)) return "Followers";
+  if (/\bmembers?\b|\bchannel\s*members?\b|মেম্বার/.test(text)) return "Members";
+  if (/\blikes?\b|লাইক/.test(text)) return "Likes";
+  if (/\bviews?\b|ভিউ/.test(text)) return "Views";
+  if (/\bsubscribers?\b|সাবস্ক্রাইবার/.test(text)) return "Subscribers";
+  if (/\bcomments?\b|কমেন্ট/.test(text)) return "Comments";
+  if (/\bshares?\b/.test(text)) return "Shares";
+  if (/\breactions?\b|রিঅ্যাকশন/.test(text)) return "Reactions";
+  if (/\breviews?\b/.test(text)) return "Reviews";
+  if (/\bboost(?:ing)?\b|\bpromot(?:e|ion|ing)\b|বুস্ট/.test(text)) return "Boost";
+  return null;
+}
+function formatSmmCatalogueReply(catalogue: any, platform: string, outcome: string | null): string {
+  const all = (catalogue.services || []).filter((s: any) => String(s.platform || "").toLowerCase() === platform.toLowerCase());
+  if (!all.length) {
+    const available = [...new Set((catalogue.services || []).filter((s: any) => s.platform).map((s: any) => s.platform))];
+    return `দুঃখিত, বর্তমানে ${platform}-এর কোনো active SMM service catalogue-এ নেই।\n\nবর্তমানে available platform: ${available.join(" · ")}\nঅন্য platform-এর service খুঁজে দিতে পারি।`;
+  }
+  let selected = outcome ? all.filter((s: any) => String(s.smm_category || "").toLowerCase() === outcome.toLowerCase()) : all;
+  let note = "";
+  if (!selected.length && platform === "Telegram" && outcome === "Followers") {
+    selected = all.filter((s: any) => String(s.smm_category || "").toLowerCase() === "members");
+    if (selected.length) note = "Telegram channel/group-এর member service catalogue-এ “Members” নামে আছে (এটি follower package নয়)।";
+  }
+  if (!selected.length) {
+    const categories = [...new Set(all.map((s: any) => s.smm_category).filter(Boolean))];
+    return `বর্তমানে ${platform}-এ “${outcome}” নামে কোনো active service নেই।\n\nAvailable service: ${categories.join(" · ")}`;
+  }
+  selected = selected.slice(0, 8);
+  const title = outcome === "Followers" && platform === "Telegram" && note ? "Telegram Members" : `${platform} ${outcome || "SMM Services"}`;
+  const lines = [`📦 ${title}`];
+  if (note) lines.push(note);
+  lines.push("");
+  selected.forEach((s: any, i: number) => {
+    const price = Number(s.price_per_1000_bdt);
+    const priceText = Number.isFinite(price) ? `৳${price.toLocaleString("en-US")} / 1,000` : "Price shown on order form";
+    const min = Number(s.min_quantity);
+    lines.push(`${i + 1}. ${String(s.name).replace(/^[^—]+—\s*/, "")}`);
+    lines.push(`   ${priceText}${Number.isFinite(min) && min > 0 ? ` · Min ${min.toLocaleString("en-US")}` : ""}`);
+  });
+  lines.push("", "যেটি নিতে চান, option number বলুন—আমি order process-এ নিয়ে যাব।");
+  return lines.join("\\n");
+}
+
 let catalogueCache: { expiresAt: number; value: any } | null = null;
 let catalogueLoading: Promise<any> | null = null;
 async function loadCatalogue(supabase: any) {
@@ -176,6 +233,15 @@ Deno.serve(async (req: Request) => {
       return json({ reply: "Apnar deposit request-er update:\nAmount: ৳" + data.amount + "\nMethod: " + data.method + "\nStatus: " + data.status + "\nSubmitted: " + new Date(data.created_at).toLocaleString("en-GB", { timeZone: "Asia/Dhaka" }) + (data.status === "Approved" ? "\nDeposit approved hoyeche." : data.status === "Rejected" ? "\nRequest reject hoyeche. Account Wallet-e admin note check korun." : "\nAdmin payment proof review korar por wallet balance update hobe.") });
     }
     const catalogue = await loadCatalogue(supabase);
+    // Resolve explicit SMM platform requests against that platform's active catalogue only.
+    // Never let broad keyword overlap recommend Facebook/Instagram when the customer asked for TikTok.
+    const currentPlatform = detectSmmPlatform(message);
+    const currentOutcome = detectSmmOutcome(message);
+    const smmIntentInCurrent = /\\b(?:smm|social media|followers?|likes?|views?|subscribers?|comments?|shares?|reactions?|members?|boost|engagement|reach|instagram|insta|ig|facebook|fb|youtube|yt|tiktok|telegram)\\b|ফলো|লাইক|ভিউ|সাবস্ক্রাইবার|মেম্বার|বুস্ট/i.test(chatbotNormalize(message));
+    if (currentPlatform && smmIntentInCurrent) {
+      return json({ reply: formatSmmCatalogueReply(catalogue, currentPlatform, currentOutcome) });
+    }
+
     const queryContext = [...userHistory.slice(-3).map((m: any) => m.text), String(body?.message || "")].join(" ").toLowerCase();
     const packageRows = catalogue.packages || [];
     const genericCatalogueQuestion = /\b(all|list|show|what|which|services|packages|catalogue|catalog|price list|available|options?)\b|সার্ভিস|প্যাকেজ|কী কী|কি কি|দাম|কোন কোন/i.test(queryContext);
@@ -214,7 +280,7 @@ Deno.serve(async (req: Request) => {
       "NATURAL CONVERSATION (VERY IMPORTANT): Behave like an attentive, emotionally intelligent customer-care person. First understand what the visitor is saying and why they are saying it; do not treat every message as a service enquiry. If they greet you, greet them naturally. If they make small talk, respond briefly and warmly before gently leaving space for their actual need. If they share frustration, worry, disappointment or confusion, acknowledge the feeling first in a sincere, non-dramatic way, then help with the practical next step. Never sound defensive, dismissive, scripted or overly cheerful when the visitor is upset.",
       "FOLLOW THE FLOW: Read the recent conversation as one continuous conversation. Remember what the visitor has already told you in this chat; do not ask for the same detail again unless it needs verification for a secure lookup. Answer follow-up questions in context, understand pronouns and references such as 'eta', 'oita', 'ager ta', 'that one' and 'same service', and connect your reply to the immediately preceding topic. Do not restart with a greeting on every turn. If the visitor changes topic, follow the new topic naturally.",
       "LISTEN BEFORE SELLING: Do not push services, packages, links, order forms or WhatsApp in every reply. Recommend a service only when it genuinely matches what the visitor asked. For casual conversation, simple greetings, thanks or acknowledgements, respond naturally without forcing a sales pitch. If the request is unclear, ask one short, specific question rather than listing every service. Customers do not need to type the exact service/package title: understand their goal, platform, product, synonym, Banglish wording or outcome; search the live catalogue and suggest the closest real matches. If ambiguous, ask one concise clarifying question.",
-      "HUMAN-FRIENDLY RESPONSE STYLE: Use natural spoken phrasing, varied sentence openings and short paragraphs. Match the visitor's energy and level of detail. Avoid repeating the question, generic openings like 'Certainly! How may I assist you today?' and robotic phrases like 'As an AI language model'. Use a light emoji only when it fits the mood; do not overuse emojis. Be empathetic without pretending to have human feelings or personal experiences.",
+      "CATALOGUE LIST PRESENTATION: When listing services or subscription packages, NEVER put several packages in one paragraph. Use a short heading, blank line, then one numbered item per line. Put each package name on its own line and price/duration/access on the next indented line. Add a blank line between sections. Keep the list easy to scan on a mobile phone. For SMM service lists, show platform + requested outcome only, exact catalogue names, price per 1,000 and minimum quantity. Never mix platforms or unrelated categories. If the requested platform has no active catalogue service, say so clearly and do not recommend another platform as if it matched.",\n      "HUMAN-FRIENDLY RESPONSE STYLE: Use natural spoken phrasing, varied sentence openings and short paragraphs. Match the visitor's energy and level of detail. Avoid repeating the question, generic openings like 'Certainly! How may I assist you today?' and robotic phrases like 'As an AI language model'. Use a light emoji only when it fits the mood; do not overuse emojis. Be empathetic without pretending to have human feelings or personal experiences.",
       "ANSWER QUALITY STANDARD: Give the direct answer first, then only the explanation needed for the next step. Prefer 1–4 short sentences for simple questions; use a short numbered sequence only for multi-step instructions. Do not dump the whole catalogue unless asked. Distinguish confirmed facts from estimates and unknowns. If live data does not answer something, say the team must confirm it—never guess.",
       "BANGLA & BANGLISH QUALITY: If the customer writes Banglish, reply in natural, easy Bangla script by default; retain common English service names, technical terms and brand names where clearer. Avoid awkward literal translations. If they write English, use clear everyday English. Follow explicit language requests.",
       "CONVERSATION MEMORY: Use earlier user messages to understand references and recover details already supplied. Never treat an assistant message as proof of a customer-provided phone number, Order ID, payment, consent or personal detail. Ask again only when secure verification requires it.",

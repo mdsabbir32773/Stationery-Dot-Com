@@ -23,6 +23,24 @@ function tokens(value){return normalized(value).split(/\s+/).map(word=>TOKEN_ALI
 function catalogScore(query,label){const q=normalized(query),c=normalized(label);if(!q||!c)return 0;if(q===c)return 100;const qt=tokens(query),ct=tokens(label);if(!qt.length||!ct.length)return 0;const overlap=ct.filter(word=>qt.includes(word)).length;if(!overlap)return 0;return Math.round((overlap/qt.length*.72+overlap/ct.length*.28)*100);}
 function rankCatalog(query,items,labelOf){return items.map(item=>({item,score:catalogScore(query,labelOf(item))})).filter(row=>row.score>=42).sort((a,b)=>b.score-a.score);}
 function selectedOption(value,max){const v=String(value||'').trim().toLowerCase();const words={first:1,second:2,third:3,fourth:4,fifth:5,sixth:6,প্রথম:1,দ্বিতীয়:2,দ্বিতীয়:2,তৃতীয়:3,তৃতীয়:3,চতুর্থ:4,পঞ্চম:5};const m=v.match(/^(?:option\s*)?(\d+|first|second|third|fourth|fifth|sixth|প্রথম|দ্বিতীয়|দ্বিতীয়|তৃতীয়|তৃতীয়|চতুর্থ|পঞ্চম)$/i);if(!m)return -1;const n=words[m[1]]||Number(m[1]);return Number.isInteger(n)&&n>=1&&n<=max?n-1:-1;}
+function detectSmmPlatform(value){
+ const text=normalized(value).replace(/\\btik\\s*tok\\b/g,'tiktok');
+ const options=[['TikTok',/\\btiktok\\b|\\btik\\s*tok\\b/],['Telegram',/\\btelegram\\b|\\btg\\b/],['Instagram',/\\binstagram\\b|\\binsta\\b|\\big\\b/],['Facebook',/\\bfacebook\\b|\\bfb\\b/],['YouTube',/\\byoutube\\b|\\byt\\b/]];
+ return options.find(([,re])=>re.test(text))?.[0]||null;
+}
+function detectSmmOutcome(value){
+ const text=normalized(value);
+ if(/\\bfollow(?:ers?|rs?)\\b|\\bfollow\\b|\\bfolowers?\\b|\\bfollwers?\\b|ফলো/.test(text))return 'Followers';
+ if(/\\bmembers?\\b|\\bchannel\\s*members?\\b|মেম্বার/.test(text))return 'Members';
+ if(/\\blikes?\\b|লাইক/.test(text))return 'Likes';
+ if(/\\bviews?\\b|ভিউ/.test(text))return 'Views';
+ if(/\\bsubscribers?\\b|সাবস্ক্রাইবার/.test(text))return 'Subscribers';
+ if(/\\bcomments?\\b|কমেন্ট/.test(text))return 'Comments';
+ if(/\\bshares?\\b/.test(text))return 'Shares';
+ if(/\\breactions?\\b|রিঅ্যাকশন/.test(text))return 'Reactions';
+ if(/\\breviews?\\b/.test(text))return 'Reviews';
+ return null;
+}
 function asksForSuggestions(text){return /\b(related|recommend|suggest|options?|list|show me|what do you have|which packages?)\b|ki ki ache|aro package|related package|option gula|প্যাকেজ.*(দেখা|আছে|কোন)|কোন কোন|কি কি আছে|আরো.*প্যাকেজ/i.test(text);}
 
 
@@ -91,6 +109,34 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
  function currentPrompt(){return prompts[step]||'';}
  useEffect(()=>{actionEndRef.current?.scrollIntoView({behavior:'smooth'});},[messages,step,error,loading,result]);
  function handleServiceQuery(query){
+  // Platform + outcome is authoritative for SMM; don't let generic "page" or keyword scoring select Page Setup.
+  const requestedPlatform=detectSmmPlatform(query);
+  const requestedOutcome=detectSmmOutcome(query);
+  if(requestedPlatform&&(requestedOutcome||/\\b(?:smm|social media|service|services|option|package|packages)\\b|কি কি|কোন কোন/i.test(query))){
+   const platformServices=services.filter(s=>String(s.smm_platform||'').toLowerCase()===requestedPlatform.toLowerCase());
+   if(!platformServices.length){
+    const available=[...new Set(services.filter(s=>s.smm_platform).map(s=>s.smm_platform))];
+    bot((language==='bn'?'দুঃখিত, বর্তমানে ':'Sorry, currently there are no active ')+requestedPlatform+(language==='bn'?' platform-এর SMM service catalogue-এ নেই।\n\nAvailable platform: ':' SMM services in the catalogue.\n\nAvailable platforms: ')+available.join(' · '));
+    return;
+   }
+   let targetOutcome=requestedOutcome;
+   let matching=targetOutcome?platformServices.filter(s=>String(s.smm_category||'').toLowerCase()===targetOutcome.toLowerCase()):platformServices;
+   let note='';
+   if(!matching.length&&requestedPlatform==='Telegram'&&targetOutcome==='Followers'){
+    matching=platformServices.filter(s=>String(s.smm_category||'').toLowerCase()==='members');
+    if(matching.length)note='Telegram channel/group member service is listed as “Members” (not a follower package).';
+   }
+   if(!matching.length){
+    const categories=[...new Set(platformServices.map(s=>s.smm_category).filter(Boolean))];
+    bot((language==='bn'?'বর্তমানে ':'Currently no ')+requestedPlatform+' '+targetOutcome+' service is active.\n\n'+(language==='bn'?'Available service: ':'Available categories: ')+categories.join(' · '));
+    return;
+   }
+   setServiceOptions(matching);
+   const rows=matching.slice(0,10).map((s,i)=>(i+1)+'. '+s.name+'\n   '+taka(getSmmUnitPrice(s))+' / 1,000'+(s.smm_min_quantity?' · Min '+Number(s.smm_min_quantity).toLocaleString('en-US'):'')).join('\n');
+   bot((note?note+'\n\n':'')+(language==='bn'?'📦 '+requestedPlatform+' '+(targetOutcome==='Followers'&&requestedPlatform==='Telegram'?'Members':targetOutcome||'SMM Services')+'\n\n':'📦 '+requestedPlatform+' '+(targetOutcome==='Followers'&&requestedPlatform==='Telegram'?'Members':targetOutcome||'SMM Services')+'\n\n')+rows+'\n\n'+(language==='bn'?'Option number বলুন—ঠিক service-টাই select হবে।':'Reply with an option number to select the exact service.'));
+   return;
+  }
+
   setServiceOptions([]);setPackageOptions([]);
   const serviceMatches=rankCatalog(query,services,x=>(x.name||'')+' '+(x.category||'')+' '+(x.description||'')+' '+(x.slug||'')+' '+(x.smm_platform||'')+' '+(x.smm_category||'')+' '+(x.smm_delivery_time||'')+' '+(x.smm_platform?'social media smm followers likes views subscribers comments engagement boost':''));
   const packageMatches=rankCatalog(query,packages,x=>{const d=x.duration_months===0?'lifetime':x.duration_months%12===0?(x.duration_months/12)+' year':x.duration_months+' months';const svc=services.find(y=>y.id===x.service_id);return (x.name||'')+' '+(x.access_type||'')+' '+d+' '+x.duration_months+' '+(x.description||'')+' '+(svc?.name||'')+' '+(svc?.category||'')+' '+(svc?.description||'');});

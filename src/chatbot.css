@@ -90,3 +90,17 @@
 @media(max-width:600px){.sdc-convo-control,.sdc-convo-review,.sdc-convo-reply,.sdc-convo-payment,.sdc-convo-foot{margin-left:32px}.sdc-convo-options{max-height:150px}.sdc-convo-msg{font-size:12.5px}}
 
 .sdc-convo-upload{padding:10px;border:1px dashed #e8b89f;border-radius:11px;background:#fffaf7}.sdc-convo-upload>span{display:flex;align-items:center;gap:7px;color:#a74c22;font-weight:700}.sdc-convo-upload input[type=file]{width:100%;margin-top:5px}.sdc-convo-upload small{color:#7b8493;font-size:10px}
+
+
+/* Structured assistant replies: scannable package/service lists on mobile */
+.sdc-chat-row.is-assistant .sdc-chat-bubble{max-width:90%;padding:12px 13px}
+.sdc-chat-list-line{display:block;line-height:1.55}
+.sdc-chat-list-heading{display:block;margin:0 0 5px;color:#263448;font-size:13px;font-weight:800;line-height:1.45}
+.sdc-chat-list-item{display:flex;align-items:flex-start;gap:8px;margin:5px 0 0;line-height:1.45}
+.sdc-chat-list-number{display:inline-flex;align-items:center;justify-content:center;flex:0 0 21px;height:21px;margin-top:1px;border-radius:7px;background:#fff0e7;color:#c65320;font-size:11px;font-weight:800}
+.sdc-chat-list-copy{min-width:0;flex:1;overflow-wrap:anywhere;font-weight:600}
+.sdc-chat-list-detail{display:block;margin:2px 0 6px 29px;color:#667085;font-size:11.5px;line-height:1.45;overflow-wrap:anywhere}
+.sdc-chat-list-spacer{height:5px}
+.sdc-chat-list-item.is-bullet .sdc-chat-list-bullet{flex:0 0 13px;color:#e96528;font-weight:900}
+.sdc-chat-list-item.is-bullet .sdc-chat-list-copy{font-weight:500}
+@media(max-width:600px){.sdc-chat-row.is-assistant .sdc-chat-bubble{max-width:92%;padding:11px 12px}.sdc-chat-list-detail{font-size:11px}}

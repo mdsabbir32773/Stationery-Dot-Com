@@ -43,6 +43,18 @@ Deno.serve(async (req: Request) => {
     const history = Array.isArray(body?.history) ? body.history.slice(-8) : [];
     if (!message) return json({ error: "Please enter a message." }, 400);
 
+    // Fast-path simple greetings and thanks: no catalogue queries or LLM call needed.
+    const simple = message.toLowerCase().replace(/[.!?…،,]+$/g, "").trim();
+    if (/^(?:assalamu?\\s*alaikum|assalamualaikum|as-salamu\\s*alaykum|salam|সালাম|আসসালামু আলাইকুম)$/.test(simple)) {
+      return json({ reply: "ওয়ালাইকুম আসসালাম! 😊 কীভাবে সাহায্য করতে পারি?" });
+    }
+    if (/^(?:hi|hello|hey|hiya|good morning|good afternoon|good evening|হাই|হ্যালো|হেই)$/.test(simple)) {
+      return json({ reply: /[\\u0980-\\u09ff]/.test(message) ? "হ্যালো! 😊 কীভাবে সাহায্য করতে পারি?" : "Hello! 😊 Welcome to Stationery Dot Com. How can I help you today?" });
+    }
+    if (/^(?:thanks?|thank you|thank you so much|thx|ধন্যবাদ|অনেক ধন্যবাদ)$/.test(simple)) {
+      return json({ reply: /[\\u0980-\\u09ff]/.test(message) ? "আপনাকে স্বাগতম! 😊" : "You’re welcome! 😊" });
+    }
+
     const supabase = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
     const userHistory = history.filter((m: any) => m?.role === "user" && typeof m?.text === "string").slice(-8);
     const userText = [...userHistory.map((m: any) => String(m.text).slice(0, 1800)), String(body?.message || "")].join("\n");

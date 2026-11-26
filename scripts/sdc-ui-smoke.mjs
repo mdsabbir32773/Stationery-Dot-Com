@@ -485,6 +485,50 @@ try {
     throw new Error(`Simple chatbot greeting should return a fast direct reply; status=${assistantHelloResponse.status()}, elapsed=${assistantHelloElapsed}ms, reply=${assistantHelloData.reply || assistantHelloData.error || 'empty'}`);
   }
 
+  const streamStarted = Date.now();
+  const streamController = new AbortController();
+  const streamTimeout = setTimeout(() => streamController.abort(), 12000);
+  let streamReader;
+  let firstTokenText = '';
+  try {
+    const streamResponse = await fetch(assistantEndpoint, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ message: 'What services do you offer? Reply in one short sentence.', history: [], stream: true }),
+      signal: streamController.signal
+    });
+    if (!streamResponse.ok || !(streamResponse.headers.get('content-type') || '').includes('text/event-stream')) {
+      const bodyText = await streamResponse.text();
+      throw new Error(`Chatbot stream endpoint returned ${streamResponse.status}: ${bodyText.slice(0, 250)}`);
+    }
+    if (!streamResponse.body) throw new Error('Chatbot stream response has no readable body.');
+    streamReader = streamResponse.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    while (!firstTokenText) {
+      const { value, done } = await streamReader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true }).replace(/\r\n/g, '\n');
+      const boundary = buffer.indexOf('\n\n');
+      if (boundary >= 0) {
+        const event = buffer.slice(0, boundary);
+        const dataLine = event.split('\n').find(line => line.startsWith('data:'));
+        const data = dataLine?.slice(5).trim();
+        if (data && data !== '[DONE]') {
+          const payload = JSON.parse(data);
+          firstTokenText = payload?.candidates?.[0]?.content?.parts?.map(part => part.text || '').join('') || '';
+        }
+      }
+    }
+    const firstTokenElapsed = Date.now() - streamStarted;
+    if (!firstTokenText || firstTokenElapsed > 8000) {
+      throw new Error(`Chatbot should stream its first text token promptly; elapsed=${firstTokenElapsed}ms, text=${firstTokenText.slice(0, 100)}`);
+    }
+  } finally {
+    clearTimeout(streamTimeout);
+    if (streamReader) await streamReader.cancel().catch(() => {});
+  }
+
   const trackingResponse = await page.goto(`${baseURL}/track-order`, { waitUntil: 'domcontentloaded', timeout: 30000 });
   if (!trackingResponse || trackingResponse.status() >= 400) {
     throw new Error(`Track Order page returned HTTP ${trackingResponse?.status() ?? 'no response'}`);

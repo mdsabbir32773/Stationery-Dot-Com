@@ -58,7 +58,7 @@ async function dynamicSitemap(env) {
   };
   ["/", "/about", "/services", "/digital-subscriptions", "/document-services", "/meta-services", "/creative-services", "/smm", "/contact", "/track-order", "/help", "/blog", "/refund-policy", "/delivery-policy", "/privacy-policy", "/terms-of-service"].forEach(path => add(path));
   for (const service of services || []) {
-    if (service?.slug && /^[a-z0-9-]+$/.test(service.slug)) add("/services/" + service.slug);
+    if (service?.slug && /^[a-z0-9-]+$/.test(service.slug) && !/^smm-tiktok-(?:likes|views|followers)-/.test(service.slug)) add("/services/" + service.slug);
   }
   for (const post of posts || []) {
     if (post?.slug && /^[a-z0-9-]+$/.test(post.slug)) add("/blog/" + post.slug, post.updated_at || post.published_at);
@@ -775,6 +775,7 @@ export default {
         html = html.replace(guideSectionPattern, "");
       }
       const privateRoute = routeExists === false || route === "/admin" || route.startsWith("/admin/") ||
+        /^\/services\/smm-tiktok-(?:likes|views|followers)-/.test(route) ||
         route === "/account" || route === "/cart" || route === "/order" || route === "/checkout" ||
         route === "/order-success" || route.startsWith("/order-success/") ||
         route === "/invoice" || route.startsWith("/invoice/") ||

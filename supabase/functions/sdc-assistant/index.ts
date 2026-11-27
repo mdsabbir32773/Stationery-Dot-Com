@@ -120,7 +120,9 @@ function formatSmmCatalogueReply(catalogue: any, platform: string, outcome: stri
     const priceText = Number.isFinite(price) ? `৳${price.toLocaleString("en-US")} / 1,000` : "Price shown on order form";
     const min = Number(s.min_quantity);
     lines.push(`${i + 1}. ${String(s.name)}`);
-    lines.push(`   ${priceText}${Number.isFinite(min) && min > 0 ? ` · Min ${min.toLocaleString("en-US")}` : ""}`);
+    const max = Number(s.max_quantity);
+    const limits = (Number.isFinite(min) && min > 0 ? ` · Min ${min.toLocaleString("en-US")}` : "") + (Number.isFinite(max) && max > 0 ? ` · Max ${max.toLocaleString("en-US")}` : "");
+    lines.push(`   ${priceText}${limits}${s.refill ? ` · Refill: ${s.refill}` : ""}`);
   });
   lines.push("", "যে service/quality চান, তার exact নামটি বলুন। অর্ডার করতে চাইলে “order korte chai” লিখুন—তখন secure order steps শুরু হবে।");
   return lines.join("\n");
@@ -133,7 +135,7 @@ async function loadCatalogue(supabase: any) {
   if (catalogueLoading) return catalogueLoading;
   catalogueLoading = (async () => {
     const [servicesRes, packagesRes, settingsRes] = await Promise.all([
-      supabase.from("services").select("name,category,slug,description,requires_file,smm_platform,smm_category,smm_price_per_1000,smm_min_quantity,smm_max_quantity,smm_delivery_time").eq("is_active", true).order("sort_order").limit(120),
+      supabase.from("services").select("name,category,slug,description,requires_file,smm_platform,smm_category,smm_price_per_1000,smm_min_quantity,smm_max_quantity,smm_delivery_time,smm_refill").eq("is_active", true).order("sort_order").limit(120),
       supabase.from("packages").select("name,description,price,unit,access_type,duration_months,services!inner(name,category,description,slug,smm_platform,smm_category,is_active)").eq("is_active", true).eq("services.is_active", true).order("sort_order").limit(100),
       supabase.from("site_settings").select("key,value").in("key", ["contact_phone","contact_phone_2","contact_whatsapp","payment_method_name","payment_number","payment_account_name","payment_instructions"])
     ]);
@@ -143,7 +145,7 @@ async function loadCatalogue(supabase: any) {
     const catalogue = {
       services: (servicesRes.data || []).map((s: Record<string, unknown>) => ({
         name: s.name, category: s.category, description: s.description, slug: s.slug, requires_file: s.requires_file, search_terms: serviceSearchText({name:s.name,category:s.category,description:s.description,slug:s.slug,platform:s.smm_platform,smm_category:s.smm_category}),
-        ...(s.smm_platform ? { platform: s.smm_platform, smm_category: s.smm_category, price_per_1000_bdt: s.smm_price_per_1000, min_quantity: s.smm_min_quantity, max_quantity: s.smm_max_quantity, delivery_estimate: s.smm_delivery_time } : {})
+        ...(s.smm_platform ? { platform: s.smm_platform, smm_category: s.smm_category, price_per_1000_bdt: s.smm_price_per_1000, min_quantity: s.smm_min_quantity, max_quantity: s.smm_max_quantity, delivery_estimate: s.smm_delivery_time, refill: s.smm_refill } : {})
       })),
       packages: (packagesRes.data || []).map((p: Record<string, any>) => ({
         service: Array.isArray(p.services) ? p.services[0]?.name : p.services?.name,

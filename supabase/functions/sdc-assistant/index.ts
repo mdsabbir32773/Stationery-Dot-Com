@@ -80,13 +80,27 @@ function detectSmmOutcome(value: string): string | null {
   if (/\bboost(?:ing)?\b|\bpromot(?:e|ion|ing)\b|বুস্ট/.test(text)) return "Boost";
   return null;
 }
+function smmCategoryMatches(category: unknown, outcome: string | null): boolean {
+  const value = chatbotNormalize(category);
+  if (!outcome) return true;
+  if (outcome === "Views") return /\bviews?\b/.test(value);
+  if (outcome === "Followers") return /\bfollowers?\b/.test(value);
+  if (outcome === "Members") return /\bmembers?\b/.test(value);
+  if (outcome === "Likes") return /\blikes?\b/.test(value);
+  if (outcome === "Subscribers") return /\bsubscribers?\b/.test(value);
+  if (outcome === "Comments") return /\bcomments?\b/.test(value);
+  if (outcome === "Shares") return /\bshares?\b/.test(value);
+  if (outcome === "Reactions") return /\breactions?\b/.test(value);
+  if (outcome === "Reviews") return /\breviews?\b/.test(value);
+  return value === chatbotNormalize(outcome);
+}
 function formatSmmCatalogueReply(catalogue: any, platform: string, outcome: string | null): string {
   const all = (catalogue.services || []).filter((s: any) => String(s.platform || "").toLowerCase() === platform.toLowerCase());
   if (!all.length) {
     const available = [...new Set((catalogue.services || []).filter((s: any) => s.platform).map((s: any) => s.platform))];
     return `দুঃখিত, বর্তমানে ${platform}-এর কোনো active SMM service catalogue-এ নেই।\n\nবর্তমানে available platform: ${available.join(" · ")}\nঅন্য platform-এর service খুঁজে দিতে পারি।`;
   }
-  let selected = outcome ? all.filter((s: any) => String(s.smm_category || "").toLowerCase() === outcome.toLowerCase()) : all;
+  let selected = outcome ? all.filter((s: any) => smmCategoryMatches(s.smm_category, outcome)) : all;
   let note = "";
   if (!selected.length && platform === "Telegram" && outcome === "Followers") {
     selected = all.filter((s: any) => String(s.smm_category || "").toLowerCase() === "members");

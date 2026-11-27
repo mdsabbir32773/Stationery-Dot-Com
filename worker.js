@@ -683,6 +683,10 @@ export default {
       return secureResponse(Response.redirect(url.toString(), 308));
     }
     if (url.pathname === "/api/public-settings" && request.method === "GET") return publicSettings(env);
+    // IndexNow verification: serve the exact public key as plain text even if the static asset fallback is unavailable.
+    if (url.pathname === "/4cde2178a9c84152bb97bb374b96f897.txt" && request.method === "GET") {
+      return secureResponse(new Response("4cde2178a9c84152bb97bb374b96f897", { status: 200, headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "public, max-age=3600" } }));
+    }
     if (url.pathname === "/sitemap.xml" && request.method === "GET") {
       try {
         return secureResponse(await dynamicSitemap(env));

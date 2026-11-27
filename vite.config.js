@@ -4,6 +4,9 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins:[react()],
   build:{
+    // Target modern browsers used by current Lighthouse/Chrome; avoid legacy polyfills.
+    target:'es2022',
+    cssTarget:'chrome111',
     rollupOptions:{
       output:{
         manualChunks(id){

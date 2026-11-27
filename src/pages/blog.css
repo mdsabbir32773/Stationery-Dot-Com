@@ -11,3 +11,6 @@
 .blog-hero .blog-kicker{color:#ffe0c9;}
 .blog-meta,.blog-meta span{color:#52647c;}
 .blog-card-meta{color:#52647c;}
+
+/* Lighthouse WCAG AA: the hero kicker uses a solid readable badge. */
+.blog-hero .blog-kicker{display:inline-flex;align-items:center;background:#fff;color:#8f3908;padding:7px 11px;border-radius:999px;}

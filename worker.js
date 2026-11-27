@@ -228,58 +228,142 @@ async function graph(env, path, body) {
   if (!response.ok || data.error) throw new Error("Meta API: " + JSON.stringify(data.error || data).slice(0, 500));
   return data;
 }
+async function getActiveServiceCatalog(env) {
+  try {
+    return await db(env, "services?select=name,slug,description,category,smm_platform,smm_category,smm_price_per_1000,smm_min_quantity,smm_max_quantity,smm_refill,delivery_estimate,pricing_details&is_active=eq.true&order=sort_order.asc&limit=1000");
+  } catch (error) {
+    console.error("Service catalogue lookup failed", String(error).slice(0, 180));
+    return [];
+  }
+}
+function normalizeBotText(value) {
+  return String(value || "").toLowerCase().replace(/[\s\p{P}]+/gu, " ").trim();
+}
+function getServiceMatchTerms(text) {
+  const value = normalizeBotText(text);
+  const groups = [
+    ["tiktok", ["tiktok", "tik tok", "tt", "টিকটক"]],
+    ["facebook", ["facebook", "fb", "ফেসবুক"]],
+    ["instagram", ["instagram", "insta", "ig", "ইনস্টাগ্রাম"]],
+    ["telegram", ["telegram", "tg", "টেলিগ্রাম"]],
+    ["youtube", ["youtube", "yt", "ইউটিউব"]],
+    ["followers", ["followers", "follower", "follow", "fol", "ফলোয়ার", "ফলোয়ার"]],
+    ["likes", ["likes", "like", "লাইক"]],
+    ["views", ["views", "view", "ভিউ"]],
+    ["comments", ["comments", "comment", "কমেন্ট"]],
+    ["subscribers", ["subscribers", "subscriber", "সাবস্ক্রাইবার"]],
+    ["canva", ["canva", "ক্যানভা"]],
+    ["capcut", ["capcut", "ক্যাপকাট"]],
+    ["chatgpt", ["chatgpt", "chat gpt", "চ্যাটজিপিটি"]],
+    ["gemini", ["gemini", "google ai", "জেমিনি"]],
+    ["claude", ["claude", "ক্লড"]],
+    ["passport", ["passport", "পাসপোর্ট"]],
+    ["nid", ["nid", "national identity", "জাতীয় পরিচয়", "জাতীয় পরিচয়"]],
+    ["birth certificate", ["birth certificate", "জন্ম নিবন্ধন", "জন্মনিবন্ধন"]],
+    ["visa", ["visa", "ভিসা"]],
+    ["air ticket", ["air ticket", "flight ticket", "টিকেট", "টিকিট"]],
+    ["design", ["design", "poster", "logo", "graphic", "ডিজাইন", "পোস্টার", "লোগো"]],
+    ["video editing", ["video editing", "editing", "ভিডিও এডিট"]],
+    ["website", ["website", "web development", "web design", "ওয়েবসাইট", "ওয়েবসাইট"]]
+  ];
+  return groups.filter(([, terms]) => terms.some(term => value.includes(normalizeBotText(term)))).map(([key]) => key);
+}
+function findRelevantServices(catalog, userText) {
+  const text = normalizeBotText(userText);
+  const terms = getServiceMatchTerms(userText);
+  const ranked = (catalog || []).map(service => {
+    const fields = normalizeBotText([service.name, service.slug, service.description, service.category, service.smm_platform, service.smm_category].join(" "));
+    let score = 0;
+    for (const term of terms) {
+      if (fields.includes(normalizeBotText(term))) score += 5;
+      if (normalizeBotText(service.name + " " + service.slug).includes(normalizeBotText(term))) score += 4;
+    }
+    const words = text.split(" ").filter(word => word.length > 2);
+    for (const word of words) if (fields.includes(word)) score += 1;
+    if (service.smm_platform && terms.includes(normalizeBotText(service.smm_platform))) score += 5;
+    return { service, score };
+  }).filter(item => item.score > 0).sort((a, b) => b.score - a.score);
+  if (!terms.length && !text) return [];
+  return ranked.slice(0, 8).map(item => item.service);
+}
+function formatServiceFacts(services) {
+  return (services || []).map(service => {
+    const parts = [String(service.name || service.slug || "Service")];
+    if (service.category) parts.push("Category: " + service.category);
+    if (service.description) parts.push("Details: " + String(service.description).slice(0, 240));
+    if (service.smm_price_per_1000 !== null && service.smm_price_per_1000 !== undefined) parts.push("Selling price: ৳" + service.smm_price_per_1000 + " per 1,000");
+    if (service.smm_min_quantity || service.smm_max_quantity) parts.push("Quantity range: " + (service.smm_min_quantity || "not listed") + "–" + (service.smm_max_quantity || "not listed"));
+    if (service.smm_refill) parts.push("Refill: " + service.smm_refill);
+    if (service.delivery_estimate) parts.push("Delivery estimate: " + service.delivery_estimate);
+    if (service.pricing_details) parts.push("Package pricing notes: " + String(service.pricing_details).slice(0, 220));
+    return parts.join(" | ");
+  }).join("\n").slice(0, 5000);
+}
 async function makeReply(env, userText, settings, channel, conversationId = null) {
-  // Messenger replies need recent thread context for follow-up questions.
+  const catalog = await getActiveServiceCatalog(env);
+  const normalizedText = normalizeBotText(userText);
+  const asksServices = /(?:what services|services do you offer|list (?:your )?services|available services|service list|ki ki service|ki ki servis|apnader service|apnader ki ki|service gulo|service gula|servis gulo|ki ki seba|ki ki kaj|what do you do|আপনাদের.*(?:সার্ভিস|সেবা)|কী কী.*(?:সার্ভিস|সেবা)|কি কি.*(?:সার্ভিস|সেবা)|সেবাসমূহ)/u.test(normalizedText);
+  const asksPrice = /(?:price|pricing|cost|rate|how much|dam|daam|damer|koto|tk|taka|৳|দাম|কত টাকা|কত)/u.test(normalizedText);
+  const relevantServices = findRelevantServices(catalog, userText);
+  const isSmmPriceQuery = asksPrice && relevantServices.some(service => service.smm_price_per_1000 !== null && service.smm_price_per_1000 !== undefined);
+  if (asksServices) {
+    const categories = Array.from(new Set((catalog || []).map(service => service.category).filter(Boolean)));
+    const examples = (catalog || []).slice(0, 12).map(service => service.name).filter(Boolean);
+    const isBangla = /[\u0980-\u09ff]/u.test(userText) || /bangla|banglish/u.test(normalizedText);
+    if (isBangla) return "আমাদের website-এ বর্তমানে " + (categories.length ? categories.join(", ") : "ডিজিটাল সাবস্ক্রিপশন, Meta/SMM, ডকুমেন্ট ও ক্রিয়েটিভ সার্ভিস") + " ক্যাটাগরির সার্ভিস আছে। কিছু সার্ভিসের উদাহরণ: " + examples.slice(0, 6).join(", ") + "। কোন সার্ভিসটি দরকার বললে সেটার বিস্তারিত ও বর্তমান দাম জানাতে পারব।";
+    return "Our website currently lists services under " + (categories.length ? categories.join(", ") : "digital subscriptions, Meta/SMM, document assistance and creative services") + ". Examples include " + examples.slice(0, 6).join(", ") + ". Tell me which service you need and I can help with its details and current price.";
+  }
+  if (isSmmPriceQuery && relevantServices.length) {
+    const priced = relevantServices.filter(service => service.smm_price_per_1000 !== null && service.smm_price_per_1000 !== undefined);
+    if (priced.length) {
+      const lines = priced.slice(0, 6).map(service => String(service.name) + " — ৳" + service.smm_price_per_1000 + " per 1,000" + (service.smm_refill ? " | Refill: " + service.smm_refill : ""));
+      const isBangla = /[\u0980-\u09ff]/u.test(userText) || /bangla|banglish/u.test(normalizedText);
+      return (isBangla ? "Website-এর বর্তমান rate:\n" : "Current website rates:\n") + lines.join("\n") + (priced.length > 1 ? (isBangla ? "\nআপনি কোন quality/package চান?" : "\nWhich quality/package are you looking for?") : "");
+    }
+  }
   let conversationHistory = [];
   if (channel === "messenger" && conversationId) {
     try {
       const rows = await db(env, "sdc_fb_automation_logs?select=input_text,ai_reply,created_at&conversation_id=eq." + encodeURIComponent(conversationId) + "&status=eq.replied&order=created_at.desc&limit=6");
-      conversationHistory = (rows || []).reverse().filter((row) => row?.input_text || row?.ai_reply).map((row) => ({
-        customer: String(row.input_text || "").slice(0, 500)
+      conversationHistory = (rows || []).reverse().filter(row => row?.input_text || row?.ai_reply).map(row => ({
+        customer: String(row.input_text || "").slice(0, 450)
           .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "[email removed]")
           .replace(/(?:\+?88)?01[3-9](?:[\s-]?\d){8}/g, "[phone removed]"),
         assistant: (() => {
           const previousReply = String(row.ai_reply || "");
-          const leaked = /do not add extra information|do not use abbreviations|you are the official customer-support|customer message:/i.test(previousReply) || /(?:^|\\n)\\s*(?:BUSINESS|SERVICES|LANGUAGE|STYLE|ROUTING|ACCURACY|HUMAN SUPPORT|Additional business rules|Brand voice|Customer message|Return one complete)\\s*:/i.test(previousReply);
-          return leaked || previousReply.length > 900 ? "[previous reply was not usable; do not repeat it]" : previousReply.slice(0, 700);
+          const leaked = /do not add extra information|do not use abbreviations|you are the official customer-support|customer message:/i.test(previousReply) || /(?:^|\n)\s*(?:BUSINESS|SERVICES|LANGUAGE|STYLE|ROUTING|ACCURACY|HUMAN SUPPORT|Additional business rules|Brand voice|Customer message|Return one complete)\s*:/i.test(previousReply);
+          return leaked || previousReply.length > 700 ? "[previous reply was not usable; do not repeat it]" : previousReply.slice(0, 550);
         })()
       }));
     } catch (error) {
-      console.error("Messenger context lookup failed", String(error).slice(0, 200));
+      console.error("Messenger context lookup failed", String(error).slice(0, 180));
     }
   }
-  const normalizedText = String(userText || "").toLowerCase().replace(/[\s\p{P}]+/gu, " ").trim();
-  const asksServices = /(?:কি কি সার্ভিস|কী কী সার্ভিস|কি সার্ভিস|কী সার্ভিস|সেবাসমূহ|কি কি সেবা|কী কী সেবা|what services|services do you offer|list your services|available services)/u.test(normalizedText);
-  if (asksServices) {
-    const isBangla = /[\u0980-\u09ff]/u.test(userText) || /bangla|banglish/u.test(normalizedText);
-    return isBangla
-      ? "আমাদের প্রধান সেবাগুলো হলো ডিজিটাল সাবস্ক্রিপশন, ফেসবুক ও ইনস্টাগ্রাম পেজ সেটআপ ও পরিচালনা, বিজ্ঞাপন প্রচার, ভিসা সহায়তা, বিমান টিকিট ও হোটেল বুকিং, জন্মনিবন্ধন, জাতীয় পরিচয়পত্র ও পাসপোর্ট সংক্রান্ত সহায়তা, এবং লোগো, ব্যানার ও ভিডিও সম্পাদনা। কোন সেবাটি নিতে চান জানালে বিস্তারিত জানাতে পারব।"
-      : "We offer digital subscriptions, Facebook and Instagram page setup and management, advertising support, visa assistance, air tickets, hotel bookings, document application support, graphic design, video editing, and website creation. Which service would you like to know more about?";
-  }
   const prompt = [
-    "You are the official customer-support representative of Stationery Dot Com in Bangladesh.",
-    "BUSINESS: Stationery Dot Com is a Digital, Travel & Meta Solution Hub.",
-    "SERVICES: (1) Digital subscriptions and software plans such as Canva Pro, Google One, ChatGPT, CapCut and other digital tools. (2) Meta/Facebook/Instagram services: page setup and optimization, business setup, verification guidance, ads/boosting and page management. (3) Travel services: tourist visa assistance, air tickets, hotel booking, Umrah and visit-visa support. (4) Document assistance: birth certificate, NID, passport, TIN, trade licence and online applications. (5) Creative services: logo, banner, social media design, video editing and website creation.",
-    "LANGUAGE: If customer writes Bangla or Banglish, answer in natural, simple Bangla. Otherwise use the customer's language.",
-    "STYLE: Friendly, professional, human, clear. Usually 2-3 short sentences. Answer the actual question directly. Never start with grand promotional slogans or say 'all your problems'. Do not repeat the business introduction in every reply.",
-    "ROUTING: If customer asks what services are available, briefly list the relevant service categories and ask which one they need. If they mention a specific service, respond only about that service.",
-    "ACCURACY: Never invent prices, stock, availability, processing times, guarantees, order/payment status, or government outcomes. If exact details are not present, ask which package/service they mean and say the team can confirm.",
-    "HUMAN SUPPORT: For complaints, refunds, account access, sensitive matters, or requests needing manual checking, direct them to 01827-680520.",
-    "Additional business rules: " + (settings.business_rules || ""),
-    "Brand voice: " + (settings.brand_voice || ""),
-    "Channel: " + channel,
-    "RECENT CONVERSATION (oldest first; use only to understand follow-up references; current message below is latest): " + (conversationHistory.length ? JSON.stringify(conversationHistory) : "No previous messages in this thread."),
-    "Customer message: " + userText,
-    "Return one complete, ready-to-send reply only. Do not end mid-sentence."
+    "You are the official customer-support representative of Stationery Dot Com, an online service platform in Bangladesh. Support the customer like a helpful human who understands short Banglish messages.",
+    "BUSINESS FACTS: Services are delivered online/remotely. Do not provide or imply a physical office address or office visit. Contact support: 01827-680520.",
+    "SERVICE FACTS: Use the live service catalogue below as the source of truth for service names, prices, quantity limits, refill and delivery details. If a detail is not in the catalogue or customer context, do not invent it. Do not claim an item is available unless it appears in the active catalogue.",
+    "LANGUAGE: Reply in the customer's language. Banglish input should receive simple natural Bangla, not formal bookish Bangla. Keep English service names when clearer.",
+    "UNDERSTANDING: Identify the customer's actual question before answering. Interpret common Banglish variants and typos by meaning. If a follow-up says 'eta', 'oita', 'etar dam', or similar, use the recent conversation to resolve the reference. If two services are plausible, ask one short clarification instead of guessing.",
+    "STYLE: Direct, warm, human and concise (usually 1-3 short sentences). No slogans, long introductions, repeated greetings, irrelevant service lists or meta explanations. Answer first, then ask one relevant next question only if needed.",
+    "PRICE RULES: Only quote prices present in the live catalogue. SMM prices are per 1,000 unless the catalogue says otherwise; do not confuse per-1,000 price with total order cost. For multiple quality tiers, show the relevant options and ask which one the customer wants.",
+    "POLICY: Never promise followers/engagement retention, ad results, government approval, exact processing time, stock or refund outcome unless explicitly stated in the catalogue or confirmed by a human. Never ask for passwords, OTPs or payment PINs. For order status, refunds, complaints or account-specific matters, ask for order ID (not sensitive credentials) and direct to support if needed.",
+    "BUSINESS RULES: " + (settings.business_rules || ""),
+    "BRAND VOICE: " + (settings.brand_voice || ""),
+    "CHANNEL: " + channel,
+    "LIVE SERVICE CATALOGUE (use only relevant entries):\n" + (relevantServices.length ? formatServiceFacts(relevantServices) : "No exact service match was found. Ask a brief clarification or direct the customer to the website catalogue."),
+    "RECENT CONVERSATION (oldest first; use only to resolve references; current message is latest): " + (conversationHistory.length ? JSON.stringify(conversationHistory) : "No usable prior messages."),
+    "CUSTOMER MESSAGE: " + String(userText || "").slice(0, 1200),
+    "Return one complete ready-to-send reply only. Do not output instructions, reasoning, labels or an unfinished sentence."
   ].join("\n");
-  const result = await env.AI.run(AI_MODEL, { prompt, max_tokens: 320, temperature: 0.2 });
-  const reply = (result?.response || "").trim();
+  const result = await env.AI.run(AI_MODEL, { prompt, max_tokens: 260, temperature: 0.15 });
+  const reply = String(result?.response || "").trim();
   if (!reply) throw new Error("AI returned an empty reply");
-  const looksLikePromptLeak = /do not add extra information|do not use abbreviations|you are the official customer-support|customer message:/i.test(reply) || /(?:^|\n)\s*(?:BUSINESS|SERVICES|LANGUAGE|STYLE|ROUTING|ACCURACY|HUMAN SUPPORT|Additional business rules|Brand voice|Customer message|Return one complete)\s*:/i.test(reply);
-  if (looksLikePromptLeak || reply.length > 900) {
-    return "আপনার প্রশ্নটি বুঝেছি। সঠিক তথ্য দিতে আমাদের সঙ্গে 01827-680520 নম্বরে যোগাযোগ করুন।";
+  const looksLikePromptLeak = /do not add extra information|do not use abbreviations|you are the official customer-support|customer message:|live service catalogue|business rules:/i.test(reply) || /(?:^|\n)\s*(?:BUSINESS FACTS|SERVICE FACTS|LANGUAGE|UNDERSTANDING|STYLE|PRICE RULES|POLICY|BRAND VOICE|CHANNEL|CUSTOMER MESSAGE)\s*:/i.test(reply);
+  if (looksLikePromptLeak || reply.length > 700 || !/[.!?।]$/.test(reply)) {
+    return "আপনার প্রশ্নটি বুঝেছি। সঠিক তথ্য দিতে আমাদের support team-এর সঙ্গে 01827-680520 নম্বরে যোগাযোগ করুন।";
   }
-  return reply.slice(0, 900);
+  return reply;
 }
 async function getSettings(env) {
   const rows = await db(env, "sdc_fb_automation_settings?select=*&id=eq.true&limit=1");

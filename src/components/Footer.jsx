@@ -87,7 +87,7 @@ export default function Footer() {
           <h2>Help</h2>
           <ul>
             <li><Link to="/about">About us</Link></li>
-            <li><Link to="/services">All services</Link></li>
+            <li><Link to="/services">All services</Link></li>\n            <li><Link to="/free-image-metadata-cleaner">Free Image Metadata Cleaner</Link></li>
             <li><Link to="/track-order">Track order</Link></li>
             <li><Link to="/contact">Contact</Link></li>
             <li><Link to="/help">Help Center</Link></li>

@@ -278,7 +278,8 @@ function findRelevantServices(catalog, userText) {
       if (fields.includes(normalizeBotText(term))) score += 5;
       if (normalizeBotText(service.name + " " + service.slug).includes(normalizeBotText(term))) score += 4;
     }
-    const words = text.split(" ").filter(word => word.length > 2);
+    const stopWords = new Set(["service","services","servis","seba","please","pls","price","pricing","cost","rate","how","much","what","your","for","the","and","want","need","koto","dam","daam","taka","tk","ache","ase","gulo","gula","ki","apnader","amar","ami","bolen","janan"]);
+    const words = text.split(" ").filter(word => word.length > 2 && !stopWords.has(word));
     for (const word of words) if (fields.includes(word)) score += 1;
     if (service.smm_platform && terms.includes(normalizeBotText(service.smm_platform))) score += 5;
     return { service, score };
@@ -351,7 +352,7 @@ async function makeReply(env, userText, settings, channel, conversationId = null
     "BUSINESS RULES: " + (settings.business_rules || ""),
     "BRAND VOICE: " + (settings.brand_voice || ""),
     "CHANNEL: " + channel,
-    "LIVE SERVICE CATALOGUE (use only relevant entries):\n" + (relevantServices.length ? formatServiceFacts(relevantServices) : "No exact service match was found. Ask a brief clarification or direct the customer to the website catalogue."),
+    "LIVE SERVICE CATALOGUE (use only relevant entries):\n" + (relevantServices.length ? formatServiceFacts(relevantServices) : "No exact service match was found. If the customer is asking about a service, ask one brief clarification or direct them to the website catalogue. If this is a greeting or general chat, answer naturally without forcing a service question.."),
     "RECENT CONVERSATION (oldest first; use only to resolve references; current message is latest): " + (conversationHistory.length ? JSON.stringify(conversationHistory) : "No usable prior messages."),
     "CUSTOMER MESSAGE: " + String(userText || "").slice(0, 1200),
     "Return one complete ready-to-send reply only. Do not output instructions, reasoning, labels or an unfinished sentence."
@@ -369,14 +370,14 @@ async function getSettings(env) {
   const rows = await db(env, "sdc_fb_automation_settings?select=*&id=eq.true&limit=1");
   return rows?.[0] || null;
 }
-async function logEvent(env, eventType, eventId, inputText, status, errorMessage = null, aiReply = null) {
+async function logEvent(env, eventType, eventId, inputText, status, errorMessage = null, aiReply = null, conversationId = null) {
   if (!eventId) return;
   const existing = await db(env, "sdc_fb_automation_logs?select=id&external_event_id=eq." + encodeURIComponent(eventId) + "&limit=1");
   if (existing?.length) return false;
   await db(env, "sdc_fb_automation_logs", {
     method: "POST",
     headers: { prefer: "return=minimal" },
-    body: JSON.stringify({ event_type: eventType, external_event_id: eventId, input_text: inputText, status, error_message: errorMessage, ai_reply: aiReply })
+    body: JSON.stringify({ event_type: eventType, external_event_id: eventId, conversation_id: conversationId, input_text: inputText, status, error_message: errorMessage, ai_reply: aiReply })
   });
   return true;
 }
@@ -408,7 +409,7 @@ async function processIncoming(env, channel, senderId, text, eventId, pageId, co
       body: JSON.stringify({ last_message: text, last_message_at: new Date().toISOString() })
     });
   }
-  const inserted = await logEvent(env, channel, eventId, text, "received");
+  const inserted = await logEvent(env, channel, eventId, text, "received", null, null, conversation?.id || null);
   if (!inserted) return;
   try {
     const reply = await makeReply(env, text, settings, channel, conversation?.id || null);

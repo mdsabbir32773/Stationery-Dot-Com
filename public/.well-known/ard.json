@@ -1,0 +1,17 @@
+{
+  "entries": [
+    {
+      "@context": "https://agenticresourcediscovery.org/context/v1",
+      "identifier": "urn:air:stationerydotcom.me:website:service-catalog",
+      "displayName": "Stationery Dot Com Public Service Catalog",
+      "type": "text/html",
+      "url": "https://stationerydotcom.me/services",
+      "description": "Public website catalog for Stationery Dot Com's fully online services in Bangladesh. This entry describes the human-readable website; it does not claim to provide a callable AI agent or MCP API.",
+      "representativeQueries": [
+        "Browse online service packages and published prices in Bangladesh",
+        "Find digital subscriptions, document assistance, and creative services",
+        "Compare social media marketing services and their delivery terms"
+      ]
+    }
+  ]
+}

@@ -5,7 +5,6 @@ import './ImageMetadataCleaner.css';
 
 const MAX_BYTES=20*1024*1024;
 const ACCEPTED=['image/jpeg','image/png','image/webp'];
-const encoder=new TextEncoder();
 const decoder=new TextDecoder();
 function formatBytes(bytes){if(bytes<1024)return bytes+' B';if(bytes<1024*1024)return (bytes/1024).toFixed(1)+' KB';return (bytes/1024/1024).toFixed(2)+' MB';}
 function ascii(bytes,start,length){return decoder.decode(bytes.subarray(start,start+length));}

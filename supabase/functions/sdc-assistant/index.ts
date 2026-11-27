@@ -119,10 +119,10 @@ function formatSmmCatalogueReply(catalogue: any, platform: string, outcome: stri
     const price = Number(s.price_per_1000_bdt);
     const priceText = Number.isFinite(price) ? `৳${price.toLocaleString("en-US")} / 1,000` : "Price shown on order form";
     const min = Number(s.min_quantity);
-    lines.push(`${i + 1}. ${String(s.name).replace(/^[^—]+—\s*/, "")}`);
+    lines.push(`${i + 1}. ${String(s.name)}`);
     lines.push(`   ${priceText}${Number.isFinite(min) && min > 0 ? ` · Min ${min.toLocaleString("en-US")}` : ""}`);
   });
-  lines.push("", "যেটি নিতে চান, option number বলুন—আমি order process-এ নিয়ে যাব।");
+  lines.push("", "যে service/quality চান, তার exact নামটি বলুন। অর্ডার করতে চাইলে “order korte chai” লিখুন—তখন secure order steps শুরু হবে।");
   return lines.join("\n");
 }
 

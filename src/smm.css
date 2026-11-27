@@ -4,3 +4,12 @@
 @media(max-width:390px){.smm-form-pair{grid-template-columns:1fr}.smm-hero h1{font-size:40px}.smm-art{transform:scale(.74);margin-inline:-38px}.smm-filter-panel{grid-template-columns:1fr}.smm-filter-panel .smm-search{grid-column:auto}}
 
 
+
+/* WCAG AA contrast corrections for small SMM labels and prices. */
+.smm-new-hero-inner .smm-hero-stat .smm-stat-card>span,.smm-new-hero-inner .smm-hero-stat .smm-stat-card>small{color:#36566b;}
+.smm-toolbar .smm-selects>label>span{color:#4b5d52;}
+.smm-product-card .smm-product-meta>div>span{color:#53645a;}
+.smm-product-card .smm-product-bottom .smm-price>small{color:#526459;}
+.smm-product-card .smm-product-bottom .smm-price>s{color:#5b6b5e;}
+.smm-product-card .smm-product-bottom .smm-price>span{color:#53645a;}
+.smm-trust-bar>div>span>small{color:#4e5e55;}

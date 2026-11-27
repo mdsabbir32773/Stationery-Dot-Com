@@ -6,6 +6,8 @@ const DEFAULT_DESCRIPTION='Stationery Dot Com is a fully online service platform
 const KEYWORDS='Stationery Dot Com, online services Bangladesh, digital services Bangladesh, document services Bangladesh, government document service Bangladesh, NID service Bangladesh, passport service Bangladesh, birth certificate service Bangladesh, Meta ads Bangladesh, Facebook ads service Bangladesh, social media marketing Bangladesh, SMM panel Bangladesh, Instagram growth Bangladesh, digital subscriptions Bangladesh, Canva Pro Bangladesh, ChatGPT Plus Bangladesh, graphic design Bangladesh, web design Bangladesh, video editing Bangladesh';
 
 const BLOG_SEO_TITLES={
+  'tiktok-likes-views-followers-bangladesh-guide':'TikTok Likes, Views & Followers Bangladesh | Stationery Dot Com',
+
   'personal-vs-shared-digital-subscription-guide':'Personal নাকি Shared Subscription? ৬টি বিষয় | SDC',
   'smm-panel-bangladesh-order-checklist':'SMM Panel বাছাইয়ের আগে ৮টি বিষয় | SDC',
   'nid-correction-preparation-checklist':'NID সংশোধনের আগে ৭টি প্রস্তুতি | SDC',

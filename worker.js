@@ -228,7 +228,22 @@ async function graph(env, path, body) {
   if (!response.ok || data.error) throw new Error("Meta API: " + JSON.stringify(data.error || data).slice(0, 500));
   return data;
 }
-async function makeReply(env, userText, settings, channel) {
+async function makeReply(env, userText, settings, channel, conversationId = null) {
+  // Messenger replies need recent thread context for follow-up questions.
+  let conversationHistory = [];
+  if (channel === "messenger" && conversationId) {
+    try {
+      const rows = await db(env, "sdc_fb_automation_logs?select=input_text,ai_reply,created_at&conversation_id=eq." + encodeURIComponent(conversationId) + "&status=eq.replied&order=created_at.desc&limit=6");
+      conversationHistory = (rows || []).reverse().filter((row) => row?.input_text || row?.ai_reply).map((row) => ({
+        customer: String(row.input_text || "").slice(0, 500)
+          .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "[email removed]")
+          .replace(/(?:\+?88)?01[3-9](?:[\s-]?\d){8}/g, "[phone removed]"),
+        assistant: String(row.ai_reply || "").slice(0, 700)
+      }));
+    } catch (error) {
+      console.error("Messenger context lookup failed", String(error).slice(0, 200));
+    }
+  }
   const normalizedText = String(userText || "").toLowerCase().replace(/[\s\p{P}]+/gu, " ").trim();
   const asksServices = /(?:কি কি সার্ভিস|কী কী সার্ভিস|কি সার্ভিস|কী সার্ভিস|সেবাসমূহ|কি কি সেবা|কী কী সেবা|what services|services do you offer|list your services|available services)/u.test(normalizedText);
   if (asksServices) {
@@ -249,13 +264,14 @@ async function makeReply(env, userText, settings, channel) {
     "Additional business rules: " + (settings.business_rules || ""),
     "Brand voice: " + (settings.brand_voice || ""),
     "Channel: " + channel,
+    "RECENT CONVERSATION (oldest first; use only to understand follow-up references; current message below is latest): " + (conversationHistory.length ? JSON.stringify(conversationHistory) : "No previous messages in this thread."),
     "Customer message: " + userText,
     "Return one complete, ready-to-send reply only. Do not end mid-sentence."
   ].join("\n");
   const result = await env.AI.run(AI_MODEL, { prompt, max_tokens: 320, temperature: 0.2 });
   const reply = (result?.response || "").trim();
   if (!reply) throw new Error("AI returned an empty reply");
-  const looksLikePromptLeak = /do not add extra information|do not use abbreviations|you are the official customer-support|customer message:/i.test(reply);
+  const looksLikePromptLeak = /do not add extra information|do not use abbreviations|you are the official customer-support|customer message:/i.test(reply) || /(?:^|\n)\s*(?:BUSINESS|SERVICES|LANGUAGE|STYLE|ROUTING|ACCURACY|HUMAN SUPPORT|Additional business rules|Brand voice|Customer message|Return one complete)\s*:/i.test(reply);
   if (looksLikePromptLeak || reply.length > 900) {
     return "আপনার প্রশ্নটি বুঝেছি। সঠিক তথ্য দিতে আমাদের সঙ্গে 01827-680520 নম্বরে যোগাযোগ করুন।";
   }
@@ -307,7 +323,7 @@ async function processIncoming(env, channel, senderId, text, eventId, pageId, co
   const inserted = await logEvent(env, channel, eventId, text, "received");
   if (!inserted) return;
   try {
-    const reply = await makeReply(env, text, settings, channel);
+    const reply = await makeReply(env, text, settings, channel, conversation?.id || null);
     if (channel === "messenger") {
       await graph(env, pageId + "/messages", { recipient: { id: senderId }, messaging_type: "RESPONSE", message: { text: reply } });
     } else {

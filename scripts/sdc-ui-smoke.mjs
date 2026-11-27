@@ -909,7 +909,8 @@ try {
   }
 
   const tiktokReply = await askAssistant('TikTok followers');
-  if (!/TikTok/i.test(tiktokReply) || !/no active|currently|catalogue|active SMM/i.test(tiktokReply) || /Facebook Followers/i.test(tiktokReply)) {
+  // TikTok follower services are currently active in the live catalogue; accept their scoped listing, but never Facebook follower results.
+  if (!/TikTok/i.test(tiktokReply) || (!/TikTok Followers/i.test(tiktokReply) && !/no active|currently|catalogue|active SMM/i.test(tiktokReply)) || /Facebook Followers/i.test(tiktokReply)) {
     throw new Error('TikTok request must not return unrelated Facebook services: ' + tiktokReply.slice(0, 220));
   }
   const telegramReply = await askAssistant('Telegram followers');

@@ -114,6 +114,13 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
   // Exact platform + outcome takes precedence over fuzzy matching (e.g. "Facebook page followers").
   const requestedPlatform=detectSmmPlatform(query);
   const requestedOutcome=detectSmmOutcome(query);
+  // A named platform is a hard filter for every later fuzzy match; never cross-recommend another platform.
+  const scopedServices=requestedPlatform?services.filter(s=>String(s.smm_platform||'').toLowerCase()===requestedPlatform.toLowerCase()):services;
+  if(requestedPlatform&&!scopedServices.length){
+   const available=[...new Set(services.filter(s=>s.smm_platform).map(s=>s.smm_platform))];
+   bot((language==='bn'?'দুঃখিত, বর্তমানে ':'Sorry, there are no active ')+requestedPlatform+(language==='bn'?' service catalogue-এ নেই।':' services in the active catalogue.')+'\n\n'+(language==='bn'?'Available platform: ':'Available platforms: ')+available.join(' · '));
+   return;
+  }
   if(requestedPlatform&&(requestedOutcome||/\b(?:smm|social media|service|services|option|package|packages)\b|কি কি|কোন কোন/i.test(query))){
    const platformServices=services.filter(s=>String(s.smm_platform||'').toLowerCase()===requestedPlatform.toLowerCase());
    if(!platformServices.length){
@@ -139,12 +146,14 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
    return;
   }
   setServiceOptions([]);setPackageOptions([]);
-  const serviceMatches=rankCatalog(query,services,x=>(x.name||'')+' '+(x.category||'')+' '+(x.description||'')+' '+(x.slug||'')+' '+(x.smm_platform||'')+' '+(x.smm_category||'')+' '+(x.smm_delivery_time||'')+' '+(x.smm_platform?'social media smm followers likes views subscribers comments engagement boost':''));
-  const packageMatches=rankCatalog(query,packages,x=>{const d=formatDuration(x.duration_months);const svc=services.find(y=>y.id===x.service_id);return (x.name||'')+' '+(x.access_type||'')+' '+d+' '+x.duration_months+' '+(x.description||'')+' '+(svc?.name||'')+' '+(svc?.category||'')+' '+(svc?.description||'');});
+  const scopedServiceIds=new Set(scopedServices.map(s=>s.id));
+  const scopedPackages=requestedPlatform?packages.filter(p=>scopedServiceIds.has(p.service_id)):packages;
+  const serviceMatches=rankCatalog(query,scopedServices,x=>(x.name||'')+' '+(x.category||'')+' '+(x.description||'')+' '+(x.slug||'')+' '+(x.smm_platform||'')+' '+(x.smm_category||'')+' '+(x.smm_delivery_time||'')+' '+(x.smm_platform?'social media smm followers likes views subscribers comments engagement boost':''));
+  const packageMatches=rankCatalog(query,scopedPackages,x=>{const d=formatDuration(x.duration_months);const svc=scopedServices.find(y=>y.id===x.service_id)||services.find(y=>y.id===x.service_id);return (x.name||'')+' '+(x.access_type||'')+' '+d+' '+x.duration_months+' '+(x.description||'')+' '+(svc?.name||'')+' '+(svc?.category||'')+' '+(svc?.description||'');});
   const best=serviceMatches[0],next=serviceMatches[1];
-  const exactNamed=services.filter(s=>normalized(query).includes(normalized(s.name))).sort((a,b)=>normalized(b.name).length-normalized(a.name).length)[0];
+  const exactNamed=scopedServices.filter(s=>normalized(query).includes(normalized(s.name))).sort((a,b)=>normalized(b.name).length-normalized(a.name).length)[0];
   const queryWords=tokens(query);
-  const keywordMatches=services.filter(s=>tokens(s.name).some(word=>word.length>=4&&queryWords.includes(word)&&services.filter(other=>tokens(other.name).includes(word)).length===1));
+  const keywordMatches=scopedServices.filter(s=>tokens(s.name).some(word=>word.length>=4&&queryWords.includes(word)&&scopedServices.filter(other=>tokens(other.name).includes(word)).length===1));
   const keywordNamed=keywordMatches.length===1?keywordMatches[0]:null;
   if(exactNamed||keywordNamed||(best&&best.score>=55&&(!next||best.score-next.score>=10))){
    const svc=exactNamed||keywordNamed||best.item;
@@ -154,7 +163,7 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
    const requestedMonths=years?Number(years[1])*12:months?Number(months[1]):null;
    const durationMatches=packages.filter(x=>x.service_id===svc.id&&(wantsLifetime?x.duration_months===0:requestedMonths!==null?Number(x.duration_months)===requestedMonths:false));
    if((exactNamed||keywordNamed)&&durationMatches.length===1){chooseService(svc.id,durationMatches[0].id);return;}
-   const within=rankCatalog(query,durationMatches.length?durationMatches:packages.filter(x=>x.service_id===svc.id),x=>{const duration=formatDuration(x.duration_months);return (x.name||'')+' '+(x.access_type||'')+' '+duration+' '+(x.duration_months||'')+' '+(x.price||'')+' '+svc.name;});
+   const within=rankCatalog(query,durationMatches.length?durationMatches:scopedPackages.filter(x=>x.service_id===svc.id),x=>{const duration=formatDuration(x.duration_months);return (x.name||'')+' '+(x.access_type||'')+' '+duration+' '+(x.duration_months||'')+' '+(x.price||'')+' '+svc.name;});
    const match=within[0]&&within[0].score>=54&&(!within[1]||within[0].score-within[1].score>=8)?within[0].item:null;
    chooseService(svc.id,match?.id||'');return;
   }

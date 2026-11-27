@@ -33,6 +33,7 @@
 The live service and package listings on the website are the source of truth for current availability, pricing, quantity limits, delivery estimates, refill/cancellation terms and package details. These details can change; do not infer a current price or guarantee from an older article or external mention.
 
 ## Important limitations
+- TikTok's published policies prohibit services that artificially increase engagement or mislead its recommendation system, including the trade or marketing of artificial likes and followers. Read TikTok's current policies before using or promoting any third-party engagement service: https://newsroom.tiktok.com/how-tiktok-counters-deceptive-behaviour
 - Stationery Dot Com is an independent online service provider, not a government office or government authority.
 - Government applications, eligibility, fees, appointments, processing and approvals are controlled by the relevant official authority.
 - Third-party subscription features and social platform policies are controlled by their respective providers and may change.

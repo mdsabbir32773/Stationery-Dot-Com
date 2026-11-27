@@ -154,7 +154,7 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
     return;
    }
    setServiceOptions(matching);
-   const rows=matching.slice(0,10).map((s,i)=>(i+1)+'. '+s.name+'\n   '+taka(getSmmUnitPrice(s))+' / 1,000'+(s.smm_min_quantity?' · Min '+Number(s.smm_min_quantity).toLocaleString('en-US'):'')).join('\n');
+   const rows=matching.slice(0,10).map((s,i)=>(i+1)+'. '+s.name+'\n   '+taka(getSmmUnitPrice(s))+' / 1,000'+(s.smm_min_quantity?' · Min '+Number(s.smm_min_quantity).toLocaleString('en-US'):'')+(s.smm_max_quantity?' · Max '+Number(s.smm_max_quantity).toLocaleString('en-US'):'')+' · Refill: '+(s.smm_refill||'Not specified')).join('\n');
    bot((note?note+'\n\n':'')+'📦 '+requestedPlatform+' '+(targetOutcome==='Followers'&&requestedPlatform==='Telegram'?'Members':targetOutcome||'SMM Services')+'\n\n'+rows+'\n\n'+(language==='bn'?'Option number বলুন—ঠিক service-টাই select হবে।':'Reply with an option number to select the exact service.'));
    return;
   }

@@ -1,105 +1,34 @@
 import {useEffect,useRef,useState} from 'react';
-import {Download,ImagePlus,ShieldCheck,Trash2,RefreshCw,CheckCircle2,AlertCircle} from 'lucide-react';
+import {Download,ImagePlus,ShieldCheck,Trash2,RefreshCw,CheckCircle2,AlertCircle,FileArchive,X,FileImage} from 'lucide-react';
 import useTitle from '../lib/useTitle';
 import './ImageMetadataCleaner.css';
-
-const MAX_BYTES=20*1024*1024;
-const ACCEPTED=['image/jpeg','image/png','image/webp'];
-const decoder=new TextDecoder();
-function formatBytes(bytes){if(bytes<1024)return bytes+' B';if(bytes<1024*1024)return (bytes/1024).toFixed(1)+' KB';return (bytes/1024/1024).toFixed(2)+' MB';}
-function ascii(bytes,start,length){return decoder.decode(bytes.subarray(start,start+length));}
-function u32be(bytes,offset){return new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength).getUint32(offset,false);}
-function u32le(bytes,offset){return new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength).getUint32(offset,true);}
-function putU32le(bytes,offset,value){new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength).setUint32(offset,value,true);}
-function concat(parts){const size=parts.reduce((n,p)=>n+p.length,0);const out=new Uint8Array(size);let offset=0;for(const part of parts){out.set(part,offset);offset+=part.length;}return out;}
-function cleanJpeg(bytes){
- if(bytes.length<4||bytes[0]!==0xff||bytes[1]!==0xd8)throw new Error('This JPG file is invalid or unsupported.');
- const parts=[bytes.subarray(0,2)];let offset=2;
- while(offset<bytes.length){
-  if(bytes[offset]!==0xff)throw new Error('This JPG file has an unexpected data structure.');
-  let markerStart=offset;while(offset<bytes.length&&bytes[offset]===0xff)offset++;
-  if(offset>=bytes.length)throw new Error('This JPG file is incomplete.');
-  const marker=bytes[offset++];
-  if(marker===0xda){parts.push(bytes.subarray(markerStart));return concat(parts);}
-  if(marker===0xd9){parts.push(bytes.subarray(markerStart));return concat(parts);}
-  if(marker===0x01||(marker>=0xd0&&marker<=0xd7)){parts.push(bytes.subarray(markerStart,offset));continue;}
-  if(offset+2>bytes.length)throw new Error('This JPG file is incomplete.');
-  const length=(bytes[offset]<<8)|bytes[offset+1];
-  if(length<2||offset+length>bytes.length)throw new Error('This JPG file has an invalid metadata segment.');
-  const payloadStart=offset+2;const payloadEnd=offset+length;
-  const isApp1=marker===0xe1;const isApp13=marker===0xed;
-  const isExif=isApp1&&payloadEnd-payloadStart>=6&&ascii(bytes,payloadStart,6)==='Exif\\0\\0';
-  const isXmp=isApp1&&ascii(bytes,payloadStart,Math.min(29,payloadEnd-payloadStart)).startsWith('http://ns.adobe.com/xap/1.0/');
-  // Keep EXIF orientation data so portrait photos continue to display correctly.
-  const remove=(isApp13||isXmp||(isExif&&!hasExifOrientation(bytes,payloadStart+6,payloadEnd)));
-  if(!remove)parts.push(bytes.subarray(markerStart,payloadEnd));
-  offset=payloadEnd;
- }
- throw new Error('This JPG file has no complete image data.');
-}
-function hasExifOrientation(bytes,start,end){
- try{
-  if(start+8>end)return false;
-  const endian=ascii(bytes,start,2);const little=endian==='II';if(!little&&endian!=='MM')return false;
-  const view=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);
-  const read16=(p)=>view.getUint16(p,little);const read32=(p)=>view.getUint32(p,little);
-  if(read16(start+2)!==42)return false;
-  const ifd=start+read32(start+4);if(ifd+2>end)return false;
-  const count=read16(ifd);
-  for(let i=0;i<count;i++){const p=ifd+2+i*12;if(p+12>end)break;if(read16(p)===0x0112)return read16(p+8)!==1;}
-  return false;
- }catch{return false;}
-}
-function cleanPng(bytes){
- const signature=[137,80,78,71,13,10,26,10];if(bytes.length<8||!signature.every((v,i)=>bytes[i]===v))throw new Error('This PNG file is invalid or unsupported.');
- const removeTypes=new Set(['eXIf','tEXt','zTXt','iTXt']);const parts=[bytes.subarray(0,8)];let offset=8,ended=false;
- while(offset+12<=bytes.length){
-  const length=u32be(bytes,offset);const end=offset+12+length;if(end>bytes.length)throw new Error('This PNG file is incomplete.');
-  const type=ascii(bytes,offset+4,4);if(!removeTypes.has(type))parts.push(bytes.subarray(offset,end));offset=end;
-  if(type==='IEND'){ended=true;break;}
- }
- if(!ended)throw new Error('This PNG file has no complete end marker.');
- if(offset<bytes.length)parts.push(bytes.subarray(offset));
- return concat(parts);
-}
-function cleanWebp(bytes){
- if(bytes.length<12||ascii(bytes,0,4)!=='RIFF'||ascii(bytes,8,4)!=='WEBP')throw new Error('This WebP file is invalid or unsupported.');
- const parts=[bytes.subarray(0,12)];let offset=12,removedExif=false,removedXmp=false;
- while(offset+8<=bytes.length){
-  const type=ascii(bytes,offset,4);const size=u32le(bytes,offset+4);const end=offset+8+size+(size&1);if(end>bytes.length)throw new Error('This WebP file is incomplete.');
-  if(type==='EXIF')removedExif=true;else if(type==='XMP ')removedXmp=true;else{
-   const chunk=bytes.slice(offset,end);
-   if(type==='VP8X'&&size>=1){chunk[8]&=~(0x08|0x04);}
-   parts.push(chunk);
-  }
-  offset=end;
- }
- if(offset!==bytes.length)throw new Error('This WebP file has an invalid chunk structure.');
- const output=concat(parts);putU32le(output,4,output.length-8);return output;
-}
-async function cleanImageFile(file){
- const bytes=new Uint8Array(await file.arrayBuffer());let cleaned,type;
- if(file.type==='image/jpeg'){cleaned=cleanJpeg(bytes);type='image/jpeg';}
- else if(file.type==='image/png'){cleaned=cleanPng(bytes);type='image/png';}
- else if(file.type==='image/webp'){cleaned=cleanWebp(bytes);type='image/webp';}
- else throw new Error('Please choose a JPG, PNG or WebP image.');
- return new Blob([cleaned],{type});
-}
+const MAX=20*1024*1024,MAX_COUNT=20,MAX_TOTAL=100*1024*1024,TYPES=['image/jpeg','image/png','image/webp'],dec=new TextDecoder();
+const fmt=n=>n<1024?n+' B':n<1048576?(n/1024).toFixed(1)+' KB':(n/1048576).toFixed(2)+' MB',asc=(b,o,n)=>dec.decode(b.subarray(o,o+n));
+const cat=parts=>{let b=new Uint8Array(parts.reduce((n,x)=>n+x.length,0)),o=0;for(const p of parts){b.set(p,o);o+=p.length;}return b;};
+function scan(b,t){let a=[];if(t==='image/jpeg'&&b[0]===255&&b[1]===216){let o=2;while(o+4<b.length&&b[o]===255){while(b[o]===255)o++;let m=b[o++];if(m===218||m===217)break;if(m===1||(m>=208&&m<=215))continue;let l=(b[o]<<8)|b[o+1];if(l<2||o+l>b.length)break;let p=o+2,n=l-2;if(m===225){if(asc(b,p,Math.min(6,n))==='Exif\\0\\0')a.push('EXIF');else if(asc(b,p,Math.min(29,n)).startsWith('http://ns.adobe.com/xap/1.0/'))a.push('XMP');}if(m===237)a.push('IPTC');if(m===254)a.push('JPEG comment');o+=l;}}
+else if(t==='image/png'){let o=8;while(o+12<=b.length){let l=new DataView(b.buffer,b.byteOffset,b.byteLength).getUint32(o,false);if(o+12+l>b.length)break;let k=asc(b,o+4,4);if(['eXIf','tEXt','zTXt','iTXt'].includes(k))a.push(k);o+=12+l;if(k==='IEND')break;}}
+else if(t==='image/webp'){let o=12;while(o+8<=b.length){let k=asc(b,o,4),l=new DataView(b.buffer,b.byteOffset,b.byteLength).getUint32(o+4,true);if(o+8+l+(l&1)>b.length)break;if(k==='EXIF')a.push('EXIF');if(k==='XMP ')a.push('XMP');o+=8+l+(l&1);}}
+return [...new Set(a)];}
+function stripJ(b){if(b[0]!==255||b[1]!==216)throw Error('JPG verification failed.');let parts=[b.subarray(0,2)],o=2;while(o<b.length){if(b[o]!==255)throw Error('Unexpected JPG data.');let s=o;while(b[o]===255)o++;let m=b[o++];if(m===218||m===217){parts.push(b.subarray(s));break;}if(m===1||(m>=208&&m<=215)){parts.push(b.subarray(s,o));continue;}if(o+2>b.length)break;let l=(b[o]<<8)|b[o+1];if(l<2||o+l>b.length)throw Error('Incomplete JPG.');if(!((m>=225&&m!==226)||m===237||m===254))parts.push(b.subarray(s,o+l));o+=l;}return cat(parts);}
+function stripP(b){if(asc(b,0,8)!=='\x89PNG\r\n\x1a\n')throw Error('PNG verification failed.');let p=[b.subarray(0,8)],o=8,ok=false;while(o+12<=b.length){let l=new DataView(b.buffer,b.byteOffset,b.byteLength).getUint32(o,false),e=o+12+l;if(e>b.length)throw Error('Incomplete PNG.');let k=asc(b,o+4,4);if(!['eXIf','tEXt','zTXt','iTXt'].includes(k))p.push(b.subarray(o,e));o=e;if(k==='IEND'){ok=true;break;}}if(!ok)throw Error('PNG end marker missing.');return cat(p);}
+function stripMeta(b,t){if(t==='image/jpeg')return stripJ(b);if(t==='image/png')return stripP(b);throw Error('Unsupported output format.');}
+async function processOne(file,type,q){let raw=new Uint8Array(await file.arrayBuffer()),url=URL.createObjectURL(file);try{let im=await new Promise((res,rej)=>{let i=new Image();i.onload=()=>res(i);i.onerror=()=>rej(Error('Image could not be decoded.'));i.src=url;});let w=im.naturalWidth,h=im.naturalHeight;if(!w||!h||w*h>100000000)throw Error('Image dimensions too large.');let c=document.createElement('canvas');c.width=w;c.height=h;let x=c.getContext('2d');if(!x)throw Error('Browser canvas unavailable.');x.drawImage(im,0,0);let blob=await new Promise((res,rej)=>c.toBlob(b=>b?res(b):rej(Error('Image export failed.')),type,type==='image/jpeg'?q:undefined));c.width=c.height=0;let clean=stripMeta(new Uint8Array(await blob.arrayBuffer()),type),out=new Blob([clean],{type}),report=scan(clean,type);return {blob,report,found:scan(raw,file.type),w,h};}finally{URL.revokeObjectURL(url);}}
+function crc32(b){let c=0xffffffff;for(let v of b){c^=v;for(let k=0;k<8;k++)c=(c>>>1)^((c&1)?0xedb88320:0);}return(c^0xffffffff)>>>0;}
+function zip(files){let enc=new TextEncoder(),l=[],d=[],off=0;for(let f of files){let n=enc.encode(f.name),b=f.bytes,crc=crc32(b),h=new Uint8Array(30+n.length),v=new DataView(h.buffer);v.setUint32(0,0x04034b50,true);v.setUint16(4,20,true);v.setUint16(6,0x0800,true);v.setUint32(14,crc,true);v.setUint32(18,b.length,true);v.setUint32(22,b.length,true);v.setUint16(26,n.length,true);h.set(n,30);l.push(h,b);let z=new Uint8Array(46+n.length),w=new DataView(z.buffer);w.setUint32(0,0x02014b50,true);w.setUint16(4,20,true);w.setUint16(6,20,true);w.setUint16(8,0x0800,true);w.setUint32(16,crc,true);w.setUint32(20,b.length,true);w.setUint32(24,b.length,true);w.setUint16(28,n.length,true);w.setUint32(42,off,true);z.set(n,46);d.push(z);off+=h.length+b.length;}let size=d.reduce((a,b)=>a+b.length,0),e=new Uint8Array(22),v=new DataView(e.buffer);v.setUint32(0,0x06054b50,true);v.setUint16(8,files.length,true);v.setUint16(10,files.length,true);v.setUint32(12,size,true);v.setUint32(16,off,true);return new Blob([...l,...d,e],{type:'application/zip'});}
 export default function ImageMetadataCleaner(){
- useTitle('Free Image Metadata Cleaner | Stationery Dot Com','Remove common image metadata from JPG, PNG and WebP files in your browser. Free, private and processed on your device.');
- const inputRef=useRef(null);const urlsRef=useRef(new Set());const [file,setFile]=useState(null);const [preview,setPreview]=useState('');const [result,setResult]=useState(null);const [busy,setBusy]=useState(false);const [error,setError]=useState('');
- useEffect(()=>()=>{urlsRef.current.forEach(url=>URL.revokeObjectURL(url));urlsRef.current.clear();},[]);
- function clear(){urlsRef.current.forEach(url=>URL.revokeObjectURL(url));urlsRef.current.clear();setPreview('');setFile(null);setResult(null);setError('');if(inputRef.current)inputRef.current.value='';}
- function choose(next){setError('');setResult(null);if(!next)return;if(!ACCEPTED.includes(next.type)){setError('Please choose a JPG, PNG or WebP image.');return;}if(next.size>MAX_BYTES){setError('Please choose an image smaller than 20 MB.');return;}if(preview){URL.revokeObjectURL(preview);urlsRef.current.delete(preview);}const nextUrl=URL.createObjectURL(next);urlsRef.current.add(nextUrl);setFile(next);setPreview(nextUrl);}
- async function process(){if(!file||busy)return;setBusy(true);setError('');try{const blob=await cleanImageFile(file);const outputUrl=URL.createObjectURL(blob);urlsRef.current.add(outputUrl);const ext=file.type==='image/jpeg'?'jpg':file.type==='image/webp'?'webp':'png';setResult({blob,url:outputUrl,name:file.name.replace(/\\.[^.]+$/,'')+'-metadata-clean.'+ext,size:blob.size});}catch(e){setError(e?.message||'Something went wrong. Please try again.');}finally{setBusy(false);}}
- return <main className="wrap image-cleaner-page"><header className="image-cleaner-heading"><span className="image-cleaner-eyebrow"><ShieldCheck size={16}/> FREE ONLINE TOOL</span><h1>Image Metadata Cleaner</h1><p>Remove common hidden metadata from your image files — right in your browser.</p><div className="image-cleaner-trust"><span><ShieldCheck size={16}/> 100% free</span><span><ImagePlus size={16}/> No account needed</span><span><CheckCircle2 size={16}/> On-device processing</span></div></header>
- <section className="image-cleaner-card" aria-label="Image metadata removal tool">
- {!file?<button className="image-cleaner-drop" type="button" onClick={()=>inputRef.current?.click()} onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();choose(e.dataTransfer.files?.[0]);}}><span className="image-cleaner-upload-icon"><ImagePlus size={28}/></span><strong>Choose an image to clean</strong><span>Tap to upload or drag and drop</span><small>JPG, PNG or WebP · Maximum 20 MB</small><span className="btn image-cleaner-select-btn">Select image</span></button>
- :<div className="image-cleaner-workspace"><div className="image-cleaner-preview"><img src={preview} alt="Selected image preview"/><span className="image-cleaner-file-tag">{file.type.replace('image/','').toUpperCase()}</span></div><div className="image-cleaner-file-details"><strong>{file.name}</strong><span>{formatBytes(file.size)} · {file.type.split('/')[1]?.toUpperCase()}</span>{result&&<div className="image-cleaner-success"><CheckCircle2 size={17}/> Metadata-clean copy is ready.</div>}{error&&<p className="image-cleaner-error" role="alert"><AlertCircle size={16}/>{error}</p>}<div className="image-cleaner-actions">{!result?<button className="btn image-cleaner-primary" type="button" disabled={busy} onClick={process}>{busy?<><RefreshCw className="image-cleaner-spin" size={17}/> Processing…</>:<><Trash2 size={17}/> Remove metadata</>}</button>:<a className="btn image-cleaner-primary" href={result.url} download={result.name}><Download size={17}/> Download cleaned image</a>}<button className="btn alt image-cleaner-reset" type="button" onClick={clear}>Choose another</button></div>{result&&<small className="image-cleaner-output-size">Output file: {formatBytes(result.size)}</small>}</div></div>}
- {error&&!file&&<p className="image-cleaner-error" role="alert"><AlertCircle size={16}/>{error}</p>}
- <input ref={inputRef} className="image-cleaner-hidden-input" type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>choose(e.target.files?.[0])}/>
- </section>
- <section className="image-cleaner-info"><div><h2>How it works</h2><ol><li>Choose a JPG, PNG or WebP image.</li><li>The tool removes selected metadata chunks without decoding or re-encoding the image.</li><li>Download the cleaned file with the original image data preserved.</li></ol></div><div className="image-cleaner-privacy"><ShieldCheck size={22}/><h3>Your image stays on your device</h3><p>Image processing happens locally in your browser. The selected image is not uploaded to Stationery Dot Com or any image-processing server.</p></div></section>
- <aside className="image-cleaner-note"><strong>Important note</strong><p>This tool removes common metadata such as XMP, IPTC and selected EXIF/text chunks while preserving the original compressed image data, so it does not recompress or reduce image quality. JPEG orientation information is retained when needed so photos display correctly. It does not remove information embedded in image pixels, invisible watermarks, or platform-side AI detection. Social networks may still show AI-generated labels; removing metadata cannot guarantee that a label will disappear.</p></aside>
- </main>;
+ useTitle('Free Image Metadata Cleaner | Stationery Dot Com','Clean image metadata in your browser. Batch processing, format selection and quality controls.');
+ const input=useRef(null),urls=useRef(new Set()),id=useRef(0),[items,setItems]=useState([]),[format,setFormat]=useState('image/png'),[quality,setQuality]=useState(98),[busy,setBusy]=useState(false),[error,setError]=useState(''),[zipUrl,setZipUrl]=useState('');
+ useEffect(()=>()=>urls.current.forEach(URL.revokeObjectURL),[]);
+ const revoke=u=>{if(u){URL.revokeObjectURL(u);urls.current.delete(u);}};
+ function add(list){setError('');let added=[],total=items.reduce((n,x)=>n+x.file.size,0);for(let f of Array.from(list||[])){if(!TYPES.includes(f.type)){setError(f.name+': JPG, PNG or WebP only.');continue;}if(f.size>MAX){setError(f.name+': maximum 20 MB.');continue;}if(items.length+added.length>=MAX_COUNT){setError('Maximum 20 images per batch.');break;}if(total+f.size>MAX_TOTAL){setError('Batch limit is 100 MB.');break;}let u=URL.createObjectURL(f);urls.current.add(u);added.push({id:++id.current,file:f,preview:u,status:'ready'});total+=f.size;}if(added.length)setItems(p=>[...p,...added]);}
+ function remove(i){setItems(p=>{let x=p.find(y=>y.id===i);if(x){revoke(x.preview);if(x.result)revoke(x.result.url);}return p.filter(y=>y.id!==i);});}
+ function clear(){items.forEach(x=>{revoke(x.preview);if(x.result)revoke(x.result.url);});revoke(zipUrl);setZipUrl('');setItems([]);setError('');if(input.current)input.current.value='';}
+ async function run(){if(!items.length||busy)return;setBusy(true);setError('');revoke(zipUrl);setZipUrl('');setItems(p=>p.map(x=>({...x,status:'processing',result:null})));let done=[];for(let x of items){try{let r=await processOne(x.file,format,quality),u=URL.createObjectURL(r.blob);urls.current.add(u);let ext=format==='image/jpeg'?'jpg':'png';done.push({...x,status:'done',result:{...r,url:u,name:(x.file.name.replace(/\\.[^.]+$/,'')||'image')+'-cleaned.'+ext,size:r.blob.size}});}catch(e){done.push({...x,status:'error',error:e.message||'Failed'});}}setItems(done);let good=done.filter(x=>x.result);if(good.length){try{let z=zip(await Promise.all(good.map(async x=>({name:x.result.name,bytes:new Uint8Array(await x.result.blob.arrayBuffer())}))));let u=URL.createObjectURL(z);urls.current.add(u);setZipUrl(u);}catch{setError('ZIP creation failed. Download files individually.');}}setBusy(false);}
+ const cleaned=items.filter(x=>x.result).length;
+ return <main className="wrap image-cleaner-page"><header className="image-cleaner-heading"><span className="image-cleaner-eyebrow"><ShieldCheck size={16}/> FREE ONLINE TOOL</span><h1>Image Metadata Cleaner</h1><p>Clean metadata from multiple images — without sending them to a server.</p><div className="image-cleaner-trust"><span><ShieldCheck size={16}/> Free</span><span><FileImage size={16}/> Batch up to 20 images</span><span><CheckCircle2 size={16}/> Browser-only</span></div></header>
+ <section className="image-cleaner-card"><button className="image-cleaner-drop" type="button" onClick={()=>input.current?.click()} onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();add(e.dataTransfer.files);}}><span className="image-cleaner-upload-icon"><ImagePlus size={28}/></span><strong>Add images to clean</strong><span>Select multiple files or drag and drop</span><small>JPG, PNG, WebP · 20 files · 20 MB each · 100 MB total</small><span className="btn image-cleaner-select-btn">Choose images</span></button><input ref={input} className="image-cleaner-hidden-input" type="file" multiple accept="image/jpeg,image/png,image/webp" onChange={e=>add(e.target.files)}/>
+ {items.length>0&&<><div className="image-cleaner-options"><label>Output format<select value={format} disabled={busy} onChange={e=>setFormat(e.target.value)}><option value="image/png">PNG — best to avoid extra JPG loss</option><option value="image/jpeg">JPG — smaller, compression applies</option></select></label>{format==='image/jpeg'&&<label>JPG quality: {quality}%<input type="range" min="90" max="100" value={quality} disabled={busy} onChange={e=>setQuality(+e.target.value)}/><small>100% minimizes loss; JPG is still lossy.</small></label>}</div><div className="image-cleaner-batch-head"><strong>{items.length} selected</strong><button className="image-cleaner-text-btn" type="button" onClick={clear} disabled={busy}>Clear all</button></div><div className="image-cleaner-list">{items.map(x=><article className="image-cleaner-item" key={x.id}><img src={x.preview} alt="Selected image"/><div className="image-cleaner-item-info"><strong title={x.file.name}>{x.file.name}</strong><small>{fmt(x.file.size)}</small>{x.status==='done'&&<span className="image-cleaner-success"><CheckCircle2 size={15}/> Metadata check completed</span>}{x.status==='done'&&x.result.report.length>0&&<small>Remaining markers: {x.result.report.join(', ')}</small>}{x.status==='error'&&<span className="image-cleaner-error">{x.error}</span>}{x.status==='processing'&&<small>Processing…</small>}</div>{x.result?<a className="image-cleaner-icon-btn" href={x.result.url} download={x.result.name} aria-label="Download cleaned image"><Download size={18}/></a>:<button className="image-cleaner-icon-btn" type="button" onClick={()=>remove(x.id)} disabled={busy} aria-label="Remove image"><X size={18}/></button>}</article>)}</div><div className="image-cleaner-actions"><button className="btn image-cleaner-primary" type="button" disabled={busy||!items.some(x=>x.status!=='done')} onClick={run}>{busy?<><RefreshCw className="image-cleaner-spin" size={17}/> Cleaning…</>:<><Trash2 size={17}/> Clean {items.length} images</>}</button>{zipUrl&&<a className="btn image-cleaner-zip" href={zipUrl} download="cleaned-images.zip"><FileArchive size={17}/> Download all (ZIP)</a>}</div>{cleaned>0&&<p className="image-cleaner-batch-summary">{cleaned}/{items.length} cleaned. Supported metadata scan completed.</p>}</>}
+ {error&&<p className="image-cleaner-error" role="alert"><AlertCircle size={16}/>{error}</p>}</section>
+ <section className="image-cleaner-info"><div><h2>Quality & format</h2><ol><li>PNG is recommended to avoid an additional lossy JPG compression step.</li><li>For JPG output, choose 90–100% quality; JPG remains lossy.</li><li>Image is decoded to normalize orientation, exported, then metadata chunks are stripped. Color-profile chunks are preserved where possible.</li></ol></div><div className="image-cleaner-privacy"><ShieldCheck size={22}/><h3>Nothing saved on our server</h3><p>Files stay in your browser and are not uploaded or stored by Stationery Dot Com. Refreshing or closing the page clears the selection and results. Download before refreshing.</p></div></section>
+ <aside className="image-cleaner-note"><strong>Verification & limitations</strong><p>The output is scanned for supported EXIF, XMP, IPTC and text metadata markers; any detected markers are shown beside the file. Color profiles may remain to preserve color accuracy. This cannot remove pixel-embedded information, invisible watermarks, or platform-side AI labels.</p></aside></main>;
 }

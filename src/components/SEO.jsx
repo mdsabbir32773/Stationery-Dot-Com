@@ -53,6 +53,7 @@ export default function SEO(){
         '/contact':{title:'Contact Stationery Dot Com | Online Support Bangladesh',description:'Contact Stationery Dot Com online for digital subscriptions, SMM, Meta advertising, document support and creative services. Call or message our team.'},
         '/help':{title:'Help Center | Stationery Dot Com',description:'Find answers about ordering, payments, wallet deposits, delivery, documents and customer support at Stationery Dot Com.'},
         '/blog':{title:'Stationery Dot Com Blog | Online Service Guides',description:'Practical Bangladesh-focused guides about digital subscriptions, Facebook marketing, SMM, online services, documents and creative work.'},
+        '/free-image-metadata-cleaner':{title:'Free Image Metadata Cleaner & Background Remover | Stationery Dot Com',description:'Clean image metadata from JPG and PNG files or remove image backgrounds online for free. Batch process images in your browser with no server upload.'},
         '/privacy-policy':{title:'Privacy Policy | Stationery Dot Com',description:'Read the Stationery Dot Com privacy policy and learn how customer information is handled.'},
         '/terms-of-service':{title:'Terms of Service | Stationery Dot Com',description:'Read the Stationery Dot Com terms of service for online orders and digital services.'},
         '/account':{title:'My Account | Stationery Dot Com',description:'Manage your Stationery Dot Com profile, orders and reviews.',noindex:true},

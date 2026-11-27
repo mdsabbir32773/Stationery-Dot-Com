@@ -238,7 +238,11 @@ async function makeReply(env, userText, settings, channel, conversationId = null
         customer: String(row.input_text || "").slice(0, 500)
           .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "[email removed]")
           .replace(/(?:\+?88)?01[3-9](?:[\s-]?\d){8}/g, "[phone removed]"),
-        assistant: String(row.ai_reply || "").slice(0, 700)
+        assistant: (() => {
+          const previousReply = String(row.ai_reply || "");
+          const leaked = /do not add extra information|do not use abbreviations|you are the official customer-support|customer message:/i.test(previousReply) || /(?:^|\\n)\\s*(?:BUSINESS|SERVICES|LANGUAGE|STYLE|ROUTING|ACCURACY|HUMAN SUPPORT|Additional business rules|Brand voice|Customer message|Return one complete)\\s*:/i.test(previousReply);
+          return leaked || previousReply.length > 900 ? "[previous reply was not usable; do not repeat it]" : previousReply.slice(0, 700);
+        })()
       }));
     } catch (error) {
       console.error("Messenger context lookup failed", String(error).slice(0, 200));

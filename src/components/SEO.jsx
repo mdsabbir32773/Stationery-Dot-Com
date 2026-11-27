@@ -2,8 +2,8 @@ import {useEffect} from 'react';
 import {useLocation} from 'react-router-dom';
 
 const SITE='Stationery Dot Com';
-const DEFAULT_DESCRIPTION='Stationery Dot Com is a fully online service platform serving customers across Bangladesh for document and government services, Meta ads, social media growth, SMM services, digital subscriptions and creative design.';
-const KEYWORDS='Stationery Dot Com, online services Bangladesh, digital services Bangladesh, document services Bangladesh, government document service Bangladesh, NID service Bangladesh, passport service Bangladesh, birth certificate service Bangladesh, Meta ads Bangladesh, Facebook ads service Bangladesh, social media marketing Bangladesh, SMM panel Bangladesh, Instagram growth Bangladesh, digital subscriptions Bangladesh, Canva Pro Bangladesh, ChatGPT Plus Bangladesh, graphic design Bangladesh, web design Bangladesh, video editing Bangladesh';
+const DEFAULT_DESCRIPTION='Stationery Dot Com is a fully online service platform serving customers across Bangladesh for digital subscriptions, TikTok and social media services, Meta ads support, document assistance and creative design.';
+const KEYWORDS='Stationery Dot Com, online services Bangladesh, digital services Bangladesh, TikTok likes Bangladesh, TikTok views Bangladesh, TikTok followers Bangladesh, document services Bangladesh, government document service Bangladesh, NID service Bangladesh, passport service Bangladesh, birth certificate service Bangladesh, Meta ads Bangladesh, Facebook ads service Bangladesh, social media marketing Bangladesh, SMM panel Bangladesh, Instagram growth Bangladesh, digital subscriptions Bangladesh, Canva Pro Bangladesh, ChatGPT Plus Bangladesh, graphic design Bangladesh, web design Bangladesh, video editing Bangladesh';
 
 const BLOG_SEO_TITLES={
   'tiktok-likes-views-followers-bangladesh-guide':'TikTok Likes, Views & Followers Bangladesh | Stationery Dot Com',
@@ -38,7 +38,7 @@ export default function SEO(){
     const run=async()=>{
       const route=pathname.replace(/\/+$/,'')||'/';
       const pages={
-        '/':{title:'Stationery Dot Com | Subscriptions & Followers BD',description:'Stationery Dot offers digital subscriptions in Bangladesh, Facebook and Instagram followers, SMM panel services, Meta ads, document assistance and creative services.'},
+        '/':{title:'Stationery Dot Com | Subscriptions & Followers BD',description:'Stationery Dot offers digital subscriptions in Bangladesh, TikTok likes, views and followers, Facebook and Instagram services, SMM panel services, Meta ads, document assistance and creative services.'},
         '/about':{title:'About Stationery Dot Com | Online Services Bangladesh',description:'Learn about Stationery Dot Com, a fully online service platform for digital subscriptions, SMM, Meta support, document assistance and creative services.'},
         '/refund-policy':{title:'Refund & Cancellation Policy | Stationery Dot Com',description:'Understand how Stationery Dot Com reviews order cancellation and refund requests.'},
         '/delivery-policy':{title:'Service Delivery Policy | Stationery Dot Com',description:'Learn how Stationery Dot Com reviews orders and handles online service delivery.'},

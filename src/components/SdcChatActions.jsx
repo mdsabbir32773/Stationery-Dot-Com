@@ -41,6 +41,19 @@ function detectSmmOutcome(value){
  if(/\breviews?\b/.test(text))return 'Reviews';
  return null;
 }
+function smmCategoryMatches(category,outcome){
+ const value=normalized(category);
+ if(outcome==='Views')return /\bviews?\b/.test(value);
+ if(outcome==='Followers')return /\bfollowers?\b/.test(value);
+ if(outcome==='Members')return /\bmembers?\b/.test(value);
+ if(outcome==='Likes')return /\blikes?\b/.test(value);
+ if(outcome==='Subscribers')return /\bsubscribers?\b/.test(value);
+ if(outcome==='Comments')return /\bcomments?\b/.test(value);
+ if(outcome==='Shares')return /\bshares?\b/.test(value);
+ if(outcome==='Reactions')return /\breactions?\b/.test(value);
+ if(outcome==='Reviews')return /\breviews?\b/.test(value);
+ return value===normalized(outcome);
+}
 function asksForSuggestions(text){return /\b(related|recommend|suggest|options?|list|show me|what do you have|which packages?)\b|ki ki ache|aro package|related package|option gula|প্যাকেজ.*(দেখা|আছে|কোন)|কোন কোন|কি কি আছে|আরো.*প্যাকেজ/i.test(text);}
 
 
@@ -129,7 +142,7 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
     return;
    }
    const targetOutcome=requestedOutcome;
-   let matching=targetOutcome?platformServices.filter(s=>String(s.smm_category||'').toLowerCase()===targetOutcome.toLowerCase()):platformServices;
+   let matching=targetOutcome?platformServices.filter(s=>smmCategoryMatches(s.smm_category,targetOutcome)):platformServices;
    let note='';
    if(!matching.length&&requestedPlatform==='Telegram'&&targetOutcome==='Followers'){
     matching=platformServices.filter(s=>String(s.smm_category||'').toLowerCase()==='members');
@@ -170,7 +183,7 @@ export default function SdcChatActions({mode,initialMessage='',onCancel,onComple
   const pb=packageMatches[0],pn=packageMatches[1];
   if(pb&&pb.score>=82&&(!pn||pb.score-pn.score>=12)){const svc=services.find(x=>x.id===pb.item.service_id);if(svc){chooseService(svc.id,pb.item.id);return;}}
   if(asksForSuggestions(query)){
-   const list=serviceMatches.length?serviceMatches.slice(0,12).map(x=>x.item):services.slice(0,12);
+   const list=serviceMatches.length?serviceMatches.slice(0,12).map(x=>x.item):scopedServices.slice(0,12);
    setServiceOptions(list);
    bot((language==='bn'?'Available service-গুলো:\n':'Available services:\n')+list.map((x,i)=>(i+1)+'. '+x.name).join('\n')+'\n'+(language==='bn'?'Option number বলুন।':'Reply with an option number.'));
    return;

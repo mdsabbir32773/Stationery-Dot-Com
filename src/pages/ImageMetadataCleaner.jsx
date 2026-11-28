@@ -15,7 +15,42 @@ function stripP(b){if(asc(b,0,8)!=='\x89PNG\r\n\x1a\n')throw Error('PNG verifica
 function stripMeta(b,t){if(t==='image/jpeg')return stripJ(b);if(t==='image/png')return stripP(b);throw Error('Unsupported output format.');}
 async function convertToPng(blob){const bitmap=await createImageBitmap(blob);try{const w=bitmap.width,h=bitmap.height;if(!w||!h||w*h>30000000)throw Error('Image dimensions exceed the 30-megapixel processing limit.');const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d');if(!ctx)throw Error('Browser canvas unavailable.');ctx.drawImage(bitmap,0,0);const png=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('PNG export failed.')), 'image/png'));canvas.width=canvas.height=0;return png;}finally{bitmap.close?.();}}
 const yieldUI=()=>new Promise(resolve=>setTimeout(resolve,0));
-async function removeWhiteFringe(blob){const bitmap=await createImageBitmap(blob);try{const c=document.createElement('canvas');c.width=bitmap.width;c.height=bitmap.height;const ctx=c.getContext('2d',{willReadFrequently:true});if(!ctx)throw Error('Browser canvas unavailable.');ctx.drawImage(bitmap,0,0);const im=ctx.getImageData(0,0,c.width,c.height),d=im.data,w=c.width,h=c.height;const rows=96;for(let y0=0;y0<h;y0+=rows){const y1=Math.min(h,y0+rows);for(let y=y0;y<y1;y++){for(let x=0;x<w;x++){const i=(y*w+x)*4,a=d[i+3]/255;if(a<=0.005||a>=0.995)continue;const r=d[i],g=d[i+1],b=d[i+2],bright=Math.min(r,g,b)/255;if(bright>0.70){const keep=Math.max(0,Math.min(1,(1-bright)/Math.max(a,0.05)));d[i+3]=Math.round(d[i+3]*Math.min(1,keep*1.35));}const na=d[i+3]/255;if(na>0.02&&na<0.98&&r>175&&g>175&&b>175){d[i]=Math.max(0,Math.min(255,Math.round((r-255*(1-na))/na)));d[i+1]=Math.max(0,Math.min(255,Math.round((g-255*(1-na))/na)));d[i+2]=Math.max(0,Math.min(255,Math.round((b-255*(1-na))/na)));}}await yieldUI();}ctx.putImageData(im,0,0);const out=await new Promise((res,rej)=>c.toBlob(b=>b?res(b):rej(Error('Edge refinement failed.')),'image/png'));c.width=c.height=0;return out;}finally{bitmap.close?.();}}
+async function removeWhiteFringe(blob){
+ const bitmap=await createImageBitmap(blob);
+ try{
+  const canvas=document.createElement('canvas');
+  canvas.width=bitmap.width;canvas.height=bitmap.height;
+  const ctx=canvas.getContext('2d',{willReadFrequently:true});
+  if(!ctx)throw Error('Browser canvas unavailable.');
+  ctx.drawImage(bitmap,0,0);
+  const image=ctx.getImageData(0,0,canvas.width,canvas.height);
+  const data=image.data,w=canvas.width,h=canvas.height,rows=96;
+  for(let y0=0;y0<h;y0+=rows){
+   const y1=Math.min(h,y0+rows);
+   for(let y=y0;y<y1;y++){
+    for(let x=0;x<w;x++){
+     const i=(y*w+x)*4;
+     const alpha=data[i+3]/255;
+     if(alpha<=0.01||alpha>=0.99)continue;
+     const r=data[i],g=data[i+1],b=data[i+2];
+     if(r>170&&g>170&&b>170){
+      const matte=255*(1-alpha);
+      data[i]=Math.max(0,Math.min(255,Math.round((r-matte)/alpha)));
+      data[i+1]=Math.max(0,Math.min(255,Math.round((g-matte)/alpha)));
+      data[i+2]=Math.max(0,Math.min(255,Math.round((b-matte)/alpha)));
+     }
+    }
+   }
+   await yieldUI();
+  }
+  ctx.putImageData(image,0,0);
+  const result=await new Promise((resolve,reject)=>canvas.toBlob(value=>value?resolve(value):reject(Error('Edge refinement failed.')),'image/png'));
+  canvas.width=canvas.height=0;
+  return result;
+ }finally{
+  bitmap.close?.();
+ }
+}
 async function addSolidBackground(blob,color){if(!color||color==='transparent')return blob;const bitmap=await createImageBitmap(blob);try{const c=document.createElement('canvas');c.width=bitmap.width;c.height=bitmap.height;const ctx=c.getContext('2d');if(!ctx)throw Error('Browser canvas unavailable.');ctx.fillStyle=color;ctx.fillRect(0,0,c.width,c.height);ctx.drawImage(bitmap,0,0);const out=await new Promise((res,rej)=>c.toBlob(b=>b?res(b):rej(Error('Background color export failed.')),'image/png'));c.width=c.height=0;return out;}finally{bitmap.close?.();}}
 async function prepareForBackground(file,maxSide=2560){const bitmap=await createImageBitmap(file);try{const scale=Math.min(1,maxSide/Math.max(bitmap.width,bitmap.height));if(scale===1)return file;const w=Math.max(1,Math.round(bitmap.width*scale)),h=Math.max(1,Math.round(bitmap.height*scale)),c=document.createElement('canvas');c.width=w;c.height=h;const ctx=c.getContext('2d');if(!ctx)throw Error('Browser canvas unavailable.');ctx.drawImage(bitmap,0,0,w,h);const blob=await new Promise((res,rej)=>c.toBlob(b=>b?res(b):rej(Error('Image resize failed.')),'image/png'));c.width=c.height=0;return new File([blob],file.name||'image.png',{type:'image/png'});}finally{bitmap.close?.();}}
 async function processOne(file,type,q,mode='clean'){if(mode==='background'){const mod=await import(/* @vite-ignore */ 'https://esm.sh/@imgly/background-removal@1.7.0');const removeBG=mod.removeBackground||(typeof mod.default==='function'?mod.default:mod.default?.removeBackground);if(typeof removeBG!=='function')throw Error('Background removal module failed to load. Please refresh and try again.');const prepared=await prepareForBackground(file);const cutout=await removeBG(prepared,{model:'isnet_fp16',output:{format:'image/png',type:'foreground'},progress:(key,current,total)=>{if(total>0)window.dispatchEvent(new CustomEvent('sdc-bg-progress',{detail:{percent:Math.round(current/total*100),key}}));}});const png=await convertToPng(cutout);const refined=await removeWhiteFringe(png);const clean=new Uint8Array(await refined.arrayBuffer());const blob=new Blob([clean],{type:'image/png'});return {blob,report:[],found:[],w:0,h:0};}let raw=new Uint8Array(await file.arrayBuffer()),url=URL.createObjectURL(file);try{let im=await new Promise((res,rej)=>{let i=new Image();i.onload=()=>res(i);i.onerror=()=>rej(Error('Image could not be decoded.'));i.src=url;});let w=im.naturalWidth,h=im.naturalHeight;if(!w||!h||w*h>100000000)throw Error('Image dimensions too large.');let c=document.createElement('canvas');c.width=w;c.height=h;let x=c.getContext('2d');if(!x)throw Error('Browser canvas unavailable.');if(type==='image/jpeg'){x.fillStyle='#ffffff';x.fillRect(0,0,w,h);}x.drawImage(im,0,0);let blob=await new Promise((res,rej)=>c.toBlob(b=>b?res(b):rej(Error('Image export failed.')),type,type==='image/jpeg'?q:undefined));c.width=c.height=0;let clean=stripMeta(new Uint8Array(await blob.arrayBuffer()),type),out=new Blob([clean],{type}),report=scan(clean,type);return {blob,report,found:scan(raw,file.type),w,h};}finally{URL.revokeObjectURL(url);}}

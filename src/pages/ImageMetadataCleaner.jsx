@@ -53,7 +53,7 @@ async function removeWhiteFringe(blob){
 }
 async function addSolidBackground(blob,color){if(!color||color==='transparent')return blob;const bitmap=await createImageBitmap(blob);try{const c=document.createElement('canvas');c.width=bitmap.width;c.height=bitmap.height;const ctx=c.getContext('2d');if(!ctx)throw Error('Browser canvas unavailable.');ctx.fillStyle=color;ctx.fillRect(0,0,c.width,c.height);ctx.drawImage(bitmap,0,0);const out=await new Promise((res,rej)=>c.toBlob(b=>b?res(b):rej(Error('Background color export failed.')),'image/png'));c.width=c.height=0;return out;}finally{bitmap.close?.();}}
 async function prepareForBackground(file,maxSide=4096){const bitmap=await createImageBitmap(file);try{const scale=Math.min(1,maxSide/Math.max(bitmap.width,bitmap.height));if(scale===1)return file;const w=Math.max(1,Math.round(bitmap.width*scale)),h=Math.max(1,Math.round(bitmap.height*scale)),c=document.createElement('canvas');c.width=w;c.height=h;const ctx=c.getContext('2d');if(!ctx)throw Error('Browser canvas unavailable.');ctx.drawImage(bitmap,0,0,w,h);const blob=await new Promise((res,rej)=>c.toBlob(b=>b?res(b):rej(Error('Image resize failed.')),'image/png'));c.width=c.height=0;return new File([blob],file.name||'image.png',{type:'image/png'});}finally{bitmap.close?.();}}
-let birefnetPromise=null,birefnetBackend='webgpu';
+let birefnetPromise=null,birefnetBackend='webgpu',birefnetForceWasm=false;
 async function getBiRefNet(onProgress){
  if(!birefnetPromise){
   birefnetPromise=(async()=>{
@@ -62,55 +62,67 @@ async function getBiRefNet(onProgress){
    env.allowLocalModels=false;env.useBrowserCache=true;env.backends.onnx.wasm.proxy=true;
    const modelId='onnx-community/BiRefNet_lite';
    const progress_callback=e=>{if(e?.progress!=null)onProgress?.(Math.round(e.progress),e?.file||'BiRefNet model');};
-   try{
-    birefnetBackend='webgpu';
-    const model=await AutoModel.from_pretrained(modelId,{device:'webgpu',dtype:'fp16',progress_callback});
-    const processor=await AutoProcessor.from_pretrained(modelId,{progress_callback});
-    return {model,processor,RawImage:lib.RawImage};
-   }catch(webgpuError){
-    birefnetBackend='wasm';
-    onProgress?.(0,'Loading CPU-compatible model');
-    const model=await AutoModel.from_pretrained(modelId,{device:'wasm',dtype:'fp32',progress_callback});
-    const processor=await AutoProcessor.from_pretrained(modelId,{progress_callback});
-    return {model,processor,RawImage:lib.RawImage};
-   }
+   const load=async(device,dtype)=>{const model=await AutoModel.from_pretrained(modelId,{device,dtype,progress_callback});const processor=await AutoProcessor.from_pretrained(modelId,{progress_callback});return {model,processor,RawImage:lib.RawImage};};
+   if(birefnetForceWasm){birefnetBackend='wasm';return load('wasm','fp32');}
+   try{birefnetBackend='webgpu';return await load('webgpu','fp16');}
+   catch(webgpuError){birefnetBackend='wasm';onProgress?.(0,'WebGPU unavailable; loading CPU model');return await load('wasm','fp32');}
   })().catch(e=>{birefnetPromise=null;throw e;});
  }
  return birefnetPromise;
 }
+async function getImageDimensions(file){
+ const head=new Uint8Array(await file.slice(0,Math.min(file.size,1024*1024)).arrayBuffer());
+ const view=new DataView(head.buffer,head.byteOffset,head.byteLength);
+ if(head.length>=24&&head[0]===137&&head[1]===80&&head[2]===78&&head[3]===71)return {width:view.getUint32(16,false),height:view.getUint32(20,false)};
+ if(head.length>=30&&asc(head,0,4)==='RIFF'&&asc(head,8,4)==='WEBP'&&asc(head,12,4)==='VP8X')return {width:1+head[24]+(head[25]<<8)+(head[26]<<16),height:1+head[27]+(head[28]<<8)+(head[29]<<16)};
+ if(head[0]===255&&head[1]===216){
+  let o=2;while(o+4<head.length){if(head[o]!==255){o++;continue;}while(head[o]===255)o++;const m=head[o++];if(m===218||m===217)break;if(m===1||(m>=208&&m<=215))continue;const len=(head[o]<<8)|head[o+1];if(len<2||o+len>head.length)break;if([192,193,194,195,197,198,199,201,202,203,205,206,207].includes(m)&&len>=7)return {width:(head[o+5]<<8)|head[o+6],height:(head[o+3]<<8)|head[o+4]};o+=len;
+  }
+ }
+ return null;
+}
 async function makeBiRefNetCutout(file,onProgress){
- const engine=await getBiRefNet(onProgress);
- const bitmap=await createImageBitmap(file);
+ let dims=await getImageDimensions(file);
+ let bitmap;
+ if(dims?.width&&dims?.height){
+  const scale=Math.min(1,4096/Math.max(dims.width,dims.height));
+  const rw=Math.max(1,Math.round(dims.width*scale)),rh=Math.max(1,Math.round(dims.height*scale));
+  bitmap=await createImageBitmap(file,scale<1?{resizeWidth:rw,resizeHeight:rh,resizeQuality:'high'}:undefined);
+ }else bitmap=await createImageBitmap(file);
  try{
   const w=bitmap.width,h=bitmap.height;
-  if(!w||!h||w*h>50000000)throw Error('Image dimensions exceed the 50-megapixel limit.');
+  if(!w||!h)throw Error('Could not read image dimensions.');
   const maxSide=2048,scale=Math.min(1,maxSide/Math.max(w,h)),sw=Math.max(1,Math.round(w*scale)),sh=Math.max(1,Math.round(h*scale));
   const inputCanvas=document.createElement('canvas');inputCanvas.width=sw;inputCanvas.height=sh;
   const inputCtx=inputCanvas.getContext('2d');if(!inputCtx)throw Error('Browser canvas unavailable.');
   inputCtx.drawImage(bitmap,0,0,sw,sh);
   const inputBlob=await new Promise((res,rej)=>inputCanvas.toBlob(b=>b?res(b):rej(Error('Image preparation failed.')),'image/png'));
-  onProgress?.(0,'BiRefNet segmentation ('+birefnetBackend+')');
-  const raw=await engine.RawImage.fromBlob(inputBlob);
-  const {pixel_values}=await engine.processor(raw);
-  const output=await engine.model({input_image:pixel_values});
-  const tensor=output.output_image?.[0]||output.output?.[0]||output.predicted_mask?.[0];
-  if(!tensor)throw Error('BiRefNet did not return an alpha matte.');
-  const matte=await engine.RawImage.fromTensor(tensor.sigmoid().mul(255).to('uint8')).resize(sw,sh);
+  const raw=await (await getBiRefNet(onProgress)).RawImage.fromBlob(inputBlob);
+  async function predict(engine){
+   onProgress?.(0,'AI segmentation ('+birefnetBackend+')');
+   const {pixel_values}=await engine.processor(raw);
+   const output=await engine.model({input_image:pixel_values});
+   const tensor=output.output_image?.[0];
+   if(!tensor)throw Error('AI model returned no mask.');
+   return await engine.RawImage.fromTensor(tensor.sigmoid().mul(255).to('uint8')).resize(sw,sh);
+  }
+  let engine=await getBiRefNet(onProgress),matte;
+  try{matte=await predict(engine);}
+  catch(webgpuError){
+   if(birefnetBackend!=='webgpu')throw webgpuError;
+   // Some graphics drivers fail during inference even when the model loads.
+   birefnetForceWasm=true;birefnetBackend='wasm';birefnetPromise=null;
+   onProgress?.(0,'GPU inference failed; switching to CPU mode');
+   engine=await getBiRefNet(onProgress);matte=await predict(engine);
+  }
   const maskCanvas=document.createElement('canvas');maskCanvas.width=sw;maskCanvas.height=sh;
   const maskCtx=maskCanvas.getContext('2d',{willReadFrequently:true});if(!maskCtx)throw Error('Alpha mask canvas unavailable.');
   const maskImage=maskCtx.createImageData(sw,sh),md=maskImage.data,values=matte.data;
-  for(let p=0,j=0;p<sw*sh;p++,j+=4){
-   const v=(values[p]??0)/255;
-   // Suppress low-confidence background haze while keeping a soft transition for hair.
-   const t=Math.max(0,Math.min(1,(v-0.12)/0.68));
-   const a=t*t*(3-2*t);
-   md[j]=md[j+1]=md[j+2]=255;md[j+3]=Math.round(a*255);
-  }
+  for(let p=0,j=0;p<sw*sh;p++,j+=4){const v=(values[p]??0)/255;const t=Math.max(0,Math.min(1,(v-0.12)/0.68));const a=t*t*(3-2*t);md[j]=md[j+1]=md[j+2]=255;md[j+3]=Math.round(a*255);}
   maskCtx.putImageData(maskImage,0,0);
   const out=document.createElement('canvas');out.width=w;out.height=h;
   const ctx=out.getContext('2d');if(!ctx)throw Error('Browser canvas unavailable.');
-  ctx.drawImage(bitmap,0,0);
-  ctx.globalCompositeOperation='destination-in';ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(maskCanvas,0,0,w,h);ctx.globalCompositeOperation='source-over';
+  ctx.drawImage(bitmap,0,0);ctx.globalCompositeOperation='destination-in';ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(maskCanvas,0,0,w,h);ctx.globalCompositeOperation='source-over';
   const blob=await new Promise((res,rej)=>out.toBlob(b=>b?res(b):rej(Error('Transparent PNG export failed.')),'image/png'));
   onProgress?.(100,'Cutout ready');
   inputCanvas.width=inputCanvas.height=0;maskCanvas.width=maskCanvas.height=0;out.width=out.height=0;

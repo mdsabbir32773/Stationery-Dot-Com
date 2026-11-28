@@ -53,7 +53,74 @@ async function removeWhiteFringe(blob){
 }
 async function addSolidBackground(blob,color){if(!color||color==='transparent')return blob;const bitmap=await createImageBitmap(blob);try{const c=document.createElement('canvas');c.width=bitmap.width;c.height=bitmap.height;const ctx=c.getContext('2d');if(!ctx)throw Error('Browser canvas unavailable.');ctx.fillStyle=color;ctx.fillRect(0,0,c.width,c.height);ctx.drawImage(bitmap,0,0);const out=await new Promise((res,rej)=>c.toBlob(b=>b?res(b):rej(Error('Background color export failed.')),'image/png'));c.width=c.height=0;return out;}finally{bitmap.close?.();}}
 async function prepareForBackground(file,maxSide=4096){const bitmap=await createImageBitmap(file);try{const scale=Math.min(1,maxSide/Math.max(bitmap.width,bitmap.height));if(scale===1)return file;const w=Math.max(1,Math.round(bitmap.width*scale)),h=Math.max(1,Math.round(bitmap.height*scale)),c=document.createElement('canvas');c.width=w;c.height=h;const ctx=c.getContext('2d');if(!ctx)throw Error('Browser canvas unavailable.');ctx.drawImage(bitmap,0,0,w,h);const blob=await new Promise((res,rej)=>c.toBlob(b=>b?res(b):rej(Error('Image resize failed.')),'image/png'));c.width=c.height=0;return new File([blob],file.name||'image.png',{type:'image/png'});}finally{bitmap.close?.();}}
-async function processOne(file,type,q,mode='clean'){if(mode==='background'){const mod=await import(/* @vite-ignore */ 'https://esm.sh/@imgly/background-removal@1.7.0');const removeBG=mod.removeBackground||(typeof mod.default==='function'?mod.default:mod.default?.removeBackground);if(typeof removeBG!=='function')throw Error('Background removal module failed to load. Please refresh and try again.');const prepared=await prepareForBackground(file);const cutout=await removeBG(prepared,{model:'isnet_fp16',output:{format:'image/png',type:'foreground'},progress:(key,current,total)=>{if(total>0)window.dispatchEvent(new CustomEvent('sdc-bg-progress',{detail:{percent:Math.round(current/total*100),key}}));}});const png=await convertToPng(cutout);const clean=new Uint8Array(await png.arrayBuffer());const blob=new Blob([clean],{type:'image/png'});return {blob,report:[],found:[],w:0,h:0};}let raw=new Uint8Array(await file.arrayBuffer()),url=URL.createObjectURL(file);try{let im=await new Promise((res,rej)=>{let i=new Image();i.onload=()=>res(i);i.onerror=()=>rej(Error('Image could not be decoded.'));i.src=url;});let w=im.naturalWidth,h=im.naturalHeight;if(!w||!h||w*h>100000000)throw Error('Image dimensions too large.');let c=document.createElement('canvas');c.width=w;c.height=h;let x=c.getContext('2d');if(!x)throw Error('Browser canvas unavailable.');if(type==='image/jpeg'){x.fillStyle='#ffffff';x.fillRect(0,0,w,h);}x.drawImage(im,0,0);let blob=await new Promise((res,rej)=>c.toBlob(b=>b?res(b):rej(Error('Image export failed.')),type,type==='image/jpeg'?q:undefined));c.width=c.height=0;let clean=stripMeta(new Uint8Array(await blob.arrayBuffer()),type),out=new Blob([clean],{type}),report=scan(clean,type);return {blob,report,found:scan(raw,file.type),w,h};}finally{URL.revokeObjectURL(url);}}
+let birefnetPromise=null,birefnetBackend='webgpu';
+async function getBiRefNet(onProgress){
+ if(!birefnetPromise){
+  birefnetPromise=(async()=>{
+   const lib=await import(/* @vite-ignore */ 'https://esm.sh/@huggingface/transformers@3.7.2');
+   const {pipeline,env}=lib;
+   env.allowLocalModels=false;
+   env.useBrowserCache=true;
+   const progress_callback=e=>{if(e?.progress!=null)onProgress?.(Math.round(e.progress),e?.file||'BiRefNet model');};
+   try{
+    birefnetBackend='webgpu';
+    return await pipeline('image-segmentation','onnx-community/BiRefNet_lite-ONNX',{device:'webgpu',dtype:'fp16',progress_callback});
+   }catch(webgpuError){
+    birefnetBackend='wasm';
+    onProgress?.(0,'Switching to CPU compatibility model');
+    return await pipeline('image-segmentation','onnx-community/BiRefNet_lite-ONNX',{device:'wasm',dtype:'fp32',progress_callback});
+   }
+  })().catch(e=>{birefnetPromise=null;throw e;});
+ }
+ return birefnetPromise;
+}
+async function makeBiRefNetCutout(file,onProgress){
+ const pipe=await getBiRefNet(onProgress);
+ const bitmap=await createImageBitmap(file);
+ try{
+  const w=bitmap.width,h=bitmap.height;
+  if(!w||!h||w*h>50000000)throw Error('Image dimensions exceed the 50-megapixel limit.');
+  const maxSide=2048,scale=Math.min(1,maxSide/Math.max(w,h)),sw=Math.max(1,Math.round(w*scale)),sh=Math.max(1,Math.round(h*scale));
+  const inputCanvas=document.createElement('canvas');inputCanvas.width=sw;inputCanvas.height=sh;
+  const inputCtx=inputCanvas.getContext('2d',{willReadFrequently:true});if(!inputCtx)throw Error('Browser canvas unavailable.');
+  inputCtx.drawImage(bitmap,0,0,sw,sh);
+  const inputBlob=await new Promise((res,rej)=>inputCanvas.toBlob(b=>b?res(b):rej(Error('Image preparation failed.')),'image/png')));
+  onProgress?.(0,'BiRefNet segmentation ('+birefnetBackend+')');
+  const result=await pipe(inputBlob,{return_mask:true});
+  const item=Array.isArray(result)?result[0]:result;
+  const mask=item?.mask;
+  if(!mask)throw Error('BiRefNet did not return an alpha mask.');
+  const maskCanvas=typeof mask.toCanvas==='function'?mask.toCanvas():null;
+  if(!maskCanvas)throw Error('BiRefNet mask could not be decoded.');
+  const out=document.createElement('canvas');out.width=w;out.height=h;
+  const ctx=out.getContext('2d',{willReadFrequently:true});if(!ctx)throw Error('Browser canvas unavailable.');
+  ctx.drawImage(bitmap,0,0);
+  const alphaCanvas=document.createElement('canvas');alphaCanvas.width=maskCanvas.width;alphaCanvas.height=maskCanvas.height;
+  const alphaCtx=alphaCanvas.getContext('2d',{willReadFrequently:true});if(!alphaCtx)throw Error('Alpha mask canvas unavailable.');
+  alphaCtx.drawImage(maskCanvas,0,0);
+  const maskImage=alphaCtx.getImageData(0,0,alphaCanvas.width,alphaCanvas.height);
+  const md=maskImage.data;
+  // BiRefNet outputs a soft grayscale matte. Remove low-confidence background haze,
+  // preserve soft subject edges, and smoothly strengthen foreground opacity.
+  for(let i=0;i<md.length;i+=4){
+   const v=md[i]/255;
+   const t=Math.max(0,Math.min(1,(v-0.035)/0.91));
+   const a=t*t*(3-2*t);
+   md[i]=md[i+1]=md[i+2]=255;
+   md[i+3]=Math.round(a*255);
+  }
+  alphaCtx.putImageData(maskImage,0,0);
+  ctx.globalCompositeOperation='destination-in';
+  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+  ctx.drawImage(alphaCanvas,0,0,w,h);
+  ctx.globalCompositeOperation='source-over';
+  const blob=await new Promise((res,rej)=>out.toBlob(b=>b?res(b):rej(Error('Transparent PNG export failed.')),'image/png'));
+  onProgress?.(100,'Cutout ready');
+  inputCanvas.width=inputCanvas.height=0;alphaCanvas.width=alphaCanvas.height=0;out.width=out.height=0;
+  return blob;
+ }finally{bitmap.close?.();}
+}
+async function processOne(file,type,q,mode='clean'){if(mode==='background'){const blob=await makeBiRefNetCutout(file,(percent,key)=>window.dispatchEvent(new CustomEvent('sdc-bg-progress',{detail:{percent,key}})));return {blob,report:[],found:[],w:0,h:0};}let raw=new Uint8Array(await file.arrayBuffer()),url=URL.createObjectURL(file);try{let im=await new Promise((res,rej)=>{let i=new Image();i.onload=()=>res(i);i.onerror=()=>rej(Error('Image could not be decoded.'));i.src=url;});let w=im.naturalWidth,h=im.naturalHeight;if(!w||!h||w*h>100000000)throw Error('Image dimensions too large.');let c=document.createElement('canvas');c.width=w;c.height=h;let x=c.getContext('2d');if(!x)throw Error('Browser canvas unavailable.');if(type==='image/jpeg'){x.fillStyle='#ffffff';x.fillRect(0,0,w,h);}x.drawImage(im,0,0);let blob=await new Promise((res,rej)=>c.toBlob(b=>b?res(b):rej(Error('Image export failed.')),type,type==='image/jpeg'?q:undefined));c.width=c.height=0;let clean=stripMeta(new Uint8Array(await blob.arrayBuffer()),type),out=new Blob([clean],{type}),report=scan(clean,type);return {blob,report,found:scan(raw,file.type),w,h};}finally{URL.revokeObjectURL(url);}}
 function crc32(b){let c=0xffffffff;for(let v of b){c^=v;for(let k=0;k<8;k++)c=(c>>>1)^((c&1)?0xedb88320:0);}return(c^0xffffffff)>>>0;}
 function zip(files){let enc=new TextEncoder(),l=[],d=[],off=0;for(let f of files){let n=enc.encode(f.name),b=f.bytes,crc=crc32(b),h=new Uint8Array(30+n.length),v=new DataView(h.buffer);v.setUint32(0,0x04034b50,true);v.setUint16(4,20,true);v.setUint16(6,0x0800,true);v.setUint32(14,crc,true);v.setUint32(18,b.length,true);v.setUint32(22,b.length,true);v.setUint16(26,n.length,true);h.set(n,30);l.push(h,b);let z=new Uint8Array(46+n.length),w=new DataView(z.buffer);w.setUint32(0,0x02014b50,true);w.setUint16(4,20,true);w.setUint16(6,20,true);w.setUint16(8,0x0800,true);w.setUint32(16,crc,true);w.setUint32(20,b.length,true);w.setUint32(24,b.length,true);w.setUint16(28,n.length,true);w.setUint32(42,off,true);z.set(n,46);d.push(z);off+=h.length+b.length;}let size=d.reduce((a,b)=>a+b.length,0),e=new Uint8Array(22),v=new DataView(e.buffer);v.setUint32(0,0x06054b50,true);v.setUint16(8,files.length,true);v.setUint16(10,files.length,true);v.setUint32(12,size,true);v.setUint32(16,off,true);return new Blob([...l,...d,e],{type:'application/zip'});}
 export default function ImageMetadataCleaner(){

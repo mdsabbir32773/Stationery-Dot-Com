@@ -88,7 +88,7 @@ async function makeBiRefNetCutout(file,onProgress){
   const inputCanvas=document.createElement('canvas');inputCanvas.width=sw;inputCanvas.height=sh;
   const inputCtx=inputCanvas.getContext('2d');if(!inputCtx)throw Error('Browser canvas unavailable.');
   inputCtx.drawImage(bitmap,0,0,sw,sh);
-  const inputBlob=await new Promise((res,rej)=>inputCanvas.toBlob(b=>b?res(b):rej(Error('Image preparation failed.')),'image/png')));
+  const inputBlob=await new Promise((res,rej)=>inputCanvas.toBlob(b=>b?res(b):rej(Error('Image preparation failed.')),'image/png'));
   onProgress?.(0,'BiRefNet segmentation ('+birefnetBackend+')');
   const raw=await engine.RawImage.fromBlob(inputBlob);
   const {pixel_values}=await engine.processor(raw);

@@ -58,65 +58,62 @@ async function getBiRefNet(onProgress){
  if(!birefnetPromise){
   birefnetPromise=(async()=>{
    const lib=await import(/* @vite-ignore */ 'https://esm.sh/@huggingface/transformers@3.7.2');
-   const {pipeline,env}=lib;
-   env.allowLocalModels=false;
-   env.useBrowserCache=true;
+   const {AutoModel,AutoProcessor,env}=lib;
+   env.allowLocalModels=false;env.useBrowserCache=true;
+   const modelId='onnx-community/BiRefNet_lite-ONNX';
    const progress_callback=e=>{if(e?.progress!=null)onProgress?.(Math.round(e.progress),e?.file||'BiRefNet model');};
    try{
     birefnetBackend='webgpu';
-    return await pipeline('image-segmentation','onnx-community/BiRefNet_lite-ONNX',{device:'webgpu',dtype:'fp16',progress_callback});
+    const model=await AutoModel.from_pretrained(modelId,{device:'webgpu',dtype:'fp16',progress_callback});
+    const processor=await AutoProcessor.from_pretrained(modelId,{progress_callback});
+    return {model,processor,RawImage:lib.RawImage};
    }catch(webgpuError){
     birefnetBackend='wasm';
-    onProgress?.(0,'Switching to CPU compatibility model');
-    return await pipeline('image-segmentation','onnx-community/BiRefNet_lite-ONNX',{device:'wasm',dtype:'fp32',progress_callback});
+    onProgress?.(0,'Loading CPU-compatible model');
+    const model=await AutoModel.from_pretrained(modelId,{device:'wasm',dtype:'fp32',progress_callback});
+    const processor=await AutoProcessor.from_pretrained(modelId,{progress_callback});
+    return {model,processor,RawImage:lib.RawImage};
    }
   })().catch(e=>{birefnetPromise=null;throw e;});
  }
  return birefnetPromise;
 }
 async function makeBiRefNetCutout(file,onProgress){
- const pipe=await getBiRefNet(onProgress);
+ const engine=await getBiRefNet(onProgress);
  const bitmap=await createImageBitmap(file);
  try{
   const w=bitmap.width,h=bitmap.height;
   if(!w||!h||w*h>50000000)throw Error('Image dimensions exceed the 50-megapixel limit.');
   const maxSide=2048,scale=Math.min(1,maxSide/Math.max(w,h)),sw=Math.max(1,Math.round(w*scale)),sh=Math.max(1,Math.round(h*scale));
   const inputCanvas=document.createElement('canvas');inputCanvas.width=sw;inputCanvas.height=sh;
-  const inputCtx=inputCanvas.getContext('2d',{willReadFrequently:true});if(!inputCtx)throw Error('Browser canvas unavailable.');
+  const inputCtx=inputCanvas.getContext('2d');if(!inputCtx)throw Error('Browser canvas unavailable.');
   inputCtx.drawImage(bitmap,0,0,sw,sh);
   const inputBlob=await new Promise((res,rej)=>inputCanvas.toBlob(b=>b?res(b):rej(Error('Image preparation failed.')),'image/png')));
   onProgress?.(0,'BiRefNet segmentation ('+birefnetBackend+')');
-  const result=await pipe(inputBlob,{return_mask:true});
-  const item=Array.isArray(result)?result[0]:result;
-  const mask=item?.mask;
-  if(!mask)throw Error('BiRefNet did not return an alpha mask.');
-  const maskCanvas=typeof mask.toCanvas==='function'?mask.toCanvas():null;
-  if(!maskCanvas)throw Error('BiRefNet mask could not be decoded.');
-  const out=document.createElement('canvas');out.width=w;out.height=h;
-  const ctx=out.getContext('2d',{willReadFrequently:true});if(!ctx)throw Error('Browser canvas unavailable.');
-  ctx.drawImage(bitmap,0,0);
-  const alphaCanvas=document.createElement('canvas');alphaCanvas.width=maskCanvas.width;alphaCanvas.height=maskCanvas.height;
-  const alphaCtx=alphaCanvas.getContext('2d',{willReadFrequently:true});if(!alphaCtx)throw Error('Alpha mask canvas unavailable.');
-  alphaCtx.drawImage(maskCanvas,0,0);
-  const maskImage=alphaCtx.getImageData(0,0,alphaCanvas.width,alphaCanvas.height);
-  const md=maskImage.data;
-  // BiRefNet outputs a soft grayscale matte. Remove low-confidence background haze,
-  // preserve soft subject edges, and smoothly strengthen foreground opacity.
-  for(let i=0;i<md.length;i+=4){
-   const v=md[i]/255;
-   const t=Math.max(0,Math.min(1,(v-0.035)/0.91));
+  const raw=await engine.RawImage.fromBlob(inputBlob);
+  const {pixel_values}=await engine.processor(raw);
+  const output=await engine.model({input_image:pixel_values});
+  const tensor=output.output_image?.[0]||output.output?.[0]||output.predicted_mask?.[0];
+  if(!tensor)throw Error('BiRefNet did not return an alpha matte.');
+  const matte=await engine.RawImage.fromTensor(tensor.sigmoid().mul(255).to('uint8')).resize(sw,sh);
+  const maskCanvas=document.createElement('canvas');maskCanvas.width=sw;maskCanvas.height=sh;
+  const maskCtx=maskCanvas.getContext('2d',{willReadFrequently:true});if(!maskCtx)throw Error('Alpha mask canvas unavailable.');
+  const maskImage=maskCtx.createImageData(sw,sh),md=maskImage.data,values=matte.data;
+  for(let p=0,j=0;p<sw*sh;p++,j+=4){
+   const v=(values[p]??0)/255;
+   // Suppress low-confidence background haze while keeping a soft transition for hair.
+   const t=Math.max(0,Math.min(1,(v-0.025)/0.93));
    const a=t*t*(3-2*t);
-   md[i]=md[i+1]=md[i+2]=255;
-   md[i+3]=Math.round(a*255);
+   md[j]=md[j+1]=md[j+2]=255;md[j+3]=Math.round(a*255);
   }
-  alphaCtx.putImageData(maskImage,0,0);
-  ctx.globalCompositeOperation='destination-in';
-  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
-  ctx.drawImage(alphaCanvas,0,0,w,h);
-  ctx.globalCompositeOperation='source-over';
+  maskCtx.putImageData(maskImage,0,0);
+  const out=document.createElement('canvas');out.width=w;out.height=h;
+  const ctx=out.getContext('2d');if(!ctx)throw Error('Browser canvas unavailable.');
+  ctx.drawImage(bitmap,0,0);
+  ctx.globalCompositeOperation='destination-in';ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(maskCanvas,0,0,w,h);ctx.globalCompositeOperation='source-over';
   const blob=await new Promise((res,rej)=>out.toBlob(b=>b?res(b):rej(Error('Transparent PNG export failed.')),'image/png'));
   onProgress?.(100,'Cutout ready');
-  inputCanvas.width=inputCanvas.height=0;alphaCanvas.width=alphaCanvas.height=0;out.width=out.height=0;
+  inputCanvas.width=inputCanvas.height=0;maskCanvas.width=maskCanvas.height=0;out.width=out.height=0;
   return blob;
  }finally{bitmap.close?.();}
 }
